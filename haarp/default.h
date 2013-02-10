@@ -2,7 +2,7 @@
 #ifndef DEFAULT_H
 #define DEFAULT_H
 
-#define VERSION "1.0"
+#define VERSION "1.1"
 
 //##############################################################
 //Parameters in Configurationfile
