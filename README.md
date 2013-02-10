@@ -5,7 +5,7 @@ Proxy Haarpcache es un tenedor de Thundercache.
 Lo resaltante en el sistema haarpcache, es que este permite almacenar los archivos en forma inteligente. 
 
 Es decir almacena cada pedaso de video o archivo juntandolo todo en un único recurso en el disco, sin importar que estas partes hayan venido incompletas o en desorden. Además esto hace que 
-cuando se pida de nuevo el mismo archivo; se despache las partes que entan en el disco y las que no se encuentran en el, se toman desde la red, pero al final las partes faltantes del archivo que se descargan, se siguen almacenando en el mismo archivo; completando así el achivo original. 
+cuando se pida de nuevo el mismo archivo; se despachen las partes que entan en el disco y las que no se encuentran en el, se toman desde la red, pero al final las partes faltantes del archivo que se descargan se siguen almacenando en el mismo archivo; completando así el achivo original. 
  
 
 Building
