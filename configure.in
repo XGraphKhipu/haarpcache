@@ -1,0 +1,78 @@
+
+AC_INIT(haarp)
+
+dnl This ksh/zsh feature conflicts with `cd blah ; pwd`
+unset CDPATH
+
+# Check for programs.
+AC_PROG_CXX
+AC_PROG_INSTALL
+
+AC_PREFIX_DEFAULT(/usr/local)
+
+AC_CONFIG_HEADER(haarp/default.h)
+
+AC_ARG_ENABLE(ssl-tunnel,[  --enable-ssl-tunnel     Enable SSL proxying (not scanned, only forwarded!)], enable_ssl_tunnel=$enableval, enable_ssl_tunnel=no)
+
+AC_CHECK_PROG(AR, ar, ar, no)
+
+if test "$AR" = "no"; then
+	AC_MSG_ERROR([ar not found in PATH])
+fi
+
+AC_CHECK_PROG(PERL, perl, perl, no)
+
+AC_CHECK_FUNCS(initgroups setgroups)
+
+if test "$PERL" = "no"; then
+	AC_MSG_ERROR([perl not found in PATH])
+fi
+
+AC_MSG_CHECKING(OS)
+
+os="`uname`"
+
+case $os in
+	Linux*)
+		AC_MSG_RESULT(Linux)
+		mandatory=yes
+		;;
+	SunOS*)
+		AC_MSG_RESULT(Solaris)
+		mandatory=yes
+		OSLIBS="-lsocket -lresolv -lnsl"
+		;;
+	*)
+		AC_MSG_RESULT($os)
+		mandatory=no
+		;;
+esac
+
+if test "$enable_ssl_tunnel" = "yes"
+then
+	AC_DEFINE(SSLTUNNEL)
+fi
+
+# Check mysql here
+AC_HAVE_LIBRARY([mysqlclient],[],[
+		         AC_MSG_ERROR(["libmysqlclient was not found! Please install libmysqlclient or correspondent for your system"])])
+AC_CHECK_HEADERS([mysql/mysql.h])
+
+LDFLAGS="$LDFLAGS $OSLIBS"
+CFLAGS=" -Wall -O2 -lmysqlclient -ldl"
+
+test "$prefix" = "NONE" && prefix=/usr/local
+test "$localstatedir" = '${prefix}/var' && localstatedir=/var || localstatedir=$localstatedir
+#sysconfdir=`eval echo $sysconfdir | $PERL -pe 's#/haarp/?$##'`
+sysconfdir=/etc
+localstatedir=`eval echo $localstatedir`
+AC_DEFINE_UNQUOTED(CONFIGFILE, "$sysconfdir/haarp/haarp.conf")
+AC_DEFINE_UNQUOTED(ACCESSLOG, "$localstatedir/log/haarp/access.log")
+AC_DEFINE_UNQUOTED(ERRORLOG, "$localstatedir/log/haarp/error.log")
+AC_DEFINE_UNQUOTED(PIDFILE, "$localstatedir/run/haarp/haarp.pid")
+
+AC_SUBST(SCANNEROBJECTS)
+AC_SUBST(CFLAGS)
+
+AC_OUTPUT(Makefile haarp/Makefile etc/haarp/haarp.conf haarp/plugins/Makefile)
+
