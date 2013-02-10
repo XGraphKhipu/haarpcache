@@ -1,0 +1,64 @@
+CXX = g++-4.4
+CFLAGS =  -Wall -O2 -lmysqlclient -ldl
+LDFLAGS =  
+DEFINES = -DHAVE_CONFIG_H
+INSTALL = ../install-sh
+
+prefix = /usr/local
+exec_prefix = $(prefix)
+sbindir = ${exec_prefix}/sbin
+sysconfdir = /etc
+localstatedir = /var
+
+OBJECTS = helper.o logfile.o connectiontobrowser.o \
+          httphandler.o params.o sockethandler.o \
+          connectiontohttp.o haarp.o proxyhandler.o utils.o \
+	  database_mysql.o connectiontohttp2.o 
+
+all: haarp
+
+haarp: $(OBJECTS)
+	$(CXX) $(CFLAGS) -o haarp $(OBJECTS) $(LDFLAGS)
+
+%.o: %.cpp %.h default.h
+	$(CXX) $(CFLAGS) $(DEFINES) -c -o $@ $<
+
+install: all
+	$(INSTALL) -d $(DESTDIR)$(sbindir)
+	$(INSTALL) -m 755 haarp $(DESTDIR)$(sbindir)/haarp
+	$(INSTALL) -d -m 755 $(DESTDIR)$(localstatedir)/log/haarp
+	$(INSTALL) -d -m 755 $(DESTDIR)$(localstatedir)/tmp/haarp
+	$(INSTALL) -d -m 755 $(DESTDIR)$(localstatedir)/run/haarp
+	$(INSTALL) -d -m 755 $(DESTDIR)$(sysconfdir)/haarp
+	$(INSTALL) -d -m 755 $(DESTDIR)$(sysconfdir)/haarp/plugins
+	$(INSTALL) -d -m 777 $(DESTDIR)/haarp
+	$(INSTALL) -d $(DESTDIR)/etc/init.d
+	$(INSTALL) -m 644 ../etc/haarp/haarp.conf $(DESTDIR)$(sysconfdir)/haarp/haarp.conf.default
+	@if [ ! -f $(DESTDIR)$(sysconfdir)/haarp/haarp.conf ]; then \
+		echo "$(INSTALL) -m 644 ../etc/haarp/haarp.conf $(DESTDIR)$(sysconfdir)/haarp/haarp.conf"; \
+		$(INSTALL) -m 644 ../etc/haarp/haarp.conf $(DESTDIR)$(sysconfdir)/haarp/haarp.conf; \
+	else \
+                echo "Updating config $(DESTDIR)$(sysconfdir)/haarp/haarp.conf"; \
+                ../update-conf $(DESTDIR)$(sysconfdir)/haarp/haarp.conf; \
+	fi
+	@if [ ! -f $(DESTDIR)$(sysconfdir)/init.d/haarp ]; then \
+                $(INSTALL) -m 755 ../etc/init.d/haarp $(DESTDIR)$(sysconfdir)/init.d/haarp; \
+        else \
+                echo "Not overwriting old $(DESTDIR)$(sysconfdir)/init.d/haarp.conf"; \
+        fi
+	@if [ ! -f $(DESTDIR)$(sysconfdir)/haarp/haarp.php ]; then \
+                $(INSTALL) -m 755 ../etc/haarp/haarp.php $(DESTDIR)$(sysconfdir)/haarp/haarp.php; \
+        else \
+                echo "Not overwriting old $(DESTDIR)$(sysconfdir)/haarp/haarp.php"; \
+        fi
+	@if [ ! -f $(DESTDIR)$(sysconfdir)/haarp/haarp.lst ]; then \
+		 $(INSTALL) -m 755 ../etc/haarp/haarp.lst $(DESTDIR)$(sysconfdir)/haarp/haarp.lst; \
+	else \
+		 echo "Not overwriting old $(DESTDIR)$(sysconfdir)/haarp/haarp.lst"; \
+	fi							       
+	$(INSTALL) -m 755 plugins/*.so $(DESTDIR)$(sysconfdir)/haarp/plugins/
+	chmod -R a+rX $(DESTDIR)$(sysconfdir)/haarp/plugins
+
+clean:
+	cd plugins && $(MAKE) clean
+	rm -f haarp *.o

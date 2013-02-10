@@ -1,0 +1,115 @@
+#!/bin/sh
+#
+#
+####
+# This init-script tries to be LSB conform but platform independent.
+# 
+# Therefore check the following two variables to fit to your requests:
+# Haarp_BIN Haarp_CONFIG PIDFILE
+# Any configuration of Haarp is done in haarp.conf
+# Type haarp --help for help and read haarp.conf you should have received.
+
+Haarp_BIN=/usr/local/sbin/haarp
+Haarp_CONFIG=/etc/haarp/haarp.conf
+PIDFILE=/var/log/haarp/haarp.pid
+# Return values acc. to LSB for all commands but status:
+# 1       generic or unspecified error (current practice)
+# 2       invalid or excess argument(s)
+# 3       unimplemented feature (for example, "reload")
+# 4       user had insufficient privilege
+# 5       program is not installed
+# 6       program is not configured
+# 7       program is not running
+# 8-99    reserved for future LSB use
+# 100-149 reserved for distribution use
+# 150-199 reserved for application use
+# 200-254 reserved
+# Note that starting an already running service, stopping
+# or restarting a not-running service as well as the restart
+# with force-reload (in case signaling is not supported) are
+# considered a success.
+
+reload_haarp()
+{
+	echo "Reloading Haarp ..."
+	if test ! -d $(dirname $PIDFILE); then
+		mkdir $(dirname $PIDFILE)
+	fi
+	PID="`cat $PIDFILE`"
+	if [ "$PID" != "" ]; then
+		kill -HUP "$PID" >/dev/null 2>&1
+		if [ $? -ne 0 ]; then
+			echo "Error: Haarp not running"
+			exit 1
+		fi
+	else
+		echo "Error: Haarp not running or PIDFILE not readable"
+		exit 1
+	fi
+	exit 0
+}
+
+case "$1" in
+	start)
+		echo "Starting Haarp ..."
+		if [ ! -f $Haarp_BIN ]; then
+			echo "Error: $Haarp_BIN not found"
+			exit 5
+		fi
+		$Haarp_BIN -c $Haarp_CONFIG
+		exit $?
+		;;
+
+	stop)
+		echo "Shutting down Haarp ..."
+		if [ ! -f "$PIDFILE" ]; then
+		  echo "Error: Haarp not running or PIDFILE unreadable"
+		  exit 1
+		fi
+		if test ! -d $(dirname $PIDFILE); then
+			mkdir $(dirname $PIDFILE)
+		fi
+		PID="`cat $PIDFILE`"
+		if [ "$PID" != "" ]; then
+			kill -TERM "$PID" >/dev/null 2>&1
+			if [ $? -ne 0 ]; then
+				echo "Error: Haarp not running"
+				exit 1
+			fi
+		else
+			echo "Error: Haarp not running or PIDFILE unreadable"
+			exit 1
+		fi
+		sleep 2
+		exit 0
+		;;
+
+	restart)
+		echo "Shutting down Haarp ..."
+		$0 stop >/dev/null 2>&1
+		$0 start
+		exit $?
+		;;
+
+	reload-lists)
+		reload_haarp
+		;;
+
+	force-reload)
+		reload_haarp
+		;;
+
+	reload)
+		reload_haarp
+		;;
+
+	status)
+		echo "Checking for service Haarp ..."
+		exit 4
+		;;
+
+	*)
+		echo "Usage: $0 {start|stop|restart|force-reload|reload|reload-lists}"
+		exit 0
+		;;
+esac

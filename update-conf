@@ -1,0 +1,51 @@
+#!/bin/sh
+
+#
+# This script copies haarp.conf.default to haarp.conf,
+# while keeping user set values
+#
+# Command: update-conf /etc/haarp/haarp.conf
+#
+# Default config must be found: /etc/haarp/haarp.conf.default
+#
+
+if [ ! -f "$1" ]; then exit 0; fi
+if [ ! -f "$1.default" ]; then exit 0; fi
+
+cp "$1" "$1.old"
+
+perl -e '
+	open(OLDCONF, "$ARGV[0]") or die;
+	while (<OLDCONF>)
+	{
+		chomp;
+		unless ( /^\s*?#/ || /^\s*$/ )
+		{
+			if ( /\s*?(\S+?)\s+?(.+)\s*$/ )
+			{
+				$conf{$1} = $2;
+			}
+		}
+	}
+	close(OLDCONF);
+
+	open(NEWCONF, "$ARGV[0].default") or die;
+	open(REPCONF, ">$ARGV[0].tmp") or die;
+
+	while (<NEWCONF>)
+	{
+		foreach $key (keys %conf)
+		{
+			if ( /^(\# )?$key / )
+			{
+				print REPCONF "$key $conf{$key}\n" or die;
+				goto END;
+			}
+		}
+		print REPCONF $_ or die;
+		END:
+	}
+	close(REPCONF);
+	close(NEWCONF);
+	rename("$ARGV[0].tmp", "$ARGV[0]") or die;
+' $1
