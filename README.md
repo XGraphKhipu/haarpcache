@@ -29,7 +29,7 @@ __Vesion 1.1__
 
 Fork creado por
 
-kei Kurono
+Kei Kurono
 
 kei.haarpcache@gmail.com
 
