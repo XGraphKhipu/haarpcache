@@ -12,7 +12,6 @@ Building
 --------
 * Type _./configure_ and then _make_
 * To clean, type _make clean_
-* To remove, type _make uninstall_
 
 
 Changelog
