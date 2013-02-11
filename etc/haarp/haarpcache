@@ -1,0 +1,10 @@
+/var/log/haarp/*.log {
+  daily
+  compress
+  rotate 5
+  missingok
+  notifempty
+  postrotate
+  /etc/init.d/haarp restart > /dev/null
+  endscript
+}
