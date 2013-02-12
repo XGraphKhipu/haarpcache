@@ -22,7 +22,7 @@
 	$cache_dir = "/haarp";
 
 	if (!( $db = new PDO('mysql:host=localhost;dbname=haarp', 'root','haarpcache') ) ) {
-		die("Não consegui conectar no database");
+		die("I can not connect to database");
 	}
 	
 	function disk_use($dir){
@@ -61,7 +61,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">  	
 <head>
-		<title>Relatorio Haarp Cache</title>
+		<title>Report Haarp Cache</title>
 	<style type="text/css">
 		<!--
 		table {
@@ -106,20 +106,20 @@
 	</style>
 	</head>
 	<body>
-	<div align="center"><font color="#0C70EE"><strong>Relat&oacute;rio do Sistema Haarp Cache 3:</strong><br />
+	<div align="center"><font color="#0C70EE"><strong>Report Sistem Haarp Cache 1.1:</strong><br />
 	</font><br />
-	<strong>Data de gera&ccedil;&atilde;o: <?= date(DATE_RFC822) ?>
+	<strong>DATA GENERATIO: <?= date(DATE_RFC822) ?>
 	<br>
-	Uso do disco: <?= round(disk_use($cache_dir),2) ?> %
+	Disk use: <?= round(disk_use($cache_dir),2) ?> %
 	</strong></div><br>
 	<table border="1" align="center">
 	 <tr class="cabecalho">
-	   <td><strong>Dom&iacute;nio</strong></td>
-	   <td><strong>Arquivos</strong></td>
-	   <td><strong>Tamanho</strong></td>
-	   <td><strong>Economia</strong></td>
+	   <td><strong>Domain</strong></td>
+	   <td><strong>Files</strong></td>
+	   <td><strong>Size</strong></td>
+	   <td><strong>Economic</strong></td>
 	   <td><strong>Hits</strong></td>
-	   <td><strong>Efici&ecirc;ncia %</strong></td></tr>
+	   <td><strong>Efficiency %</strong></td></tr>
 	<?
 	global $db;
     $query = "select domain,COUNT(*) as files,sum(size) as size,sum(size*requested) as eco, sum(requested) as hits from haarp where deleted=0 and static=0 group by domain UNION select 'static' as domain,COUNT(*) as files,sum(size) as size,sum(size*requested) as eco, sum(requested) as hits from haarp where deleted=0 and static=1";
