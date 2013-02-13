@@ -122,7 +122,7 @@
 	   <td><strong>Efficiency %</strong></td></tr>
 	<?
 	global $db;
-    $query = "select domain,COUNT(*) as files,sum(size) as size,sum(size*requested) as eco, sum(requested) as hits from haarp where deleted=0 and static=0 group by domain UNION select 'static' as domain,COUNT(*) as files,sum(size) as size,sum(size*requested) as eco, sum(requested) as hits from haarp where deleted=0 and static=1";
+    $query = "select domain,COUNT(*) as files,sum(filesize) as size,sum(filesize*requested) as eco, sum(requested) as hits from haarp where deleted=0 and static=0 group by domain UNION select 'static' as domain,COUNT(*) as files,sum(size) as size,sum(size*requested) as eco, sum(requested) as hits from haarp where deleted=0 and static=1";
     foreach ($db->query($query) as $valor) {
         $percent=round(($valor['eco']/$valor['size'])*100,2)
 ?>
