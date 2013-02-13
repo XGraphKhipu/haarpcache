@@ -108,7 +108,7 @@
 	<body>
 	<div align="center"><font color="#0C70EE"><strong>Report System Haarp Cache 1.1:</strong><br />
 	</font><br />
-	<strong>DATA GENERATIO: <?= date(DATE_RFC822) ?>
+	<strong>DATA GENERATION: <?= date(DATE_RFC822) ?>
 	<br>
 	Disk use: <?= round(disk_use($cache_dir),2) ?> %
 	</strong></div><br>
