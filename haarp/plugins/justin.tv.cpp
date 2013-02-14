@@ -8,7 +8,7 @@ using namespace std;
 // use this line to compile
 // g++ -I. -fPIC -shared -g -o justin.tv.so justin.tv.cpp
 void get_videoid(string url, string &file, int *a, int *b){
-  vector<string> resultado, url2;
+	vector<string> resultado, url2;
 	SearchReplace(url,"?","&");
 	string lastpart = "";
 	stringexplode(url, "/", &resultado);
@@ -21,10 +21,16 @@ void get_videoid(string url, string &file, int *a, int *b){
 		stringexplode(url2.at(i),"=", &var);
 		if(var.size() != 2)
 			continue;
-		if( ( var.at(0) == "start" ) && ( regex_match("^[0-9]+$", var.at(1)) != "" ) ) {
-			*a = atoi(var.at(1).c_str()) - 0;
-			*b = -1;
-			break;
+		if( var.at(0) == "start" ) {
+			if (regex_match("^[0-9]+$", var.at(1)) != "" ) {
+				*a = atoi(var.at(1).c_str()) - 0;
+				*b = -1;
+				break;
+			}
+			else {
+				file = "";
+				return;
+			}
 		}
 	}
 }
