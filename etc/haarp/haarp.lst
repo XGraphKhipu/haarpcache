@@ -13,6 +13,8 @@ http.*(\.kaspersky-labs\.com|\.geo\.kaspersky\.com|kasperskyusa\.com).*(\.avc|\.
 #http.*\.mccont\.com.*\.flv
 http.*\.metacafe\.com.*\.flv
 http.{1,4}media\w*\.justin.tv\/archives\/(\w|\/|-)*\.flv(\?.*|$)
+http.{1,4}\w*juegos\w*\.juegosdiarios\.com\/(\w|\/|-)*\.swf$
+http.{1,4}\w*\.juegosjuegos\.com\/games(\w|\/|-)*\.swf$
 ##http.*(\.windowsupdate\.com|(\.microsoft\.com)).*(\.cab|\.exe|\.iso|\.zip|\.psf)
 http.*(\.windowsupdate\.com|(update|download|dlservice|windowsupdate)\.microsoft\.com)\/.*(\.cab|\.exe|\.iso|\.zip|\.psf|\.txt|\.crt)$
 http.*\.pornotube\.com.*\.flv
