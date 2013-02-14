@@ -12,6 +12,7 @@ http.{1,4}vsh\.r7\.com\/.*(\.mp4)$
 http.*(\.kaspersky-labs\.com|\.geo\.kaspersky\.com|kasperskyusa\.com).*(\.avc|\.kdc|\.klz|\.bz2|\.dat|\.dif)
 #http.*\.mccont\.com.*\.flv
 http.*\.metacafe\.com.*\.flv
+http.{1,4}media\w*\.justin.tv\/archives\/(\w|\/|-)*\.flv(\?.*|$)
 ##http.*(\.windowsupdate\.com|(\.microsoft\.com)).*(\.cab|\.exe|\.iso|\.zip|\.psf)
 http.*(\.windowsupdate\.com|(update|download|dlservice|windowsupdate)\.microsoft\.com)\/.*(\.cab|\.exe|\.iso|\.zip|\.psf|\.txt|\.crt)$
 http.*\.pornotube\.com.*\.flv
