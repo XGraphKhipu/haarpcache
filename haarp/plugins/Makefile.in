@@ -37,7 +37,8 @@ OBJECTS = tube8.com.so \
 	phncdn.com.so \
 	doubleclick.net.so \
 	juegosdiarios.com.so \
-	juegosjuegos.com.so
+	juegosjuegos.com.so \
+	justin.tv.so
 	
 
 all: plugins copiar
