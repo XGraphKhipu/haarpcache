@@ -166,7 +166,7 @@ short ConnectionToHTTP2::WaitLastModification() {
 	int contador = 0;
 	while ( (now() - file_getmodif(completefilepath)) <= 2.1 ) {
 		usleep(200000);
-		if ( ++contador > 19 ) // + de 5 segundos
+		if ( ++contador > 15 ) // + de 5 segundos
 		{
 			if(LL > 0) LogFile::ErrorMessage("Warning: file '%s' with persistent changes\n", r.file.c_str());
 			if(LL > 0) LogFile::AccessMessage("The file on disk is modified, go direct to internet.\n");
