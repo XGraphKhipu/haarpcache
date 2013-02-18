@@ -44,3 +44,5 @@ http.*videos\..*\.redtubefiles\.com\/.*\.flv
 #http.*\.rapidshare\.com\/cgi-bin\/.*\.cgi\?.*sub=download
 http.*\.vimeo.com\/.*\.mp4(\?.*)?$
 http.*images\.orkut\.com\/orkut\/photos\/.*\.jpg$
+http.{1,4}(\w|\/|\.|-)*media\.tumblr\.com\/(\w|\/|-|\.)*tumblr(\w|\/|-)*(\.png|\.jpg)$
+
