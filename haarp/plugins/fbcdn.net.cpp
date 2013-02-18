@@ -6,8 +6,6 @@
 
 using namespace std;
 
-// use this line to compile
-// g++ -I. -fPIC -shared -g -o submanga.com.so submanga.com.cpp  
 
 string get_filename(string url, bool *video) {
 	*video = false;
