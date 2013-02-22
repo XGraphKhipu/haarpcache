@@ -464,7 +464,7 @@ int ProxyHandler::CommunicationHTTP()
         {
             BrowserDropped = true;
             /*Change log*/
-            if (LL>0) if (alivecount==1) LogFile::ErrorMessage("(%s) (%i) - Could not send body to browser|||||||\n", ToBrowser.num_false, ToBrowser.GetIP().c_str()); ////// ERROR COMUN!!
+            if (LL>0) if (alivecount==1) LogFile::ErrorMessage("(%i) (%s) - Could not send body to browser\n", ToBrowser.num_false, ToBrowser.GetIP().c_str()); ////// ERROR COMUN!!
             return -10;
         }
         //File completely received?
