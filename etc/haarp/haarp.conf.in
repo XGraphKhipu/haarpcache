@@ -139,7 +139,7 @@ MAXSERVERS 1000
 #  1 = Informacion detallada.
 #
 # Default:
-LOGLEVEL 1
+LOGLEVEL 0
 
 #
 # Correr el Haarp como proxy transparente?
