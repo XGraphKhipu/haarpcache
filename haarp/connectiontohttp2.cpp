@@ -677,18 +677,17 @@ int64_t ConnectionToHTTP2::GetContentLength() {
         int64_t ContentLengthReference;
         ContentLengthReference = ConnectionToHTTP::GetContentLength(); //del server..
         if (r.match) {
-            if ((
-					(
-						ContentLengthReference < Params::GetConfigInt(getFileExtension(getFileName(request)) + "_MIN") || 
-						(ContentLengthReference > Params::GetConfigInt(getFileExtension(getFileName(request)) + "_MAX") && Params::GetConfigInt(getFileExtension(getFileName(request)) + "_MAX") > 0)
-					) && general
+           if ((
+					ContentLengthReference < Params::GetConfigInt(getFileExtension(r.file) + "_MIN") || 
+					(ContentLengthReference > Params::GetConfigInt(getFileExtension(r.file) + "_MAX") && Params::GetConfigInt(getFileExtension(r.file) + "_MAX") > 0)					
 				) || (
 					ContentLengthReference < Params::GetConfigInt(UpperCase(r.domain) + "_MIN") || 
 					(ContentLengthReference > Params::GetConfigInt(UpperCase(r.domain) + "_MAX") && 
 						Params::GetConfigInt(UpperCase(r.domain) + "_MAX") > 0
 					)
 				)
-			) {
+			)  
+	    {
                 r.match = general = false;
                 if (LL > 0) LogFile::AccessMessage("MAXMIN CANCEL: Domain: %s File: %s Size: "LLD"\n", r.domain.c_str(), r.file.c_str(), filesizeneto);
             }
