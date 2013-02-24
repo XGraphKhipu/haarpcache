@@ -1,7 +1,6 @@
 #include "utils.h"
 #include "params.h"
 
-#include "curl/curl.h"
 
 #include <ctype.h>
 #include <signal.h>
@@ -599,17 +598,6 @@ int file_setmodif(string szFileName, long fdate) {
 
 }
 
-string url2host(string &url) {
-    int pos = 0;
-    if (!url.empty()) {
-        pos = url.find("/");
-        if (pos > 0) {
-            return url.substr(0, pos);
-        } else {
-            return url;
-        }
-    }
-}
 
 string url2request(string &url) {
     int pos = 0;
@@ -720,22 +708,6 @@ std::string base64_encode(unsigned char const* bytes_to_encode, unsigned int in_
 
     return ret;
 
-}
-
-std::string XOR(string value, string key) {
-    string retval(value);
-
-    short unsigned int klen = key.length();
-    short unsigned int vlen = value.length();
-    short unsigned int k = 0;
-    short unsigned int v = 0;
-
-    for (v; v < vlen; v++) {
-        retval[v] = value[v]^key[k];
-        k = (++k < klen ? k : 0);
-    }
-
-    return retval;
 }
 
 const string getFileExtension(string file) {
