@@ -22,13 +22,18 @@ void get_videoid(string url, string &file, int *a, int *b) {
 	    url = resultado.at(size - 1);
 	    resultado.clear();
 	    stringexplode(url, "&", &resultado);
-	    for (int i=0; i <= resultado.size() - 1;i++){
+	    for (int i=0; i <= resultado.size() - 1;i++) {
 		    valor.clear(); 
 		    stringexplode(resultado.at(i), "=", &valor);
 		    if(valor.size() < 2)
 				continue;
-		    if (valor.at(0) == "id" || valor.at(0) == "video_id") 
+		    if (valor.at(0) == "id" || valor.at(0) == "video_id") {
 			    file  = valor.at(1);
+			    if ( file.size() > 40 ) { // For videos with variables id.
+					file = "";
+					return;
+				}
+			}
 		    else if (valor.at(0) == "itag" && valor.at(1) != "34") 
 			    itag  = "-" + valor.at(1);
 		    else if( valor.at(0) == "range") {
@@ -47,7 +52,7 @@ void get_videoid(string url, string &file, int *a, int *b) {
 			}
 	    }
     }
-    if( cm2_zero && !range ) {
+    if( cm2_zero && !range ) { 
 		file = "";
 		return;
 	}
