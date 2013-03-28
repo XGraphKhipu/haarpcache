@@ -18,7 +18,7 @@ string get_filename(string url, bool *video) {
 	*video = false;
 	vector<string> res;
 	size_t pos;
-	int in;
+	int in, sres,i;
 	string prefix;
 	
 	prefix = "";	
@@ -31,12 +31,18 @@ string get_filename(string url, bool *video) {
 		in = -2;
 	}
 	stringexplode(url, "/", &res);
-	if(!*video)	 {
-		if(regex_match("^[a-zA-Z][0-9]{3,6}x[0-9]{3,6}$",res.at(res.size() - 2)) != "") {
-			prefix = res.at(res.size() - 2) + "-";
-		}
+	sres = res.size();
+	
+	if(!*video) {
+		for(i=sres - 2;i > 0;i--) 
+			if( regex_match("^.*\\.[0-9]+\\.[0-9]+\\..*",res.at(i)) != "" )
+				return "";
+
+		if( regex_match("^[a-zA-Z][0-9]{3,6}x[0-9]{3,6}$",res.at(sres - 2)) != "" ) 
+			prefix = res.at(sres - 2) + "-";
+		
 	}
-	return prefix + res.at(res.size() + in);
+	return prefix + res.at(sres + in);
 }
 
 extern "C" resposta hgetmatch2(const string url) {
