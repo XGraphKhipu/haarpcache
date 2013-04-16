@@ -11,7 +11,7 @@ using namespace std;
 
 // use this line to compile
 // g++ -I. -ldl -rdynamic -o teste teste.c
-/* ./teste.so ./justin.tv.so "http://media6.justin.tv/archives/2011-2-18/live_user_peruanojapones_1297987490.flv"*/
+/* ./teste ./justin.tv.so "http://media6.justin.tv/archives/2011-2-18/live_user_peruanojapones_1297987490.flv"*/
 
 
 int main(int argc, char *argv[])  {
