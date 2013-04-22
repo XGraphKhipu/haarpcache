@@ -1,5 +1,10 @@
-/* 
+/*
+ * (c) Copyright 2013 Manolo Canales <kei.haarpcache@gmail.com>
+ * Some Rights Reserved.
+ *
+ * @autor Manolo Canales <kei.haarpcache@gmail.com>
  */
+ 
 
 #include <iostream>
 #include <cstring>
