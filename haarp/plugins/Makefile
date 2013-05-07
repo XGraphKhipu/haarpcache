@@ -39,7 +39,8 @@ OBJECTS = tube8.com.so \
 	juegosdiarios.com.so \
 	juegosjuegos.com.so \
 	justin.tv.so \
-	tumblr.com.so
+	tumblr.com.so \
+	speedtest.net.so
 	
 
 all: plugins copiar

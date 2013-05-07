@@ -474,6 +474,8 @@ void stringexplode(string str, string separator, vector<string>* results) {
 string getdomain(string url) {
     if (regex_match("^74\\.125\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?$)", url) != "") return "youtube.com";
     if (regex_match("^(205\\.196\\.|199\\.91\\.)[0-9]{2,3}\\.[0-9]{1,3}", url) != "") return "mediafire.com";
+	if (regex_match("^speedtest[0-9]*(\\.|[a-z]|[0-9])+", url) != "") return "speedtest.net";
+	
     vector<string> resultado;
     if (!url.empty()) {
         stringexplode(url, "/", &resultado);
