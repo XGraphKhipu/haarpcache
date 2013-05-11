@@ -14,7 +14,7 @@
 using namespace std;
 
 // use this line to compile
-// g++ -I. -fPIC -shared -g -o 4shared.com.so 4shared.com.cpp  
+// g++ -I. -fPIC -shared -g -o speedtest.com.so speedtest.com.cpp  
 //~ Ex:
 //~ http://speedtest.movistar.com.pe/speedtest/latency.txt?x=1365780932390
 //~ http://speedtest4.claro.com.pe/speedtest/random750x750.jpg?x=1367893686447&y=2
