@@ -45,4 +45,4 @@ http.*videos\..*\.redtubefiles\.com\/.*\.flv
 http.*\.vimeo.com\/.*\.mp4(\?.*)?$
 http.*images\.orkut\.com\/orkut\/photos\/.*\.jpg$
 http.{1,4}(\w|\/|\.|-)*media\.tumblr\.com\/(\w|\/|-|\.)*tumblr(\w|\/|-)*(\.png|\.jpg)$
-#http.{1,4}speedtest(\w|-)*(\.|\w)+\/speedtest\/(random.*\.jpg|latency\.txt)\?.*
+#http.{1,7}speedtest(\w|-)*(\.|\w)+\/speedtest\/(random.*\.jpg|latency\.txt)\?.*
