@@ -25,7 +25,7 @@ string get_filename(string url) {
 	vector<string> resultado;
 	SearchReplace(url, "?", "/");
 	stringexplode(url, "/", &resultado);
-	if( resultado.size() > 5 )
+	if( resultado.size() > 6 )
 		return "";
 	
 	return resultado.at(resultado.size() - 2);

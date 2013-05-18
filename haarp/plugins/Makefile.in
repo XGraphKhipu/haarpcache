@@ -40,7 +40,7 @@ OBJECTS = tube8.com.so \
 	juegosjuegos.com.so \
 	justin.tv.so \
 	tumblr.com.so \
-	speedtest.net.so
+	speedtest.net.so 
 	
 
 all: plugins copiar
@@ -63,6 +63,7 @@ copiar:
 	cp nai.com.so  update.nai.com.so
 	cp youtube.com.so googlevideo.com.so
 	cp orkut.com.so orkut.com.br.so
+	cp speedtest.net.so testdevelocidad.es.so
 
 clean:
 	rm -f *.so
