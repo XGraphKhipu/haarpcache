@@ -1,3 +1,10 @@
+/*
+ * (c) Copyright 2013 Manolo Canales <kei.haarpcache@gmail.com>
+ * Some Rights Reserved.
+ *
+ * @autor Manolo Canales <kei.haarpcache@gmail.com>
+ */
+
 #ifndef HAARP_CLEAN_H
 #define HAARP_CLEAN_H
 #include <iostream>
