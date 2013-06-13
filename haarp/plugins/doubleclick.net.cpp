@@ -15,16 +15,38 @@ using namespace std;
 
 // use this line to compile
 // g++ -I. -fPIC -shared -g -o doubleclick.net.so doubleclick.net.cpp
+void get_param(string url, string value, string &param) {
+        vector<string> resultado,valor;
+        param = "";
 
+        SearchReplace(url,"?","&");
+        stringexplode(url, "/", &resultado);
+        url = resultado.at(resultado.size() - 1);
+        resultado.clear();
+        stringexplode(url, "&", &resultado);
+        for (int i=0; i <= resultado.size() - 1;i++) {
+	        valor.clear();
+        	stringexplode(resultado.at(i), "=", &valor);
+                if(valor.size() < 2)
+	           	continue;	
+		if(valor.at(0) == value) {
+			param = valor.at(1);
+			return;
+		}
+	}
+}
 extern "C" resposta hgetmatch2(const string url) {
-    resposta r;
-    r.range_min = 0;
+    	resposta r;
+	r.range_min = 0;
 	r.range_max = 0;
 	string find = "";
 	string find2 = "";
 	int len;
+	string param;
 	if(url.find("www.youtube.com") != string::npos) {
-		if ( ( (find = regex_match("[\\?&]ad_type=skippablevideo($|&)",url)) != "" || (find = regex_match("[\\?&]ad_type=video($|&)",url)) != "" || (find = regex_match("[\\?&]ad_type=text_image_flash($|&)",url)) != "" || (find = regex_match("[\\?&]ad_type=text($|&)",url)) != "" || (find = regex_match("[\\?&]ad_type=image($|&)",url)) != "" ) && ( (find2 = regex_match("[\\?&]url=http.{2,15}www.youtube.com([a-zA-Z0-9]|%|-|_)*&?",url)) != "" ) ) {
+		get_param(url, "ad_type", param);
+		if( ( param == "skippablevideo" || param == "video" || param == "text_image_flash" \
+			 || param == "text" || param == "image" ) && ( regex_match("[\\?&]url=http.{2,15}www.youtube.com([a-zA-Z0-9]|%|-|_)*&?",url) != "" ) ) {
 			r.domain = "rewrite";
 			r.file = "googleads.g.doubleclick.net/pagead/ads";
 			r.match = true;
