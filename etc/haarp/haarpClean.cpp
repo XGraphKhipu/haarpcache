@@ -36,8 +36,8 @@
 
 //#include "database_mysql.cpp"
 #define charmalloc(a) (char *)malloc(a*sizeof(char)) 
-#define NUM_FILES 400
-#define MAX_MB_DELETE 500
+#define NUM_FILES 600
+#define MAX_MB_DELETE 5000
 
 using namespace std;
 
