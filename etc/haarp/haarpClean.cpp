@@ -3,6 +3,7 @@
  * Some Rights Reserved.
  *
  * @autor Manolo Canales <kei.haarpcache@gmail.com>
+ *
  */
 
 #include "../../haarp/utils.h"
@@ -72,9 +73,10 @@ int main(int carg, char **varg) {
 	stringexplode(cachedir,"|",&list_dir);
 	
         for(int i=0;i < (int)list_dir.size();i++) {
-                if( disk_use(list_dir.at(i)) < atoi(cachelimit.c_str()) ) 
+                if( disk_use(list_dir.at(i)) < atoi(cachelimit.c_str()) ) {
 			cout<<"The cache not are in the limit!."<<endl;
                 	return 1;
+                }
         }
 	
 	MYSQL *connect;
