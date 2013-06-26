@@ -660,17 +660,39 @@ string ConvertChar(string lineT) {
     return lineT;
 }
 
-int disk_use(string path) {
+double disk_use(string path) {
     double bfree, btotal = 0;
     struct statvfs fiData;
     if ((statvfs(path.c_str(), &fiData)) < 0) {
         return -1;
     } else {
-        bfree = (((double) fiData.f_frsize) * ((double) fiData.f_bfree));
-        btotal = (((double) fiData.f_frsize) * ((double) fiData.f_blocks));
+        bfree = (((double) fiData.f_bsize) * ((double) fiData.f_bfree));
+        btotal = (((double) fiData.f_bsize) * ((double) fiData.f_blocks));
         return ((btotal - bfree) / btotal)*100;
     }
 }
+
+//______________________________________________________________________________
+
+double disk_size(string path) {
+    struct statvfs fiData;
+    if ((statvfs(path.c_str(), &fiData)) < 0) {
+        return -1;
+    } else
+        return ((double) fiData.f_bsize)*((double) fiData.f_blocks);
+}
+
+//______________________________________________________________________________
+
+double disk_occupation(string path) {
+    struct statvfs fiData;
+    if ((statvfs(path.c_str(), &fiData)) < 0) {
+        return -1;
+    } else
+        return ((double) fiData.f_bsize)*(((double) fiData.f_blocks)-((double) fiData.f_bfree));
+}
+
+//______________________________________________________________________________
 
 std::string base64_encode(unsigned char const* bytes_to_encode, unsigned int in_len) {
     std::string ret;

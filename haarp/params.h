@@ -13,9 +13,8 @@ private:
 static map <string,string> params;
 
 static bool ReadConfig( string file );
-static void ShowConfig( string cfgfile );
 static bool TestConfig();
-static void Usage();
+static void Usage(string mainCall);
 static void SetDefaults();
 
 public:

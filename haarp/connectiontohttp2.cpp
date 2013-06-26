@@ -301,7 +301,7 @@ void ConnectionToHTTP2::Cache() {
 			completepath = completepathtmp;
 			directory = directorytmp;
 		}
-        if (LL > 0) LogFile::AccessMessage("Cache limit (%d/%d) %s\n", cache_limit, disk_use(completepath), directory.c_str());
+        if (LL > 0) LogFile::AccessMessage("Cache limit (%.0lf/%d) %s\n", disk_use(completepath), cache_limit, directory.c_str());
         if (LL > 0) LogFile::AccessMessage("File: %s\n", string(completefilepath).c_str());
         if(range_max > 0)
 			filesizeneto = range_max - range_min + 1;
@@ -431,7 +431,7 @@ void ConnectionToHTTP2::Cache() {
 						domaindb.set("INSERT INTO haarp (domain, file, size, modified, downloaded, requested, last_request, static) VALUES ('" + r.domain + "', '" + domaindb.sqlconv(subdir + "/" + r.file) + "', 0, '1980-01-01 00:00:00',now(),0,now(),1);");
 						if (LL > 0) LogFile::AccessMessage("MISS: Domain: %s File: %s\n", r.domain.c_str(), r.file.c_str());
 					} else {
-						LogFile::ErrorMessage("Cache limit (%d/%d) %s%s\n", cache_limit, disk_use(completepath), cachedir.c_str(), r.domain.c_str());
+						LogFile::ErrorMessage("Cache limit (%.0lf/%d) %s%s\n", disk_use(completepath), cache_limit, cachedir.c_str(), r.domain.c_str());
 					}
 				} else if (file_exists(completefilepath)) {
 					if (domaindb.get("SELECT size,(unix_timestamp(now())-unix_timestamp(downloaded)) as expiration FROM haarp WHERE file='" + domaindb.sqlconv(subdir + "/" + r.file) + "' and domain='" + r.domain + "';") != 0) {
@@ -478,7 +478,7 @@ void ConnectionToHTTP2::Cache() {
 							if (LL > 0) LogFile::AccessMessage("HIT RESUME: Domain: %s File: %s\n", r.domain.c_str(), r.file.c_str());
 							msghit = "HIT";
 						} else {
-							LogFile::ErrorMessage("Cache limit (%d/%d) %s%s\n", cache_limit, disk_use(completepath), cachedir.c_str(), r.domain.c_str());
+							LogFile::ErrorMessage("Cache limit (%.0lf/%d) %s%s\n", disk_use(completepath), cache_limit , cachedir.c_str(), r.domain.c_str());
 						}
 					}
 					domaindb.clear();
@@ -636,6 +636,10 @@ bool ConnectionToHTTP2::ReadHeader(string &headerT) {
             tmp << "Content-Type: application/x-shockwave-flash\r\n";
         else if (getFileExtension(r.file) == "FLV")
             tmp << "Content-Type: video/x-flv\r\n";
+        else if (getFileExtension(r.file) == "MP4")
+            tmp << "Content-Type: video/mp4\r\n";
+        else if (getFileExtension(r.file) == "AMP4" && r.domain == "youtube")
+            tmp << "Content-Type: audio/mp4\r\n";
 		else if (getFileExtension(r.file) == "WEBM")
 			tmp << "Content-Type: video/webm\r\n";
 		else

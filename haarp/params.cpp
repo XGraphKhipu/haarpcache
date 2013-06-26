@@ -13,7 +13,18 @@
 #define INADDR_NONE ((unsigned long) -1)
 #endif
 
+#define mainBin "haarp"
+
 map <string,string> Params::params;
+
+bool hasEnding (std::string const &fullString, std::string const &ending)
+{
+    if (fullString.length() >= ending.length()) {
+        return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
+    } else {
+        return false;
+    }
+}
 
 void Params::SetDefaults()
 {
@@ -107,37 +118,13 @@ bool Params::ReadConfig( string file )
 
 void Params::SetConfig( string param, string value )
 {
-    //string TempParams[] = {CONFIGPARAMS};
-    //bool ParamFound = false;
-
     param = UpperCase(param);
-    /*
-    for ( unsigned int i = 0; i < sizeof(TempParams)/sizeof(string); i++ )
-    {
-        if ( param == TempParams[i] )
-        {
-            ParamFound = true;
-        }
-    }
-    
-    if ( ParamFound )
-    {
-    */
         if ( UpperCase(value) == "TRUE" || UpperCase(value) == "FALSE" )
         {
             value = UpperCase(value);
         }
 
         params[param] = value;
-    /*
-    }
-    else
-    {
-        cout << "Unknown Config Parameter: " << param << endl;
-        cout << "Exiting.." << endl;
-        exit(1);
-    }
-    */
 }
 
 int Params::GetConfigInt( string param )
@@ -162,120 +149,26 @@ string Params::GetConfigString( string param )
     return params[param];
 }
 
-void Params::ShowConfig( string cfgfile )
+void Params::Usage(string mainCall)
 {
-    cout << endl << "# Using Haarp config: " << cfgfile << endl << endl;
-    typedef map<string,string>::const_iterator CI;
-    for(CI p = params.begin(); p != params.end(); ++p)
-    {
-        cout << p->first << "=" << p->second << '\n';
-    }
-    cout << endl;
-}
-
-void Params::Usage()
-{
+    if (mainCall == mainBin) {
     cout << endl << "Usage: haarp [Options]" << endl << endl;
     cout << "Haarp Version " << VERSION << endl << endl;
     cout << "Possible options are:" << endl;
     cout << "--help | -h                         This pamphlet" << endl;
     cout << "--conf-file=FileName | -c Filename  Use this Config-File" << endl << endl;
+    }
 }
 
 bool Params::SetParams( int argvT, char* argcT[] )
 {
     string option, value;
-    string::size_type i1, i2;
-
     string cfgfile = CONFIGFILE;
-    bool showconf = false;
 
     SetDefaults();
 
-    while ( --argvT )
-    {
-        value = *++argcT;
-        i1 = value.find_first_not_of("-");
-
-        //No GNU options
-        if ( i1 == 1 )
-        {
-            option = value.substr(i1, 1);
-
-            if ( option == "c" )
-            {
-                --argvT;
-
-                if ( argvT == 0 )
-                {
-                    Usage();
-                    return false;
-                }
-                value = *++argcT;
-            }
-            else if ( option == "s" ) //
-            {
-                showconf = true;
-            }
-            else
-            {
-                Usage();
-                return false;
-            }
-        }
-        //GNU options
-        else if ( i1 == 2 )
-        {
-            if ( (i2 = value.find("=")) != string::npos )
-            {
-                option = value.substr(i1, i2 - i1);
-
-                if ( value.size() > i2 + 1 )
-                {
-                    value = value.substr(i2 + 1);
-                }
-                else
-                {
-                    Usage();
-                    return false;
-                }
-            }
-            else
-            {
-                option = value.substr(i1);
-                value = "";
-            }
-        }
-        else
-        {
-            Usage();
-            return false;
-        }
-
-        if ( option == "help" )
-        {
-            Usage();
-            return false;
-        }
-        else if ( option == "conf-file" || option == "c" )
-        {
-            if (value == "")
-            {
-                Usage();
-                return false;
-            }
-
-            cfgfile = value;
-        }
-        else
-        {
-            Usage();
-            return false;
-        }
-    }
-
-    if ( ReadConfig( cfgfile ) == false )
-    {
+    if ( ReadConfig( cfgfile ) == false ) {
+	cout<<"Could not read configuration file "<<cfgfile<<", please check it for errors."<<endl;
         return false;
     }
 
