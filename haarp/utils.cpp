@@ -471,6 +471,21 @@ void stringexplode(string str, string separator, vector<string>* results) {
     }
 }
 
+void stringexplodetrim(string str, string separator, vector<string>* results) {
+    size_t found;
+    found = str.find_first_of(separator);
+    while (found != string::npos) {
+        if (found > 0) {
+            results->push_back(trimstr(str.substr(0, found)));
+        }
+        str = str.substr(found + 1);
+        found = str.find_first_of(separator);
+    }
+    if (str.length() > 0) {
+        results->push_back(trimstr(str));
+    }
+}
+
 string getdomain(string url) {
     if (regex_match("^74\\.125\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?$)", url) != "") return "youtube.com";
     if (regex_match("^(205\\.196\\.|199\\.91\\.)[0-9]{2,3}\\.[0-9]{1,3}", url) != "") return "mediafire.com";
@@ -691,6 +706,10 @@ double disk_occupation(string path) {
     } else
         return ((double) fiData.f_bsize)*(((double) fiData.f_blocks)-((double) fiData.f_bfree));
 }
+
+//______________________________________________________________________________
+
+
 
 //______________________________________________________________________________
 

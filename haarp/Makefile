@@ -35,7 +35,7 @@ install: all
 	$(INSTALL) -d $(DESTDIR)/etc/init.d
 	$(INSTALL) -m 644 ../etc/haarp/haarp.conf $(DESTDIR)$(sysconfdir)/haarp/haarp.conf.default
 	$(INSTALL) -m 777 ../etc/haarp/haarpcache $(DESTDIR)$(sysconfdir)/logrotate.d/haarpcache
-
+	$(INSTALL) -m 777 ../etc/haarp/haarpclean $(DESTDIR)$(sysconfdir)/init.d/haarpclean
 	@if [ ! -f $(DESTDIR)$(sysconfdir)/haarp/haarp.conf ]; then \
 		echo "$(INSTALL) -m 644 ../etc/haarp/haarp.conf $(DESTDIR)$(sysconfdir)/haarp/haarp.conf"; \
 		$(INSTALL) -m 644 ../etc/haarp/haarp.conf $(DESTDIR)$(sysconfdir)/haarp/haarp.conf; \

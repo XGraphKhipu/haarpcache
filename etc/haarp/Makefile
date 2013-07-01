@@ -1,5 +1,5 @@
 CXX = g++
-CFLAGS = -Wall -O2 -lmysqlclient -ldl -Wunused-result
+CFLAGS = -g -Wall -O2 -lmysqlclient -ldl -Wunused-result -rdynamic
 
 OBJECTS = utils.o params.o haarpClean.o
 

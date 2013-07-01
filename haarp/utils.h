@@ -48,6 +48,7 @@ int select_eintr( int fds, fd_set *readfds, fd_set *writefds, fd_set *errorfds, 
 bool MatchSubstr(string &hay, const char* needle, int startpos);
 bool MatchBegin(string &hay, const char *needle, int needlelength);
 void stringexplode(string str, string separator, vector<string>* results);
+void stringexplodetrim(string str, string separator, vector<string>* results);
 string getdomain(string url);
 bool file_exists(string strFilename);
 int64_t file_size( string szFileName );
