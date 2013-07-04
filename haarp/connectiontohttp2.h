@@ -49,6 +49,7 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
         bool SendHeader( string header, bool ConnectionClose, string requestT="" );
         string GetIP();
         bool ReadHeader(string &headerT);
+        bool ReadHeaderFromServer(string &headerT);
         bool AnalyseHeader( string &linesT );
         bool IsItKeepAlive();
         int64_t GetContentLength();

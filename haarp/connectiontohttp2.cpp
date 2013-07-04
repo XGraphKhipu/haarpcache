@@ -567,13 +567,29 @@ string ConnectionToHTTP2::GetIP() {
     else 
 		return ConnectionToHTTP::GetIP();
 }
+bool ConnectionToHTTP2::ReadHeaderFromServer(string &headerT) {
+	bool result = ConnectionToHTTP::ReadHeader(headerT);
+	if(result) {
+		if( r.domain == "youtube" && getFileExtension(r.file) == "FLV" ) {	
+			size_t pos;
+			char line[90];
+			//if (LL > 0) LogFile::AccessMessage("BEFORE-HEADER: %s\n", headerT.c_str());
+			if( (pos = headerT.find("Content-Type:")) != string::npos && (headerT[pos - 1] == '\n' || headerT[pos - 1] == '\r') ) {
+				sscanf((headerT.substr(pos + 14)).c_str(), "%s", line);
+				headerT.replace(pos,strlen(line) + 15,"Content-Type: video/x-flv");
+			}
+			//if (LL > 0) LogFile::AccessMessage("AFTER-HEADER: %s\n", headerT.c_str());
+		}
+	}
+	return result;
+}
 /* headerT: Edita la cabezera que será enviada al navegador.
  * */
 bool ConnectionToHTTP2::ReadHeader(string &headerT) {
     bool result = false;
     if( !size_orig_file && r.match && !hit ) //truncar, partial, !knowhitmiss
     {
-		result = ConnectionToHTTP::ReadHeader(headerT);
+		result = ConnectionToHTTP2::ReadHeaderFromServer(headerT);
 		if ( partial )
 		{
 			UpdateFileSizeinPartial(headerT);
@@ -638,7 +654,7 @@ bool ConnectionToHTTP2::ReadHeader(string &headerT) {
             tmp << "Content-Type: video/x-flv\r\n";
         else if (getFileExtension(r.file) == "MP4")
             tmp << "Content-Type: video/mp4\r\n";
-        else if (getFileExtension(r.file) == "AMP4" && r.domain == "youtube")
+        else if (getFileExtension(r.file) == "MP4A" && r.domain == "youtube")
             tmp << "Content-Type: audio/mp4\r\n";
 		else if (getFileExtension(r.file) == "WEBM")
 			tmp << "Content-Type: video/webm\r\n";
@@ -660,7 +676,7 @@ bool ConnectionToHTTP2::ReadHeader(string &headerT) {
     } else {
 		if(result)
 			return true;
-		bool re = ConnectionToHTTP::ReadHeader(headerT);
+		bool re = ConnectionToHTTP2::ReadHeaderFromServer(headerT);
 		return re;
 	}
 	

@@ -80,7 +80,7 @@ extern "C" resposta hgetmatch2(string url) {
 			r.match = true;
 			r.domain = "youtube";
 			if( regex_match("-aud(-[0-9]+)?$", r.file) != "" )
-				r.file += ".amp4";
+				r.file += ".mp4a";
 			else if( regex_match("-vid(-[0-9]+)?$", r.file) != "" )
 				r.file += ".mp4";
 			else
