@@ -10,7 +10,7 @@ cuando se pida de nuevo el mismo archivo; se despachen las partes que están en 
 
 Building
 --------
-* Type "_./configure CXX=g++-4.4_"; _make_
+* Type _"./configure CXX=g++-4.4"_; _make_
 * To clean, type _make clean_
 
 
