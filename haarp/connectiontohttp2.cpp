@@ -576,7 +576,8 @@ bool ConnectionToHTTP2::ReadHeaderFromServer(string &headerT) {
 			//if (LL > 0) LogFile::AccessMessage("BEFORE-HEADER: %s\n", headerT.c_str());
 			if( (pos = headerT.find("Content-Type:")) != string::npos && (headerT[pos - 1] == '\n' || headerT[pos - 1] == '\r') ) {
 				sscanf((headerT.substr(pos + 14)).c_str(), "%s", line);
-				headerT.replace(pos,strlen(line) + 15,"Content-Type: video/x-flv");
+				//headerT.replace(pos,strlen(line) + 15,"Content-Type: video/x-flv");
+				headerT.replace(pos,strlen(line) + 15,"Content-Type: application/octet-stream");
 			}
 			//if (LL > 0) LogFile::AccessMessage("AFTER-HEADER: %s\n", headerT.c_str());
 		}
@@ -651,7 +652,8 @@ bool ConnectionToHTTP2::ReadHeader(string &headerT) {
         if (getFileExtension(r.file) == "SWF")
             tmp << "Content-Type: application/x-shockwave-flash\r\n";
         else if (getFileExtension(r.file) == "FLV")
-            tmp << "Content-Type: video/x-flv\r\n";
+            //tmp << "Content-Type: video/x-flv\r\n";
+            tmp << "Content-Type: application/octet-stream\r\n";
         else if (getFileExtension(r.file) == "MP4")
             tmp << "Content-Type: video/mp4\r\n";
         else if (getFileExtension(r.file) == "MP4A" && r.domain == "youtube")
