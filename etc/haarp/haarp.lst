@@ -7,7 +7,7 @@ http.*\.etrustdownloads\.ca\.com.*(\.tar|\.zip|\.exe|\.pkg)
 http.*flashvideo\.globo\.com.*(\.mp4|\.flv)
 http.{1,4}vsh\.r7\.com\/.*(\.mp4)$
 74\.125\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)
-#http.*\.googlevideo\.com.*videoplayback
+http.*\.googlevideo\.com.*videoplayback
 #http.*fpatch\.grandchase\.com\.br.*(\.kom|\.mkom|\.mp3)
 http.*(\.kaspersky-labs\.com|\.geo\.kaspersky\.com|kasperskyusa\.com).*(\.avc|\.kdc|\.klz|\.bz2|\.dat|\.dif)
 #http.*\.mccont\.com.*\.flv
