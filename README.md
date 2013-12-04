@@ -10,24 +10,37 @@ cuando se pida de nuevo el mismo archivo; se despachen las partes que están en 
 
 Installing
 --------
+
 cd /tmp/
+
 git clone https://github.com/keikurono/haarpcache.git
+
 cd haarpcache
+
 ./configure CXX=g++-4.4 (recommended install g++-4.4)
+
 make
+
 make install
 
-Copy & page this, in the file of configuration: squid.conf (install squid)
+
+* Copy & page this, in the file of configuration: squid.conf (install squid)
+
 acl haarp\_lst\ url\_regex -i "/etc/haarp/haarp.lst"
+
 cache deny haarp\_lst
+
 cache\_peer 127.0.0.1 parent 8080 0 proxy-only no-digest
+
 dead\_peer\_timeout 2 seconds
+
 cache\_peer\_access 127.0.0.1 allow haarp\_lst
+
 cache\_peer\_access 127.0.0.1 deny all
 
 You can change the address 127.0.0.1 for the IP of you server haarp.
 
-*To clean: make clean
+* To clean: make clean
 
 Changelog
 ---------
