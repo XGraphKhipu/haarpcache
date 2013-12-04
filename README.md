@@ -21,12 +21,12 @@ Installing
 
 * Copy & page this, in the file of configuration: squid.conf (install squid)
 
-	acl haarp\_lst url\_regex -i "/etc/haarp/haarp.lst"
-	cache deny haarp\_lst
-	cache\_peer 127.0.0.1 parent 8080 0 proxy-only no-digest
-	dead\_peer\_timeout 2 seconds
-	cache\_peer\_access 127.0.0.1 allow haarp\_lst
-	cache\_peer\_access 127.0.0.1 deny all
+		acl haarp\_lst url\_regex -i "/etc/haarp/haarp.lst"
+		cache deny haarp\_lst
+		cache\_peer 127.0.0.1 parent 8080 0 proxy-only no-digest
+		dead\_peer\_timeout 2 seconds
+		cache\_peer\_access 127.0.0.1 allow haarp\_lst
+		cache\_peer\_access 127.0.0.1 deny all
 
 You can change the address 127.0.0.1 for the IP of you server haarp.
 
