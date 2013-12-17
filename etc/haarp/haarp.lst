@@ -34,6 +34,7 @@ http.*\.symantecliveupdate\.com.*(\.zip|\.exe)
 #http.*\.xpg\.com\.br.*
 http.{1,4}\w*\.ytimg\.com.*(hqdefault(\.jpg|\.mp4)$|M[0-9]+\.jpg\?sigh=)
 http.{1,4}\w*google(\.\w|\w)*\.doubleclick\.net\/pagead\/ads\?.*
+http.{1,4}\w*\.doubleclick\.net\/\w*\/pfadx\/.*main.*;.*
 http.*img[0-9]\.submanga\.com\/(hd)?pages\/.*(\.jpg|\.webp)
 http.*((profile|s?photos|video).{0,5}\.ak\.)?fbcdn.{0,10}(s?photos|videos)?(.{0,10}akamai)?.{0,10}\.net\/.*(\.mp4\?.*|\_n\.jpg$|\.mp4$|\_n\.png$)
 http.*\.video\.pornhub\.\w*\.com\/videos\/.*\.flv\?.*

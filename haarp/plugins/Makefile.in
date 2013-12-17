@@ -43,14 +43,16 @@ OBJECTS = tube8.com.so \
 	speedtest.net.so 
 	
 
-all: plugins copiar
+all: plugins copiar teste
 
 plugins: $(OBJECTS)
 
 %.so: %.cpp 
 	$(CXX) -I. -fPIC -shared -o $@ $<
 	
-	
+teste:
+	$(CXX) -I. -ldl -rdynamic -o teste teste.c
+
 copiar:	
 	cp avg.com.so grisoft.com.so
 	cp avg.com.so grisoft.cz.so

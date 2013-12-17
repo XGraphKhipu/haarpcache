@@ -93,17 +93,21 @@ void ConnectionToHTTP2::Cache2( int cl ) {
 		lrangeswork = getRangeWork(&lranges, range_min, range_max, &hit); // update HIT?.
 		if ( !hit ) {
 			short wait = WaitLastModification();
-			if ( wait == -1 ) 
+			if ( wait == -1 ) {
 				r.match = false; /* Go direct to internet */
+				if(!file_in_edition) liberate_edition();
+			}
 			if ( !wait && !ReloadData()) {
+				if(!file_in_edition) liberate_edition();
 				return;
 			} 
 		}
 		if( hit ) {
 			msghit = "HIT";
+			if(!file_in_edition) liberate_edition();
 			domaindb.set("UPDATE haarp SET requested=requested+1, last_request=now() WHERE file='" + domaindb.sqlconv(r.file) + "' and domain='" + r.domain + "';");
 		}
-	}	
+	}
 }
 /*
  * En cabeceras partial, se obtiene lo siguiente: "Content-Range: bytes a-b/c", donde c expresa la longitud total del archivo de verdad.
@@ -146,6 +150,7 @@ void ConnectionToHTTP2::Update(){
 			if(domaindb.set("UPDATE haarp set rg='" + rang_ + "', pos='" + part_ + "', filesize='" + stmp0.str() + "', np=np+" + stmp1.str() + " WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") < 0)
 				if (LL > 1) LogFile::ErrorMessage("Error updating data base, %s \n",domaindb.getError().c_str());
 			hasupdate = true;
+			if(!file_in_edition) liberate_edition();
 		}
 		acumulate = 0;
 		list_clear(&lranges);
@@ -164,9 +169,9 @@ void ConnectionToHTTP2::SubUpdate() {
 }
 short ConnectionToHTTP2::WaitLastModification() {
 	int contador = 0;
-	while ( (now() - file_getmodif(completefilepath)) <= 1.8 ) {
-		usleep(500000);
-		if ( ++contador > 3 ) // + de 5 segundos
+	while ( (now() - file_getmodif(completefilepath)) <= 2.2 ) {
+		usleep(360000);
+		if ( ++contador > 2 ) // + de 5 segundos
 		{
 			if(LL > 0) LogFile::ErrorMessage("Warning: file '%s' with persistent changes\n", r.file.c_str());
 			if(LL > 0) LogFile::AccessMessage("The file on disk is modified, go direct to internet.\n");
@@ -184,6 +189,7 @@ bool ConnectionToHTTP2::ReloadData() {
 	if (domaindb.get("SELECT size, rg, pos FROM haarp WHERE file='" + domaindb.sqlconv(r.file) + "' and domain='" + r.domain + "';") != 0) {
 		LogFile::ErrorMessage("Error: '%s'\n", domaindb.getError().c_str());
 		r.match = hit = false;
+		if(!file_in_edition) liberate_edition();
 		return false;
 	}
 
@@ -218,12 +224,29 @@ bool ConnectionToHTTP2::ReloadData() {
 	}
 	return true;
 }
+void ConnectionToHTTP2::block_edition() {
+	domaindb.set("UPDATE haarp set file_used=1 WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';");
+	if (LL > 0) LogFile::AccessMessage("File %s blocking edition from mysql.\n", r.file.c_str());	
+}
+void ConnectionToHTTP2::liberate_edition() {
+	domaindb.set("UPDATE haarp set file_used=0 WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';");
+	if (LL > 0) LogFile::AccessMessage("File %s liberate edition from mysql.\n", r.file.c_str());	
+}
+int ConnectionToHTTP2::FileInEdition() {
+	if (domaindb.get("SELECT file_used FROM haarp WHERE file='" + domaindb.sqlconv(r.file) + "' and domain='" + r.domain + "';") != 0) {
+		LogFile::ErrorMessage("Error select mysql: %s\n", domaindb.getError().c_str());
+		return 0;
+	}
+	return atoi((domaindb.get("file_used", 1)).c_str());
+}
+ 
 void ConnectionToHTTP2::Cache() {
     msghit = "MISS";
     hasupdate = false;
     unlimit = false;
     miss2hit = false;
     count_wait = 0;
+    file_in_edition = false;
     hit = downloading = r.match = rewrited = resuming = passouheader = general = etag = closed = false;
     limit = 0;
     np = 0;
@@ -303,39 +326,54 @@ void ConnectionToHTTP2::Cache() {
 		}
         if (LL > 0) LogFile::AccessMessage("Cache limit (%.0lf/%d) %s\n", disk_use(completepath), cache_limit, directory.c_str());
         if (LL > 0) LogFile::AccessMessage("File: %s\n", string(completefilepath).c_str());
-        if(range_max > 0)
+        if( range_max > 0 )
 			filesizeneto = range_max - range_min + 1;
+
         if (r.domain == "rewrite") {
             r.match = false;
             rewrited = true;
             if (LL > 1) LogFile::AccessMessage("Rewrite: %s \n", r.file.c_str());
-        } else if (!file_in_cache) { //si no está en cache - MISS!!!!??????
-			if (LL > 0) LogFile::AccessMessage("The file is not on disk\n");
+        } else if (!file_in_cache) { /* the file not are in disk - MISS!!?? */
+			if (LL > 0) LogFile::AccessMessage("The file NOT is ON disk\n");
 			/* MISS */
 			lranges = NULL;
 			if( range_max > 0 ) {
 				lrangeswork = getRangeWork(&lranges, range_min, range_max, &hit);
 			}
             if (disco_con_espacio) {
-                if (!file_exists(completepath + "/" + subdir + "/")) {
-                    mkdir_p(completepath + "/" + subdir + "/");
-                }
                 domaindb.set("DELETE FROM haarp WHERE domain='" + r.domain + "' and file='" +  domaindb.sqlconv(r.file) + "';");
-                domaindb.set("INSERT INTO haarp (domain, file, size, modified, downloaded, requested, last_request) VALUES ('" + r.domain + "', '" + domaindb.sqlconv(r.file) + "', 0, '1980-01-01 00:00:00',now(),0,now());");
+                /* ... and file is blocked (file_used) */
+                domaindb.set("INSERT INTO haarp (domain, file, size, modified, downloaded, requested, last_request, file_used) VALUES ('" + r.domain + "', '" + domaindb.sqlconv(r.file) + "', 0, '1980-01-01 00:00:00',now(),0,now(), 1);");
+				if (!file_exists(completepath + "/" + subdir + "/")) {
+					mkdir_p(completepath + "/" + subdir + "/");
+                }
                 if (LL > 0) LogFile::AccessMessage("MISS: Domain: %s File: %s\n", r.domain.c_str(), r.file.c_str());
             } else {
                 hit = r.match = false;
             }
-        } else { /* El archivo está en disco.*/
-			if (LL > 1) LogFile::AccessMessage("The file is located on disk!\n");
-
+		
+        } else { /* The file are in disk */
+			
+			if (LL > 1) LogFile::AccessMessage("The file is ON disk!\n");
+			
+			/* Check if are closed the use the of file from mysql */
+			file_in_edition = FileInEdition();
+			if( !file_in_edition || WaitLastModification())  {
+				block_edition();
+				file_in_edition = 0;
+				//~ if (LL > 1) LogFile::AccessMessage("Active Block for the Edition of file in Disk!\n");
+			} else {
+				r.match = false; /* Go to internet */
+				return;
+			}
+			
             if (domaindb.get("SELECT size, rg, pos FROM haarp WHERE file='" + domaindb.sqlconv(r.file) + "' and domain='" + r.domain + "';") != 0) {
                 LogFile::ErrorMessage("Error select mysql: %s\n", domaindb.getError().c_str());
                 r.match = hit = false;
+                /* Free use of file from mysql */
+                if(!file_in_edition) liberate_edition();
                 return;
             }
-
-
             if (domaindb.get_num_rows() == 0) // No existe en la db, pero sí en disco, entonces crear nueva entrada en la db.
             {
 				/* MISS */
@@ -344,13 +382,14 @@ void ConnectionToHTTP2::Cache() {
 					lrangeswork = getRangeWork(&lranges, range_min, range_max, &hit);
 					if ( !WaitLastModification() ) {
 						r.match = false; /* Go direct to internet */
+						if(!file_in_edition) liberate_edition();
 					}
 				}
 				/* END */
-                domaindb.set("INSERT INTO haarp (domain, file, size, modified, downloaded, requested, last_request) VALUES ('" + r.domain + "', '" + domaindb.sqlconv(r.file) + "', 0, '1980-01-01 00:00:00',now(),0,now());");
+                domaindb.set("INSERT INTO haarp (domain, file, size, modified, downloaded, requested, last_request, file_used) VALUES ('" + r.domain + "', '" + domaindb.sqlconv(r.file) + "', 0, '1980-01-01 00:00:00',now(),0,now(), 1);");
                 if (LL > 0) LogFile::AccessMessage("MISS DB: Domain: %s File: %s\n", r.domain.c_str(), r.file.c_str());
             } else { // Existe el archivo en disco y en la base de datos, miss o hit?.
-				/* size es el tamaño del archivo, si estubiera entero (como en el mismo servidor)*/
+				/* 'size' es el tamaño del archivo, si estubiera entero (como en el mismo servidor de video)*/
 				size_orig_file = atol(domaindb.get("size", 1).c_str());
 				
 				string ranges = domaindb.get("rg", 1);
@@ -359,12 +398,12 @@ void ConnectionToHTTP2::Cache() {
 				
 				if( !generateList(ranges, position, &lranges) ) { //raro que entre
 					if (LL > 0) LogFile::ErrorMessage("Format incorrect: Ranges=%s, Parts=%s\n", ranges.c_str(), position.c_str());
-					if (LL > 1) LogFile::AccessMessage("Format incorrect: Reset ranges and positions in the DB\n");
+					if (LL > 1) LogFile::AccessMessage("Format incorrect!: Reset ranges and positions in the DB\n");
 					domaindb.set("UPDATE haarp set rg='', pos='' WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';");
+					lranges = NULL;
 				}
-				if( size_orig_file )
-				{
-					if(range_max <= 0 )
+				if( size_orig_file ) {
+					if( range_max <= 0  )
 						range_max = size_orig_file - 1; // update range_max
 					if( size_orig_file > range_min + 1 && size_orig_file < range_max + 1 ) {
 						range_max = size_orig_file - 1; // truncate
@@ -374,11 +413,14 @@ void ConnectionToHTTP2::Cache() {
 					lrangeswork = getRangeWork(&lranges, range_min, range_max, &hit); /* hit, can not change it later */
 					if ( !hit ) {
 						short wait = WaitLastModification();
-						if ( wait == -1 ) 
+						if ( wait == -1 ) {
 							r.match = false; /* Go direct to internet */
+							if(!file_in_edition) liberate_edition();
+						}
 						if ( !wait && !ReloadData()) {
+							if(!file_in_edition) liberate_edition();
 							return;
-						} 
+						}
 					}
 				}
 				else {
@@ -386,9 +428,12 @@ void ConnectionToHTTP2::Cache() {
 						lrangeswork = getRangeWork(&lranges, range_min, range_max, &hit); /* hit, can not change it later */
 						if ( !hit ) {
 							short wait = WaitLastModification();
-							if ( wait == -1 ) 
+							if ( wait == -1 ) {
 								r.match = false; /* Go direct to internet */
+								if(!file_in_edition) liberate_edition();
+							}
 							if ( !wait && !ReloadData()) {
+								if(!file_in_edition) liberate_edition();
 								return;
 							} 
 						}
@@ -400,6 +445,7 @@ void ConnectionToHTTP2::Cache() {
 				
 				if( hit ) {
 					msghit = "HIT";
+					if(!file_in_edition) liberate_edition();
 					domaindb.set("UPDATE haarp SET requested=requested+1, last_request=now() WHERE file='" + domaindb.sqlconv(r.file) + "' and domain='" + r.domain + "';");
 					if (LL > 0) LogFile::AccessMessage("HIT: Domain: %s File: %s\n", r.domain.c_str(), r.file.c_str());
 				}
@@ -639,6 +685,7 @@ bool ConnectionToHTTP2::ReadHeader(string &headerT) {
         headerT = tmp.str();
         rewrited = true;
         r.match = hit = false;
+        if(!file_in_edition) liberate_edition();
         return true;
     } else if (hit) {
 		
@@ -649,20 +696,48 @@ bool ConnectionToHTTP2::ReadHeader(string &headerT) {
         else
             tmp << "HTTP/1.0 206 Partial\r\n";
         //tmp << "Content-Disposition: attachment; filename=\"" + r.file + "\"\r\n";
-        if (getFileExtension(r.file) == "SWF")
-            tmp << "Content-Type: application/x-shockwave-flash\r\n";
-        else if (getFileExtension(r.file) == "FLV")
-            //tmp << "Content-Type: video/x-flv\r\n";
-            tmp << "Content-Type: application/octet-stream\r\n";
-        else if (getFileExtension(r.file) == "MP4")
-            tmp << "Content-Type: video/mp4\r\n";
-        else if (getFileExtension(r.file) == "MP4A" && r.domain == "youtube")
-            tmp << "Content-Type: audio/mp4\r\n";
-		else if (getFileExtension(r.file) == "WEBM")
-			tmp << "Content-Type: video/webm\r\n";
-		else
-			tmp << "Content-Type: application/octet-stream\r\n";
-
+        
+		/*if( r.domain == "youtube" && (r.file).find("-") != string::npos ) {
+			char p[500];
+			strcpy(p,(r.file).c_str());
+			char *q = strstr(p, "-");
+			*q = '\0';
+			char *q1 = strstr(++q,".");
+			*q1 = '\0';
+			int itag = atoi(q);
+			if (LL > 1) LogFile::AccessMessage("Youtube - ITAG: '%i'(char:%s)\n", itag, q);
+			if(itag == 5 || itag == 34 || itag == 35)
+				tmp << "Content-Type: video/x-flv\r\n";
+			else if(itag == 17)
+				tmp << "Content-Type: video/3gpp\r\n";
+			else if( itag == 18 || itag == 22 || itag == 37 || itag == 38 || (itag >= 82 && itag <= 85) || (itag >= 133 && itag <= 137) || itag == 160 )
+				tmp << "Content-Type: video/mp4\r\n";
+			else if( itag >= 139 && itag <= 141 )
+				tmp << "Content-Type: audio/mp4\r\n";
+			else if( (itag >= 43 && itag <= 46) || (itag == 100 && itag == 102) )
+				tmp << "Content-Type: video/webm\r\n";
+			else if( (itag >= 171 && itag <= 172) )
+				tmp << "Content-Type: audio/webm\r\n";
+			else if( (itag >= 242 && itag <= 248) )
+				tmp << "Content-Type: video/webm\r\n";
+			else
+				tmp << "Content-Type: application/octet-stream\r\n";
+			if (LL > 1) LogFile::AccessMessage("Youtube - CABECERA_TMP: \n'%s'\n", (tmp.str()).c_str());
+		} else {        */
+			if (getFileExtension(r.file) == "SWF")
+				tmp << "Content-Type: application/x-shockwave-flash\r\n";
+			else if (getFileExtension(r.file) == "FLV")
+				//tmp << "Content-Type: video/x-flv\r\n";
+				tmp << "Content-Type: application/octet-stream\r\n";
+			else if (getFileExtension(r.file) == "MP4")
+				tmp << "Content-Type: video/mp4\r\n";
+			else if (getFileExtension(r.file) == "MP4A" && r.domain == "youtube")
+				tmp << "Content-Type: audio/mp4\r\n";
+			else if (getFileExtension(r.file) == "WEBM")
+				tmp << "Content-Type: video/webm\r\n";
+			else
+				tmp << "Content-Type: application/octet-stream\r\n";
+		//}
         tmp << "Content-Length: ";
         tmp << filesizeneto;
         tmp << "\r\n";
@@ -672,6 +747,14 @@ bool ConnectionToHTTP2::ReadHeader(string &headerT) {
         }
         tmp << "X-Cache: HIT from Haarp\r\n";
         tmp << "Haarp: HIT from " << r.domain << "\r\n";
+	//tmp << "Access-Control-Allow-Credentials: false\r\n";
+	if(r.domain == "youtube") {
+		tmp << "Accept-Ranges:bytes\r\n";
+		tmp << "Access-Control-Allow-Credentials:true\r\n";
+		tmp << "Access-Control-Allow-Origin:http://www.youtube.com\r\n";
+		tmp << "Timing-Allow-Origin:http://www.youtube.com\r\n";
+		tmp << "Alternate-Protocol:80:quic\r\n";
+	}
         headerT = tmp.str();
         return true;
 
@@ -698,6 +781,7 @@ int64_t ConnectionToHTTP2::GetContentLength() {
     else {
         int64_t ContentLengthReference;
         ContentLengthReference = ConnectionToHTTP::GetContentLength(); //del server..
+	if (LL > 0) LogFile::AccessMessage("ContentLength: "LLD"\n", ContentLengthReference);
         if (r.match) {
            if ((
 					ContentLengthReference < Params::GetConfigInt(getFileExtension(r.file) + "_MIN") || 
@@ -711,6 +795,7 @@ int64_t ConnectionToHTTP2::GetContentLength() {
 			)  
 	    {
                 r.match = general = false;
+                if(!file_in_edition) liberate_edition();
                 if (LL > 0) LogFile::AccessMessage("MAXMIN CANCEL: Domain: %s File: %s Size: "LLD"\n", r.domain.c_str(), r.file.c_str(), filesizeneto);
             }
         }
@@ -746,6 +831,7 @@ int ConnectionToHTTP2::GetResponse() {
         retorno = ConnectionToHTTP::GetResponse();
         if (retorno != 200 && retorno != 206 ) {
             r.match = hit = resuming = false;
+            if(!file_in_edition) liberate_edition();
         }
     } else retorno = ConnectionToHTTP::GetResponse();
     return retorno;

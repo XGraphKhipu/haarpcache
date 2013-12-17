@@ -11,11 +11,11 @@ using namespace std;
 void get_videoid(string url, string &file, int *a, int *b) {
 	vector<string> resultado,valor;
 	
-	string itag, mime;
+	string itag;
 	bool exist_cm2, range;
 	int size;
 	
-	mime = file = itag = "";
+	file = itag = "";
 	exist_cm2 = range = false;
 	
 	SearchReplace(url,"?","&");
@@ -53,12 +53,12 @@ void get_videoid(string url, string &file, int *a, int *b) {
 			else if( valor.at(0) == "cm2" && valor.at(1) == "0" ) {
 				exist_cm2 = true;
 			}
-			else if( valor.at(0) == "mime" ) {
+			/*else if( valor.at(0) == "mime" ) {
 				if( valor.at(1).find("video") != string::npos )
 					mime = "-vid";
 				else if (valor.at(1).find("audio") != string::npos )
 					mime = "-aud";
-			}
+			}*/
 	    }
     }
     if( exist_cm2 && !range ) {
@@ -66,7 +66,7 @@ void get_videoid(string url, string &file, int *a, int *b) {
 		return;
 	}
 	if(!file.empty())
-		file = file + mime + itag;
+		file = file + itag;
 }
 
 extern "C" resposta hgetmatch2(string url) {
@@ -79,11 +79,11 @@ extern "C" resposta hgetmatch2(string url) {
 		if ( !r.file.empty() ) {
 			r.match = true;
 			r.domain = "youtube";
-			if( regex_match("-aud(-[0-9]+)?$", r.file) != "" )
+			/*if( regex_match("-aud(-[0-9]+)?$", r.file) != "" )
 				r.file += ".mp4a";
 			else if( regex_match("-vid(-[0-9]+)?$", r.file) != "" )
 				r.file += ".mp4";
-			else
+			else*/
 				r.file += ".flv";
 		}
 		else

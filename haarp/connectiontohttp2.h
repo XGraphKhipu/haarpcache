@@ -32,6 +32,7 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
 		bool partial;//html5
 		//~ bool knowhitmiss;
 		bool miss2hit;
+		bool file_in_edition; //This process blocked the edition the of file?
 		
 		void UpdateFileSizeinPartial( string header );
 		void getLimitBytes(string &header);
@@ -63,6 +64,9 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
         void SubUpdate();
         short WaitLastModification();
         bool ReloadData();
+        void block_edition();
+        void liberate_edition();
+        int FileInEdition();
         void Close();
 };
 
