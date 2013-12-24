@@ -34,7 +34,18 @@ You can change the address 127.0.0.1 for the IP of you server haarp.
 
 Changelog
 ---------
-__Vesion 1.1__
+
+__Version 1.2__
+
+2013/12/24
+
+* Fixed block of plugin for bloqued of published in youtube website.
+* Update plugins: globo.com, youtube.com.
+* Differentiation of the header for the chrome browser.
+* Update of haarpclean script for the cleaning the cache.
+* Synchronous to the storage of the cache in an only file.
+
+__Version 1.1__
 
 2013/02/09
 
