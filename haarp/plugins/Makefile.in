@@ -1,4 +1,4 @@
-CXX = g++
+CXX = @CXX@
 
 OBJECTS = tube8.com.so \
 	grandchase.com.br.so \
@@ -43,15 +43,15 @@ OBJECTS = tube8.com.so \
 	speedtest.net.so 
 	
 
-all: plugins copiar teste
+all: plugins cteste copiar
 
 plugins: $(OBJECTS)
 
 %.so: %.cpp 
-	$(CXX) -I. -fPIC -shared -o $@ $<
+	$(CXX) -I. -fPIC -shared -O2 -o $@ $<
 	
-teste:
-	$(CXX) -I. -ldl -rdynamic -o teste teste.c
+cteste: teste.c
+	$(CXX) -I. -ldl -rdynamic -O2 -o teste $<
 
 copiar:	
 	cp avg.com.so grisoft.com.so

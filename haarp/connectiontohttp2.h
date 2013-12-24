@@ -31,6 +31,7 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
 		bool unlimit;
 		bool partial;//html5
 		//~ bool knowhitmiss;
+		bool bchrome;
 		bool miss2hit;
 		bool file_in_edition; //This process blocked the edition the of file?
 		

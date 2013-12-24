@@ -23,11 +23,8 @@ extern "C" resposta hgetmatch2(const string url) {
     r.range_min = 0;
 	r.range_max = 0;
 	
-	if ( (url.find("flashvideo.globo.com") != string::npos)  and
-		 ( (url.find(".mp4") != string::npos) or (url.find(".flv") != string::npos) )
-	) {
-		
-	    r.file = get_filename(url);
+	if ( url.find("&start=") == string::npos and url.find("?start=") == string::npos ) {
+	        r.file = get_filename(url);
 		if (!r.file.empty()) {
 			r.match = true;
 			r.domain = "globo";
