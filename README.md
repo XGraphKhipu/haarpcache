@@ -39,7 +39,7 @@ __Version 1.2__
 
 2013/12/24
 
-* Fixed block of plugin for bloqued of published in youtube website.
+* Improved ad-blocking plugin for Youtube.
 * Update plugins: globo.com, youtube.com.
 * Differentiation of the header for the chrome browser.
 * Update of haarpclean script for the cleaning the cache.
@@ -49,13 +49,13 @@ __Version 1.1__
 
 2013/02/09
 
-* Cache dinamico e inteligente.
-* Plugins editados, para funcionamiento inteligente.
-* Multi disco
-* Bloqueo de publicidad en www.youtube.com.
-* Cache de Youtube en html5.
+* Cache dynamic and intelligent.
+* Update of plugins for the smart operation.
+* Multi disc
+* Blocking advertising to Youtube.
+* Cache of videos in html5 for Youtube.
 
-Fork creado por
+Fork created by
 
 Manolo Canales
 
