@@ -39,4 +39,6 @@ http.*videos\..*\.redtubefiles\.com\/.*\.flv
 http.*\.vimeo.com\/.*\.mp4(\?.*)?$
 http.*images\.orkut\.com\/orkut\/photos\/.*\.jpg$
 http.{1,4}(\w|\/|\.|-)*media\.tumblr\.com\/(\w|\/|-|\.)*tumblr(\w|\/|-)*(\.png|\.jpg)$
-
+^http.{1,4}[0-9]{2,3}\.[0-9]{2,3}\.[0-9]{2,3}\.[0-9]{2,3}\/youku\/.*\.flv$
+^http.{1,4}c\.wrzuta\.pl\/w[vmh]\w{1,7}\/\w*(\?f=t)?$
+^http.{1,4}avideos\.5min\.com\/(\w|\/)*\/\w*\_\w*\.mp4.*

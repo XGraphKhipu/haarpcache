@@ -490,7 +490,9 @@ string getdomain(string url) {
     if (regex_match("^74\\.125\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?$)", url) != "") return "youtube.com";
     if (regex_match("^(205\\.196\\.|199\\.91\\.)[0-9]{2,3}\\.[0-9]{1,3}", url) != "") return "mediafire.com";
 	//if (regex_match("^speedtest[0-9]*(\\.|[a-z]|[0-9])+", url) != "") return "speedtest.net";
-        if (regex_match("^(\\.|[a-z]|[0-9]|-)+(\\/\\w+)?(\\/speedtest)+\\/(random[0-9]+x[0-9]+\\.jpg|latency\\.txt)", url) != "") return "speedtest.net";
+    if (regex_match("^(\\.|[a-z]|[0-9]|-)+(\\/\\w+)?(\\/speedtest)+\\/(random[0-9]+x[0-9]+\\.jpg|latency\\.txt)", url) != "") return "speedtest.net";
+    if (regex_match("^[0-9]{2,3}\\.[0-9]{2,3}\\.[0-9]{2,3}\\.[0-9]{1,3}\\/youku\\/", url) != "") return "youku.com";
+    
 
 	
     vector<string> resultado;

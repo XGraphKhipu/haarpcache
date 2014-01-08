@@ -30,6 +30,7 @@ void ConnectionToHTTP2::getLimitBytes(string &header) {
 			if (LL > 1) LogFile::AccessMessage("Header with status code 206 found\n");
 			partial = true;
 		}
+		
 		if (lines.at(i).find("Range: bytes=") == 0) {
 			stringexplode(lines.at(i), "=", &value);
 			if(value.size() <= 1)
