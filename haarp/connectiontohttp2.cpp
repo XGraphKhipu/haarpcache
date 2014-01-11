@@ -292,7 +292,9 @@ void ConnectionToHTTP2::Cache() {
 					if( (postmp = (int)(r.file).rfind(".flv")) != (int)string::npos) {
 						(r.file).replace(postmp,4,".webm");
 					}
-				}
+				} else 
+					r.file = "206-" + r.file;
+				
 			}
 			if (LL > 1) LogFile::AccessMessage("Ranges received: range_min=%d, range_max=%d\n", range_min, range_max);
             if (LL > 0) LogFile::AccessMessage("Resposta Match %d Domain %s File %s\n", r.match, r.domain.c_str(), r.file.c_str());

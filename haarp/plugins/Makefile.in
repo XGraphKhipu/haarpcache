@@ -66,6 +66,7 @@ copiar:
 	cp youtube.com.so googlevideo.com.so
 	cp orkut.com.so orkut.com.br.so
 	cp speedtest.net.so testdevelocidad.es.so
+	cp vimeo.com.so vimeocdn.com.so
 
 clean:
 	rm -f *.so
