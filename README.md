@@ -78,7 +78,7 @@ List of Plugins
 	Juegosjuegos.
 	
 	
-Configure your file /etc/haarp/haarp.lst to disable or enable plugins.	
+Configure your file /etc/haarp/haarp.lst to disable or enable the plugins.	
 
 	
 Changelog
