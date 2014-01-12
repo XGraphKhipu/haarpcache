@@ -100,7 +100,7 @@ __Version 1.1__
 
 * Cache dynamic and intelligent.
 * Update of plugins for the smart operation.
-* Multi disc
+* Multidisc.
 * Blocking advertising to Youtube.
 * Cache of videos in html5 for Youtube.
 
