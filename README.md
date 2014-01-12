@@ -74,8 +74,8 @@ List of Plugins
 	Redtube,
 	Tube8;
 	
-	juegosdiarios,
-	juegosjuegos.
+	Juegosdiarios,
+	Juegosjuegos.
 	
 	
 Configure your file /etc/haarp/haarp.lst to disable or enable plugins.	
