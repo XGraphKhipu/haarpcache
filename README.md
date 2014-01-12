@@ -1,13 +1,60 @@
 Introduction
 ------------
-Proxy Haarpcache es un tenedor de Thundercache.
 
-Lo resaltante en el sistema haarpcache, es que este permite almacenar los archivos en forma inteligente. 
+Proxy HaarpCache is a fork of ThunderCache.
 
-Es decir almacena cada pedazo del video o archivo juntandolo todo en un único recurso en el disco, sin importar que estas partes hayan venido incompletas o en desorden. Además esto hace que 
-cuando se pida de nuevo el mismo archivo; se despachen las partes que están en el disco y las que no se encuentran en el, se toman desde la red, pero al final las partes faltantes del archivo que se descargan se siguen almacenando en el mismo archivo; completando así el archivo original. 
+HaarpCache is a robust static and dynamic cache that provides support to the DASH technology.
+
  
+List of Plugins
+--------------
 
+* Currently Haarp supports:
+
+
+		Youtube
+		DoubleClick (Action of Blocked of the ADS)
+		Googlevideo
+		AOL
+		Vimeo
+		Metacafe
+		Bitgravity
+		Globo
+		Terra
+		Viddler
+		Justin
+		Edgecastcdn
+		Youku
+		Wrzuta
+		Ytimg
+		Tumblr
+		Facebook
+		
+		
+		4shared
+		Mediafire
+		Etrustdownloads
+		Ziddu
+		
+		Avast
+		Avgate
+		Eset
+		Mcafee
+		
+		Windowsupdate
+		Adobe
+		
+		Porntube
+		Xvideos	
+		Pornhub 
+		Redtube
+		Tube8
+		
+		juegosdiarios
+		juegosjuegos
+	
+	
+	
 Installing
 --------
 
