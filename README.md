@@ -5,56 +5,6 @@ Proxy HaarpCache is a fork of ThunderCache.
 
 HaarpCache is a robust static and dynamic cache that provides support to the DASH technology.
 
- 
-List of Plugins
---------------
-
-* Currently Haarp supports:
-
-
-		Youtube
-		DoubleClick (Action of Blocked of the ADS)
-		Googlevideo
-		AOL
-		Vimeo
-		Metacafe
-		Bitgravity
-		Globo
-		Terra
-		Viddler
-		Justin
-		Edgecastcdn
-		Youku
-		Wrzuta
-		Ytimg
-		Tumblr
-		Facebook
-		
-		
-		4shared
-		Mediafire
-		Etrustdownloads
-		Ziddu
-		
-		Avast
-		Avgate
-		Eset
-		Mcafee
-		
-		Windowsupdate
-		Adobe
-		
-		Porntube
-		Xvideos	
-		Pornhub 
-		Redtube
-		Tube8
-		
-		juegosdiarios
-		juegosjuegos
-	
-	
-	
 Installing
 --------
 
@@ -79,6 +29,58 @@ You can change the address 127.0.0.1 for the IP of you server haarp.
 
 * To clean: make clean
 
+ 
+List of Plugins
+--------------
+
+* Currently Haarp supports:
+
+
+	Youtube,
+	DoubleClick (Action of Blocked of the ADS),
+	Googlevideo,
+	AOL,
+	Vimeo,
+	Metacafe,
+	Bitgravity,
+	Globo,
+	Terra,
+	Viddler,
+	Justin,
+	Edgecastcdn,
+	Youku,
+	Wrzuta,
+	Ytimg,
+	Tumblr,
+	Facebook;
+	
+	
+	4shared,
+	Mediafire,
+	Etrustdownloads,
+	Ziddu;
+	
+	Avast,
+	Avgate,
+	Eset,
+	Mcafee;
+	
+	Windowsupdate,
+	Adobe;
+	
+	Porntube,
+	Xvideos,	
+	Pornhub,
+	Redtube,
+	Tube8;
+	
+	juegosdiarios,
+	juegosjuegos.
+	
+	
+Configure your file /etc/haarp/haarp.lst to disable or enable plugins.	
+
+	
 Changelog
 ---------
 
