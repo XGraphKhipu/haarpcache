@@ -52,7 +52,7 @@ List of Plugins
 	Wrzuta,
 	Ytimg,
 	Tumblr,
-	Facebook;
+	Facebook (https not supported);
 	
 	
 	4shared,
