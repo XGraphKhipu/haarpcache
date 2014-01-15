@@ -13,8 +13,10 @@ void get_videoid(string url, string &file, int *a, int *b) {
 	
 	string itag;
 	bool exist_cm2, range;
-	int size;
+	int size, clen;
 	
+	clen = 0;
+
 	file = itag = "";
 	exist_cm2 = range = false;
 	
@@ -53,6 +55,9 @@ void get_videoid(string url, string &file, int *a, int *b) {
 			else if( valor.at(0) == "cm2" && valor.at(1) == "0" ) {
 				exist_cm2 = true;
 			}
+			else if ( valor.at(0) == "clen" ) {
+				clen = atoi(valor.at(1).c_str());
+			}
 			/*else if( valor.at(0) == "mime" ) {
 				if( valor.at(1).find("video") != string::npos )
 					mime = "-vid";
@@ -67,6 +72,10 @@ void get_videoid(string url, string &file, int *a, int *b) {
 	}
 	if(!file.empty())
 		file = file + itag;
+	if(clen && clen >= *a && clen <= *b) {
+		file = "";
+		return;
+	}
 }
 
 extern "C" resposta hgetmatch2(string url) {

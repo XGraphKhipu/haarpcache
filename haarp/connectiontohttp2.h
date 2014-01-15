@@ -63,8 +63,7 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
         void pintarlista( llista *p, string c );
         void Update();
         void SubUpdate();
-        short WaitLastModification();
-        bool ReloadData();
+        short BusyFile();
         void block_edition();
         void liberate_edition();
         int FileInEdition();

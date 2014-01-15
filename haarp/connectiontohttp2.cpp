@@ -99,17 +99,12 @@ void ConnectionToHTTP2::Cache2( int cl ) {
 	if( !lrangeswork )
 	{
 		lrangeswork = getRangeWork(&lranges, range_min, range_max, &hit); // update HIT?.
-		if ( !hit ) {
-			short wait = WaitLastModification();
-			if ( wait == -1 ) {
-				r.match = false; /* Go direct to internet */
-				if(!file_in_edition) liberate_edition();
-			}
-			if ( !wait && !ReloadData()) {
-				if(!file_in_edition) liberate_edition();
-				return;
-			} 
-		}
+		//~ if ( !hit ) 
+			//~ if ( BusyFile() ) {
+				//~ r.match = false; /* Go direct to internet */
+				//~ if(!file_in_edition) liberate_edition();
+			//~ }
+			
 		if( hit ) {
 			msghit = "HIT";
 			if(!file_in_edition) liberate_edition();
@@ -175,62 +170,13 @@ void ConnectionToHTTP2::SubUpdate() {
 	if(domaindb.set("UPDATE haarp set rg='" + rang_ + "', pos='" + part_ + "', filesize='" + stmp0.str() + "', np=np+" + stmp1.str() + " WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") < 0)
 		if (LL > 1) LogFile::ErrorMessage("Error, in sub-updating the data base: '%s' \n",domaindb.getError().c_str());
 }
-short ConnectionToHTTP2::WaitLastModification() {
-	int contador = 0;
-	while ( (now() - file_getmodif(completefilepath)) <= 2.2 ) {
-		usleep(100000);
-		if ( ++contador > 2 ) // + de 5 segundos
-		{
-			if(LL > 0) LogFile::ErrorMessage("Warning: file '%s' with persistent changes\n", r.file.c_str());
-			if(LL > 0) LogFile::AccessMessage("The file on disk is modified, go direct to internet.\n");
-			return -1;
-		}
+short ConnectionToHTTP2::BusyFile() {
+	if ( (now() - file_getmodif(completefilepath)) <= 30.0 ) { // After of 30 seconds without modifications, is secure that the file not is working as cache.
+		if(LL > 0) LogFile::ErrorMessage("Warning: file '%s' with persistent changes\n", r.file.c_str());
+		if(LL > 0) LogFile::AccessMessage("The file on disk is working as cache, go direct to internet.\n");
+		return 1;
 	}
-	if( contador )
-		return 0;
-	return 1;
-}
-bool ConnectionToHTTP2::ReloadData() {
-	list_clear(&lranges);
-	list_clear(&lrangeswork);
-	
-	if (domaindb.get("SELECT size, rg, pos FROM haarp WHERE file='" + domaindb.sqlconv(r.file) + "' and domain='" + r.domain + "';") != 0) {
-		LogFile::ErrorMessage("Error: '%s'\n", domaindb.getError().c_str());
-		r.match = hit = false;
-		if(!file_in_edition) liberate_edition();
-		return false;
-	}
-
-	size_orig_file = atol(domaindb.get("size", 1).c_str());
-	string ranges = domaindb.get("rg", 1);
-	string position = domaindb.get("pos", 1);
-	
-	if (LL > 0) LogFile::AccessMessage("In RELOAD DB: ranges ('%s') and position ('%s')\n", ranges.c_str(), position.c_str());
-
-	if( !generateList(ranges, position, &lranges) ) { //raro que entre
-		if (LL > 0) LogFile::ErrorMessage("Format incorrect: Ranges=%s, Parts=%s\n", ranges.c_str(), position.c_str());
-		if (LL > 1) LogFile::AccessMessage("Format incorrect: Reset ranges and positions in the DB\n");
-		domaindb.set("UPDATE haarp set rg='', pos='' WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';");
-	}
-	if( size_orig_file ) {
-		if(range_max <= 0 )
-			range_max = size_orig_file - 1; // update range_max
-		if( size_orig_file > range_min + 1 && size_orig_file < range_max + 1 ) {
-			range_max = size_orig_file - 1; // truncate
-			if (LL > 1) LogFile::AccessMessage("Maximum range, trucate to: %i bytes\n", range_max);
-		}
-		filesizeneto = range_max - range_min + 1;
-		lrangeswork = getRangeWork(&lranges, range_min, range_max, &hit); /* hit, can not change it later */
-	}
-	else {
-		if ( range_max > 0 && ( getExtremeb(lranges) < range_min || range_max <= getExtremeb(lranges) ) ) {
-			lrangeswork = getRangeWork(&lranges, range_min, range_max, &hit); /* hit, can not change it later */
-		}
-		else { // range_max <= 0 || range_min <= exteme < range_max
-			hit = false; /* can be changed later (function Cache2) */
-		}
-	}
-	return true;
+	return 0;
 }
 void ConnectionToHTTP2::block_edition() {
 	domaindb.set("UPDATE haarp set file_used=1 WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';");
@@ -368,13 +314,17 @@ void ConnectionToHTTP2::Cache() {
 			
 			/* Check if are closed the use the of file from mysql */
 			file_in_edition = FileInEdition();
-			if( !file_in_edition || WaitLastModification())  {
+			if( file_in_edition ) {
+				if( !BusyFile() )  {
+					block_edition();
+					file_in_edition = 0;
+				} else {
+					r.match = false; /* Go to internet */
+					return;
+				}
+			} else {
 				block_edition();
 				file_in_edition = 0;
-				//~ if (LL > 1) LogFile::AccessMessage("Active Block for the Edition of file in Disk!\n");
-			} else {
-				r.match = false; /* Go to internet */
-				return;
 			}
 			
             if (domaindb.get("SELECT size, rg, pos FROM haarp WHERE file='" + domaindb.sqlconv(r.file) + "' and domain='" + r.domain + "';") != 0) {
@@ -390,10 +340,10 @@ void ConnectionToHTTP2::Cache() {
 				lranges = NULL;
 				if( range_max > 0 ) {
 					lrangeswork = getRangeWork(&lranges, range_min, range_max, &hit);
-					if ( !WaitLastModification() ) {
-						r.match = false; /* Go direct to internet */
-						if(!file_in_edition) liberate_edition();
-					}
+					//~ if ( BusyFile() ) {
+						//~ r.match = false; /* Go direct to internet */
+						//~ if(!file_in_edition) liberate_edition();
+					//~ }
 				}
 				/* END */
                 domaindb.set("INSERT INTO haarp (domain, file, size, modified, downloaded, requested, last_request, file_used) VALUES ('" + r.domain + "', '" + domaindb.sqlconv(r.file) + "', 0, '1980-01-01 00:00:00',now(),0,now(), 1);");
@@ -421,32 +371,21 @@ void ConnectionToHTTP2::Cache() {
 					}
 					filesizeneto = range_max - range_min + 1;
 					lrangeswork = getRangeWork(&lranges, range_min, range_max, &hit); /* hit, can not change it later */
-					if ( !hit ) {
-						short wait = WaitLastModification();
-						if ( wait == -1 ) {
-							r.match = false; /* Go direct to internet */
-							if(!file_in_edition) liberate_edition();
-						}
-						if ( !wait && !ReloadData()) {
-							if(!file_in_edition) liberate_edition();
-							return;
-						}
-					}
+					//~ if ( !hit ) 
+						//~ if ( BusyFile() ) {
+							//~ r.match = false; /* Go direct to internet */
+							//~ if(!file_in_edition) liberate_edition();
+						//~ }
 				}
 				else {
 					if ( range_max > 0 && ( getExtremeb(lranges) < range_min || range_max <= getExtremeb(lranges) ) ) {
 						lrangeswork = getRangeWork(&lranges, range_min, range_max, &hit); /* hit, can not change it later */
-						if ( !hit ) {
-							short wait = WaitLastModification();
-							if ( wait == -1 ) {
-								r.match = false; /* Go direct to internet */
-								if(!file_in_edition) liberate_edition();
-							}
-							if ( !wait && !ReloadData()) {
-								if(!file_in_edition) liberate_edition();
-								return;
-							} 
-						}
+						//~ if ( !hit ) {
+							//~ if ( BusyFile() ) {
+								//~ r.match = false; /* Go direct to internet */
+								//~ if(!file_in_edition) liberate_edition();
+							//~ }
+						//~ }
 					}
 					else { // range_max <= 0 || range_min <= exteme < range_max
 						hit = false; /* can be changed later (function Cache2) */
