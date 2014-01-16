@@ -31,7 +31,7 @@ http.*\.googlevideo\.com.*videoplayback
 http.*img[0-9]\.submanga\.com\/(hd)?pages\/.*(\.jpg|\.webp)
 http.*((profile|s?photos|video).{0,5}\.ak\.)?fbcdn.{0,10}(s?photos|videos)?(.{0,10}akamai)?.{0,10}\.net\/.*(\.mp4\?.*|\_n\.jpg$|\.mp4$|\_n\.png$) 
 http.*(profile|s?photos|video).{0,5}\.ak\.fbcdn\.net\/.*(\.mp4\?.*|\_n\.jpg$|\.mp4$|\_n\.png$)
-http.*\.video\.pornhub\.\w*\.com\/videos\/.*\.flv\?.*
+^http.{1,8}\.video\.pornhub\.\w*\.com\/videos\/.*(\.flv|\.mp4)\?.*
 http.*\.(publicvideo|publicphoto)\.xtube\.com\/(videowall\/)?videos?\/.*(\.flv\?.*|\_Thumb\.flv$)
 http.*public\.tube8\.com\/.*\.mp4.*
 http.*videos\..*\.redtubefiles\.com\/.*\.flv
