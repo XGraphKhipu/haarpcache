@@ -20,13 +20,20 @@ string get_videoid(string url){
 	string retorna = "";
 	
 	int hq = 0;
+	int mq = 0;
+
 	if(url.find("hqdefault.jpg") != string::npos)
-		hq = 1;
+		hq = 1;	
+	if(url.find("mqdefault.jpg") != string::npos)
+		mq = 1;	
+	
 	stringexplode(url, "/", &resultado);
 	retorna  = resultado.at(resultado.size()-2);
 	if(hq)
 		retorna += "-hq";
-	else // alone hqdefault 
+	else if(mq)
+		retorna += "-mq";
+	else // alone hq|mq default 
 	{
 		string resullast = resultado.at(resultado.size() - 1);
 		string str = "";

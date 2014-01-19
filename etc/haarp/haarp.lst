@@ -24,7 +24,7 @@ http.*\.eset\.com.*\.nup
 http.*\.nai\.com.*(\.zip|\.tar|\.exe|\.gem)
 http.*\.pop6\.com.*(\.flv)
 http.*\.symantecliveupdate\.com.*(\.zip|\.exe)
-http.{1,4}\w*\.ytimg\.com.*(hqdefault(\.jpg|\.mp4)$|M[0-9]+\.jpg\?sigh=)
+http.{1,4}\w*\.ytimg\.com.*((hq|mq)default(\.jpg|\.mp4)$|M[0-9]+\.jpg\?sigh=)
 ^http.{1,4}\w*google(\.\w|\w)*\.doubleclick\.net\/pagead\/ads\?.*
 http.*\.googlevideo\.com.*videoplayback
 ^http.{1,4}\w*\.doubleclick\.net\/\w*\/pfadx\/.*main.*;.*
