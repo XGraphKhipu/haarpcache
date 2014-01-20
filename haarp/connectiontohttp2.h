@@ -42,6 +42,7 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
 		
         string domain,request,msghit;
 		int port;
+	string origin_header;
         resposta r;
         int64_t size_orig_file,filedownloaded,filesended,expiration,filesizeneto;
         bool hit,downloading,rewrited,resuming,general,etag;        

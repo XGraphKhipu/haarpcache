@@ -20,10 +20,10 @@ void ConnectionToHTTP2::getLimitBytes(string &header) {
 	if (LL > 0) LogFile::AccessMessage("******************** NEW CONNECTION ********************\n");
 	range_min = 0;
 	range_max = 0;
-	bchrome = false;
 	np = 0;
 	partial = false;
 	vector<string> lines, value, rangeb;
+	origin_header = "";
 	stringexplode(header, "\r\n", &lines);
 	for (unsigned int i = 0; i <= lines.size() - 1; ++i) {
 		if ( !i && lines.at(0).find(" 206 ") != string::npos && lines.at(0).find("HTTP") != string::npos ) {
@@ -49,11 +49,8 @@ void ConnectionToHTTP2::getLimitBytes(string &header) {
 			}
 			//break;
 		}
-		if ( lines.at(i).find("User-Agent:") == 0 ) {
-			//lines.at(i) = "User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36";
-			if( lines.at(i).find("Chrome") != string::npos ) {
-				bchrome = true;
-			}
+		if ( lines.at(i).find("Origin:") == 0 ) {
+			origin_header = lines.at(i).substr(8);
 		}
 	}
 }
@@ -699,12 +696,12 @@ bool ConnectionToHTTP2::ReadHeader(string &headerT) {
 	//tmp << "Access-Control-Allow-Credentials: false\r\n";
 	if(r.domain == "youtube") {
 		tmp << "Accept-Ranges:bytes\r\n";
-		if(bchrome) {
-			tmp << "Access-Control-Allow-Credentials:true\r\n";
-			tmp << "Access-Control-Allow-Origin:http://www.youtube.com\r\n";
-			tmp << "Timing-Allow-Origin:http://www.youtube.com\r\n";
-		}
 		tmp << "Alternate-Protocol:80:quic\r\n";
+	}
+	if( origin_header != "" ) {
+		tmp << "Access-Control-Allow-Credentials:true\r\n";
+		tmp << "Access-Control-Allow-Origin:" << origin_header << "\r\n";	
+		tmp << "Timing-Allow-Origin:" << origin_header << "\r\n";
 	}
         headerT = tmp.str();
         return true;
