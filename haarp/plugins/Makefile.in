@@ -40,8 +40,12 @@ OBJECTS = tube8.com.so \
 	juegosjuegos.com.so \
 	justin.tv.so \
 	tumblr.com.so \
-	speedtest.net.so 
-	
+	speedtest.net.so \
+	cloudfront.net.so \
+	5min.com.so \
+	wrzuta.pl.so \
+	youku.com.so 
+		
 
 all: plugins cteste copiar
 
