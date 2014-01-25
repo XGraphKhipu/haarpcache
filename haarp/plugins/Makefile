@@ -1,4 +1,4 @@
-CXX = g++
+CXX = g++-4.4
 
 OBJECTS = tube8.com.so \
 	grandchase.com.br.so \
@@ -40,17 +40,23 @@ OBJECTS = tube8.com.so \
 	juegosjuegos.com.so \
 	justin.tv.so \
 	tumblr.com.so \
-	speedtest.net.so 
-	
+	speedtest.net.so \
+	cloudfront.net.so \
+	5min.com.so \
+	wrzuta.pl.so \
+	youku.com.so 
+		
 
-all: plugins copiar
+all: plugins cteste copiar
 
 plugins: $(OBJECTS)
 
 %.so: %.cpp 
-	$(CXX) -I. -fPIC -shared -o $@ $<
+	$(CXX) -I. -fPIC -shared -O2 -o $@ $<
 	
-	
+cteste: teste.c
+	$(CXX) -I. -ldl -rdynamic -O2 -o teste $<
+
 copiar:	
 	cp avg.com.so grisoft.com.so
 	cp avg.com.so grisoft.cz.so
@@ -64,6 +70,7 @@ copiar:
 	cp youtube.com.so googlevideo.com.so
 	cp orkut.com.so orkut.com.br.so
 	cp speedtest.net.so testdevelocidad.es.so
+	cp vimeo.com.so vimeocdn.com.so
 
 clean:
 	rm -f *.so
