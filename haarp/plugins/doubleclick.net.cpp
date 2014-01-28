@@ -60,7 +60,7 @@ extern "C" resposta hgetmatch2(const string url) {
 		if(url.find("www.youtube.com") != string::npos) {
 			get_param(url, "ad_type", param);
 			if( ( param == "skippablevideo" || param == "video" || param == "text_image_flash" \
-				 || param == "text" || param == "image" ) && ( regex_match("[\\?&]url=http.{2,15}www.youtube.com([a-zA-Z0-9]|%|-|_)*&?",url) != "" ) ) {
+				 || param == "text" || param == "image"  || param == "image_text_flash" ) && ( regex_match("[\\?&]url=http.{2,15}www.youtube.com([a-zA-Z0-9]|%|-|_)*&?",url) != "" ) ) {
 				r.domain = "rewrite";
 				r.file = "googleads.g.doubleclick.net/pagead/ads";
 				r.match = true;

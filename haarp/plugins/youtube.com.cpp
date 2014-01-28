@@ -11,13 +11,15 @@ using namespace std;
 void get_videoid(string url, string &file, int *a, int *b) {
 	vector<string> resultado,valor;
 	
+	string sclen;
 	string itag;
 	bool exist_cm2, range;
 	int size, clen;
 	
 	clen = 0;
+	
+	sclen = file = itag = "";
 
-	file = itag = "";
 	exist_cm2 = range = false;
 	
 	SearchReplace(url,"?","&");
@@ -57,6 +59,7 @@ void get_videoid(string url, string &file, int *a, int *b) {
 			}
 			else if ( valor.at(0) == "clen" ) {
 				clen = atoi(valor.at(1).c_str());
+				sclen = "-" + valor.at(1);
 			}
 			/*else if( valor.at(0) == "mime" ) {
 				if( valor.at(1).find("video") != string::npos )
@@ -65,17 +68,18 @@ void get_videoid(string url, string &file, int *a, int *b) {
 					mime = "-aud";
 			}*/
 	    }
-    }
-    if( exist_cm2 && !range ) {
+	}
+	if( exist_cm2 && !range ) {
 		file = "";
 		return;
 	}
-	if(!file.empty())
-		file = file + itag;
+	if( !file.empty() )
+		file = file + itag + sclen;
 	if(clen && clen >= *a && clen <= *b) {
 		file = "";
 		return;
 	}
+	return;
 }
 
 extern "C" resposta hgetmatch2(string url) {
@@ -83,7 +87,7 @@ extern "C" resposta hgetmatch2(string url) {
 	r.range_min = 0;
 	r.range_max = 0;
 
-	if ( regex_match("[\\?&]begin=[0-9]*[1-9]+[0-9]*", url) == "" ) {
+	if ( regex_match("[\\?&]begin=[0-9]*[1-9]+[0-9]*", url) == "" && regex_match("[\\?&]cms_redirect=yes(&.*)?$", url) == "" && regex_match("[\\?&]redirect_counter=1(&.*)?$", url) == "" &&  url.find("&ir=1") == string::npos && url.find("&rr=12") == string::npos ) {
 		get_videoid(url, r.file, &r.range_min, &r.range_max);
 		if ( !r.file.empty() ) {
 			r.match = true;
