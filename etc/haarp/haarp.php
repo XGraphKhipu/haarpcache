@@ -106,7 +106,7 @@
 	</style>
 	</head>
 	<body>
-	<div align="center"><font color="#0C70EE"><strong>Report System Haarp Cache 1.1:</strong><br />
+	<div align="center"><font color="#0C70EE"><strong>Report System Haarp Cache 1.2:</strong><br />
 	</font><br />
 	<strong>DATA GENERATION: <?= date(DATE_RFC822) ?>
 	<br>
