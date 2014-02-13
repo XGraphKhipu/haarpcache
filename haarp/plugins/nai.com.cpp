@@ -1,5 +1,5 @@
 /* 
- * (c) Copyright 2009 Kei Kurono (keikurono01) <keikurono01@gmail.com>. Some Rights Reserved.
+ * (c) Copyright 2009 Kei Kurono (keikurono01) <kei.haarpcache gmail.com>. Some Rights Reserved.
  */
 
 #include <iostream>
