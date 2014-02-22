@@ -111,3 +111,13 @@ Manolo Canales
 kei.haarpcache@gmail.com
 
 http://perufw.wordpress.com
+
+<br/>
+<div align="center">
+<p><h6>If you find this code useful, or wish to fund further development,
+you can use PayPal to donate to the HaarpCache project:</h6>
+<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=QYCCSYYGW52QU"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif"></a>
+</div>
+    
+  </body>
+</html>
