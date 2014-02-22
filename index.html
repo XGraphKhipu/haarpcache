@@ -1,0 +1,173 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Haarpcache by keikurono</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/keikurono/haarpcache">View On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/keikurono/haarpcache/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/keikurono/haarpcache/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>Haarpcache</h1>
+          <p>Fork of thundercache, haarpcache one smart cache.</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/keikurono">keikurono</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
+        </div>
+
+        <h2>
+<a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>Introduction</h2>
+
+<p>Proxy HaarpCache is a fork of ThunderCache.</p>
+
+<p>HaarpCache is a robust static and dynamic cache that provides support to the DASH technology.</p>
+
+<h2>
+<a name="installing" class="anchor" href="#installing"><span class="octicon octicon-link"></span></a>Installing</h2>
+
+<pre><code>cd /tmp/
+git clone https://github.com/keikurono/haarpcache.git
+cd haarpcache
+./configure CXX=g++-4.4 (recommended install g++-4.4)
+make
+make install
+</code></pre>
+
+<ul>
+<li>
+<p>Copy &amp; page this, in the file of configuration: squid.conf (install squid)</p>
+
+<pre><code>acl haarp_lst url_regex -i "/etc/haarp/haarp.lst"
+cache deny haarp_lst
+cache_peer 127.0.0.1 parent 8080 0 proxy-only no-digest
+dead_peer_timeout 2 seconds
+cache_peer_access 127.0.0.1 allow haarp_lst
+cache_peer_access 127.0.0.1 deny all
+</code></pre>
+</li>
+</ul><p>You can change the address 127.0.0.1 for the IP of you server haarp.</p>
+
+<ul>
+<li>To clean: make clean</li>
+</ul><h2>
+<a name="list-of-plugins" class="anchor" href="#list-of-plugins"><span class="octicon octicon-link"></span></a>List of Plugins</h2>
+
+<ul>
+<li>
+<p>Currently Haarp supports:</p>
+
+<p>Youtube,
+DoubleClick (Action of Blocked of the ADS),
+Googlevideo,
+AOL,
+Vimeo,
+Metacafe,
+Bitgravity,
+Globo,
+Terra,
+Viddler,
+Justin,
+Edgecastcdn,
+Youku,
+Wrzuta,
+Ytimg,
+Tumblr,
+Facebook (https not supported);</p>
+
+<p>4shared,
+Mediafire,
+Etrustdownloads,
+Ziddu;</p>
+
+<p>Avast,
+Avgate,
+Eset,
+Mcafee;</p>
+
+<p>Windowsupdate,
+Adobe;</p>
+
+<p>Porntube,
+Xvideos,<br>
+Pornhub,
+Redtube,
+Tube8;</p>
+
+<p>Juegosdiarios,
+Juegosjuegos.</p>
+</li>
+</ul><p>Configure your file /etc/haarp/haarp.lst to disable or enable the plugins.  </p>
+
+<h2>
+<a name="changelog" class="anchor" href="#changelog"><span class="octicon octicon-link"></span></a>Changelog</h2>
+
+<p><strong>Version 1.2</strong></p>
+
+<p>2013/12/24</p>
+
+<ul>
+<li>Improved ad-blocking plugin for Youtube.</li>
+<li>Update plugins: globo.com, youtube.com.</li>
+<li>Differentiation of the header for the chrome browser.</li>
+<li>Update of haarpclean script for the cleaning the cache.</li>
+<li>Synchronous to the storage of the cache in an only file.</li>
+</ul><p><strong>Version 1.1</strong></p>
+
+<p>2013/02/09</p>
+
+<ul>
+<li>Cache dynamic and intelligent.</li>
+<li>Update of plugins for the smart operation.</li>
+<li>Multidisc.</li>
+<li>Blocking advertising to Youtube.</li>
+<li>Cache of videos in html5 for Youtube.</li>
+</ul><p>Fork created by</p>
+
+<p>Manolo Canales</p>
+
+<p><a href="mailto:kei.haarpcache@gmail.com">kei.haarpcache@gmail.com</a></p>
+
+<p><a href="http://perufw.wordpress.com">http://perufw.wordpress.com</a></p>
+
+<p><br></p>
+
+<div align="center">
+<p></p>
+<h6>
+<a name="if-you-find-this-code-useful-or-wish-to-fund-further-developmentyou-can-use-paypal-to-donate-to-the-haarpcache-project" class="anchor" href="#if-you-find-this-code-useful-or-wish-to-fund-further-developmentyou-can-use-paypal-to-donate-to-the-haarpcache-project"><span class="octicon octicon-link"></span></a>If you find this code useful, or wish to fund further development,
+you can use PayPal to donate to the HaarpCache project:</h6>
+<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=QYCCSYYGW52QU"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif"></a>
+</div>
+    
+
+<p></p>
+      </section>
+
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
