@@ -43,4 +43,6 @@ http.{1,4}(\w|\/|\.|-)*media\.tumblr\.com\/(\w|\/|-|\.)*tumblr(\w|\/|-)*(\.png|\
 ^http.{1,4}c\.wrzuta\.pl\/w[vmh]\w{1,7}\/\w*(\?f=t)?$
 ^http.{1,4}avideos\.5min\.com\/(\w|\/)*\/\w*\_\w*\.mp4.*
 ^http.{1,4}\w*\.cloudfront\.net\/(\w|\/|\.|-|\_)+\/recoded\_videos\/.*\.\w*.webm$
-
+#http.{1,7}speedtest(\w|-)*(\.|\w)+\/speedtest\/(random.*\.jpg|latency\.txt)\?.*
+#http.{1,10}testdevelocidad.{1,5}\/speedtest\/(random.*\.jpg|latency\.txt)\?.*
+#http.{1,7}(\.|[a-z]|[0-9]|-)+(\/\w+)?(\/speedtest)+\/(random[0-9]+x[0-9]+\.jpg|latency\.txt)
