@@ -153,8 +153,9 @@ void ConnectionToHTTP2::Update(){
 			if(!file_in_edition) liberate_edition();
 		}
 		acumulate = 0;
-		list_clear(&lranges);
 	}
+        list_clear(&lranges);
+        list_clear(&lrangeswork);
 }
 void ConnectionToHTTP2::SubUpdate() {
 	string rang_, part_;
