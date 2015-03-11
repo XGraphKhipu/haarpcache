@@ -135,7 +135,6 @@ string ConnectionToBrowser::PrepareHeaderForServer( bool UseParentProxy )
     }
 
     string via = "";
-
     string it;
     it.reserve(200);
 
@@ -180,6 +179,13 @@ string ConnectionToBrowser::PrepareHeaderForServer( bool UseParentProxy )
         {
             continue;
         }
+	else if ( MatchBegin( it, "ACCEPT-ENCODING", 15 ) && 
+			(UpperCase(Host) == "WWW.YOUTUBE.COM") && 
+			(UpperCase(Request).find("/WATCH?") != string::npos) 
+		)
+	{
+		*itvec = "Accept-Encoding: ";
+	}
 
 
         header += *itvec;

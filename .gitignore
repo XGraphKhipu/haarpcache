@@ -1,7 +1,8 @@
 *.so
 *.o
 teste
-haarp$
+haarp/haarp
+etc/haarp/haarpclean
 Makefile
 *.log
 default.h

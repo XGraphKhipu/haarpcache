@@ -17,6 +17,7 @@ http.{1,4}media\w*\.justin.tv\/archives\/(\w|\/|-)*\.flv(\?.*|$)
 http.{1,4}\w*juegos\w*\.juegosdiarios\.com\/(\w|\/|-)*\.swf$
 http.{1,4}\w*\.juegosjuegos\.com\/games(\w|\/|-)*\.swf$
 http.*\.youtube\.com.*videoplayback\?
+http.*\.youtube\.com.*watch\?*v=*
 http.*\.ziddu\.com.*(\.exe|\.iso|\.torrent|\.zip|\.rar|\.pdf|\.doc|\.tar|\.mp3|\.mp4|\.avi|\.wmv)
 http.*edgecastcdn\.net/.*(\.mp4|\.flv)
 http.*adobe\.com/.*(\.cab|\.aup|\.exe|\.msi|\.upd|\.msp)

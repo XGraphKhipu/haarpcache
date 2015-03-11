@@ -481,6 +481,7 @@ void ConnectionToHTTP2::Cache() {
     }
 }
 bool ConnectionToHTTP2::SetDomainAndPort(string domainT, int portT, string requestT) {
+	//if (LL > 0) LogFile::AccessMessage("Pasando por SetDomainAndPort (1)\n");
     if (!domaindb.connected)
         if (domaindb.open(Params::GetConfigString("MYSQL_HOST"), Params::GetConfigString("MYSQL_USER"), Params::GetConfigString("MYSQL_PASS"), Params::GetConfigString("MYSQL_DB")) != 0) {
             LogFile::ErrorMessage("Error, connection mysql: %s\n", domaindb.getError().c_str());
@@ -501,6 +502,7 @@ bool ConnectionToHTTP2::SetDomainAndPort(string domainT, int portT, string reque
         return ConnectionToHTTP::SetDomainAndPort(domain, port);
 }
 bool ConnectionToHTTP2::ConnectToServer() {
+	//if (LL > 0) LogFile::AccessMessage("Pasando por ConnectToServer\n");
     if (rewrited) return true;
     if (resuming) {
         if (!downloader.ConnectToServer()) {
@@ -517,6 +519,7 @@ bool ConnectionToHTTP2::ConnectToServer() {
 // requestT = ToBrowser.GetRequest()
 //
 bool ConnectionToHTTP2::SendHeader(string header, bool ConnectionClose, string requestT) {
+	//if (LL > 0) LogFile::AccessMessage("Pasando por SendHeader (2)\n");
     if (passouheader) {
         if (cachefile.is_open()) cachefile.close();
         if (outfile.is_open()) outfile.close();
@@ -556,11 +559,13 @@ bool ConnectionToHTTP2::SendHeader(string header, bool ConnectionClose, string r
 	}		
 }
 string ConnectionToHTTP2::GetIP() {
+	//if (LL > 0) LogFile::AccessMessage("Pasando por GetIP (3)\n");
     if (hit || rewrited) return "0.0.0.0";
     else 
 		return ConnectionToHTTP::GetIP();
 }
 bool ConnectionToHTTP2::ReadHeaderFromServer(string &headerT) {
+	//if (LL > 0) LogFile::AccessMessage("Pasando por ReadHeaderFromServer (4)\n");
 	bool result = ConnectionToHTTP::ReadHeader(headerT);
 	if(result) {
 		if( r.domain == "youtube" && getFileExtension(r.file) == "FLV" ) {	
@@ -580,6 +585,7 @@ bool ConnectionToHTTP2::ReadHeaderFromServer(string &headerT) {
 /* headerT: Edita la cabezera que será enviada al navegador.
  * */
 bool ConnectionToHTTP2::ReadHeader(string &headerT) {
+	//if (LL > 0) LogFile::AccessMessage("Pasando por ReadHeader (3.5)\n");
     bool result = false;
     if( !size_orig_file && r.match && !hit ) //truncar, partial, !knowhitmiss
     {
@@ -716,14 +722,17 @@ bool ConnectionToHTTP2::ReadHeader(string &headerT) {
 	
 }
 bool ConnectionToHTTP2::AnalyseHeader(string &linesT) {
+	//if (LL > 0) LogFile::AccessMessage("Pasando por AnalyseHeader (5)\n");
     if (hit) return true;
     else return ConnectionToHTTP::AnalyseHeader(linesT);
 }
 bool ConnectionToHTTP2::IsItKeepAlive() {
+	//if (LL > 0) LogFile::AccessMessage("Pasando por IsItKeepAlive (6)\n");
     if (hit) return true;
     else return ConnectionToHTTP::IsItKeepAlive();
 }
 int64_t ConnectionToHTTP2::GetContentLength() {
+	//if (LL > 0) LogFile::AccessMessage("Pasando por GetContentLength (7)\n");
 	int64_t tmp;
     if (hit)
         tmp = filesizeneto;
@@ -753,12 +762,14 @@ int64_t ConnectionToHTTP2::GetContentLength() {
     return tmp;
 }
 bool ConnectionToHTTP2::IsItChunked() {
+	//if (LL > 0) LogFile::AccessMessage("Pasando por IsItChunked (6)\n");
     bool tmp;
     if (hit) return false;
     else tmp =  ConnectionToHTTP::IsItChunked();
 	return tmp;
 }
 string ConnectionToHTTP2::PrepareHeaderForBrowser() {
+	//if (LL > 0) LogFile::AccessMessage("Pasando por PrepareHeaderForBrowser (7)\n");
     if (hit) {
         string header;
         ReadHeader(header);
@@ -774,6 +785,7 @@ string ConnectionToHTTP2::PrepareHeaderForBrowser() {
     } else return ConnectionToHTTP::PrepareHeaderForBrowser();
 }
 int ConnectionToHTTP2::GetResponse() {
+	//if (LL > 0) LogFile::AccessMessage("Pasando por GetResponse (8)\n");
     int retorno;
     if (hit) retorno = 200;
     else if (!hit && r.match) {
@@ -786,19 +798,24 @@ int ConnectionToHTTP2::GetResponse() {
     return retorno;
 }
 bool ConnectionToHTTP2::CheckForData(int timeout) {
+	//if (LL > 0) LogFile::AccessMessage("Pasando por CheckForData (9)\n");
     if (hit) return false;
     else return ConnectionToHTTP::CheckForData(timeout);
 }
 
 //filedownloaded - Cantidad de bytes descargados.
 ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
+	//if (LL > 0) LogFile::AccessMessage("Pasando por ReadBodyPart (10)\n");
     if (rewrited) {
         bodyT.append("\r\n", 2);
         return 2;
     }
     ssize_t BodyLength = 0;
-    
+
+    string bodyTTemp = "";
+
     if (resuming) {
+	if (LL > 0) LogFile::AccessMessage("Pasando por ReadBodyPart -RESUMING!- (10)\n");
         string bodyTmp = "";
         BodyLength = downloader.ReadBodyPart(bodyTmp, Chunked);
         if (!outfile.is_open()) {
@@ -883,12 +900,21 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
         ssize_t BodyLengthTmp = 0;
         BodyLength = ConnectionToHTTP::ReadBodyPart(bodyT, Chunked);
         BodyLengthTmp = BodyLength;
-        if (r.match) {
+	// HACEMOS UN TRACK DEL VIDEO
+	if (r.domain.find("youtube_IDs") != string::npos) 
+	{	
+		bodyTTemp = bodyT;
+		SearchReplace(bodyTTemp ,"videoplayback%3F","TEMPORAL");
+		SearchReplace(bodyTTemp ,"TEMPORAL","videoplayback%3Fwatchid%3D"+r.file+"%26");
+			
+		bodyT = bodyTTemp;
+	}
+        else if (r.match) {
             if ( !cachefile.is_open() ) {
-				if ( !file_exists(completefilepath) ) {
-					cachefile.open(string(completefilepath).c_str(), ios::out | ios::binary);
-					cachefile.close();
-				}
+		if ( !file_exists(completefilepath) ) {
+			cachefile.open(string(completefilepath).c_str(), ios::out | ios::binary);
+			cachefile.close();
+		}
                 cachefile.open(string(completefilepath).c_str(), ios::out | ios::binary | ios::in);
                 /**/
                 bwrite = 0;

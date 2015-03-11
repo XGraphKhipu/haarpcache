@@ -459,6 +459,7 @@ int ProxyHandler::CommunicationHTTP()
             //Drop server connection (we can keep browser open)
             DropServer = true;
         }
+        //if (LL > 0) LogFile::AccessMessage("Pasando por for;; - BODY-BROWSER: '%s' \n", BodyTemp.c_str());
         //Send body to browser
         if ( ToBrowser.Send( BodyTemp ) == false )
         {
@@ -477,6 +478,7 @@ int ProxyHandler::CommunicationHTTP()
             if (LL>0) LogFile::ErrorMessage("(%s) Could not read server body (%s/%s:%d)\n", ToServer.GetIP().c_str(), ToBrowser.GetIP().c_str(), ToBrowser.GetHost().c_str(), ToBrowser.GetPort());
             return -75;
         }
+        //if (LL > 0) LogFile::AccessMessage("Pasando por for;; - BODY-SERVER: '%s' \n", BodyTemp.c_str());
         //Server finished, end loop
         if ( BodyLength == 0 )
         {
