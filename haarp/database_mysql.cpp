@@ -19,8 +19,15 @@ int Database::open(string host,string username,string password,string database){
 
 int Database::set(string sql) {  //o ok, -1 no ok
     //cout << "set: "<<sql<<endl;
-    if(!mysql_query(&conn, sql.c_str())) return 0; else return -1;
+    if(!mysql_query(&conn, sql.c_str())) 
+		return 0; 
+	else 
+		return -1;
 }
+
+long long int Database::get_affect_rows() {
+	return (long long int) mysql_affected_rows(&conn);
+} 
 
 int Database::get(string sql) {
     //cout << "get: "<<sql<<endl;

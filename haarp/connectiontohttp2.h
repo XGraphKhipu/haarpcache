@@ -18,6 +18,7 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
         ConnectionToHTTP downloader;
         Database domaindb;
         bool passouheader,closed;
+        bool was_liberate;
     public:
 		llista *lranges, *brange, *lrangeswork;
 		int range_min, range_max;//ADD
@@ -33,7 +34,7 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
 		//~ bool knowhitmiss;
 		bool bchrome;
 		bool miss2hit;
-		bool file_in_edition; //This process blocked the edition the of file?
+		bool exists_transaction_editing_file; //This process blocked the edition the of file?
 		
 		void UpdateFileSizeinPartial( string header );
 		void getLimitBytes(string &header);
@@ -65,8 +66,9 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
         void Update();
         void SubUpdate();
         short BusyFile();
-        void block_edition();
-        void liberate_edition();
+        bool lock_row_exclusive();
+        bool lock_row_exclusive_strict();
+        bool liberate_edition();
         int FileInEdition();
         void Close();
 };

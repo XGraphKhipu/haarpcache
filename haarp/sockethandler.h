@@ -54,6 +54,7 @@ bool ConnectToServer();
 bool ConnectToSocket( string SocketPath, int retry );
 bool Send( const char *sock_outT, int len );
 bool Send( string &sock_outT );
+bool Send( string &sock_outT, int *status );
 ssize_t Recv( string &sock_inT, bool sock_delT, int timeout );
 bool RecvLength( string &sock_inT, unsigned int sock_lengthT );
 bool GetLine( string &lineT, string separator, int timeout );

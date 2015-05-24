@@ -15,6 +15,7 @@ struct resposta {
 	string file;
 	int range_min;
 	int range_max;
+	bool exist_range;	
 };
 typedef struct lista {
 	int a;

@@ -166,7 +166,7 @@ int getPointEnd(llista *primer) {
 }
 /*
  * Consigue una lista de nodos del tipo llista
- * que contiene el orden de los nodos a trabajar (cada nodo es un bloque de datos de un archivo)
+ * que contiene el orden de los nodos a trabajar (cada nodo es un bloque de datos de un archivo).
  * getRangeWork retorna el valor hit, y la lista de bloques a trabajar.
  * 
  */

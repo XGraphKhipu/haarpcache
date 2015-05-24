@@ -6,3 +6,4 @@ etc/haarp/haarpclean
 Makefile
 *.log
 default.h
+config.status

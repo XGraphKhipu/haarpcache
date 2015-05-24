@@ -23,6 +23,7 @@ bool ReadHeader( string &headerT );
 int AnalyseHeader( string &linesT );
 ssize_t ReadBodyPart( string &bodyT, bool Chunked );
 bool SendHeader( string header, bool ConnectionClose );
+bool SendHeader( string header, bool ConnectionClose, int *status );
 
 HTTPHandler();
 virtual ~HTTPHandler();
