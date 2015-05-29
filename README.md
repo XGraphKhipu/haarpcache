@@ -1,7 +1,7 @@
 Introduction
 ------------
 
-HaarpCache is a fork of ThunderCache.
+Proxy HaarpCache is a fork of ThunderCache.
 
 HaarpCache is a robust static and dynamic cache that provides support to the DASH technology.
 
