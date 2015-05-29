@@ -1,7 +1,7 @@
 CXX = g++
 CFLAGS = -g -Wall -O2 -lmysqlclient -ldl -Wunused-result -rdynamic
 
-OBJECTS = utils.o params.o haarpClean.o
+OBJECTS = utils.o params.o haarpClean.o 
 
 all: haarputils
 

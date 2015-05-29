@@ -18,9 +18,7 @@ string get_filename(string url, int *ra, int *rb) {
 	if (url.find("?") != string::npos) {
 		stringexplode(url, "?", &resultado);
 		if( ( tmp = regex_match("[\\?&]fs=[0-9]+", resultado.at(1)) ) != "" ) {
-			tmp.erase(0,4);
-			*ra = atoi(tmp.c_str()) - 13;
-			*rb = -1;
+			return "";
 		}
 		url = resultado.at(0);
 		if( (pos = url.find(";")) != string::npos )

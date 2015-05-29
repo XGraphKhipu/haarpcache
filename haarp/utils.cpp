@@ -505,7 +505,7 @@ string getdomain(string url) {
         stringexplode(url, ".", &resultado);
         if (resultado.size() > 1) {
             if ((resultado.at(resultado.size() - 2)).size() <= 3 &&
-                    (resultado.at(resultado.size() - 1)).size() <= 3) {
+                    (resultado.at(resultado.size() - 1)).size() <= 3 && resultado.at(resultado.size() - 2) != "avg" ) {
                 return resultado.at(resultado.size() - 3) + "." + resultado.at(resultado.size() - 2) + "." + resultado.at(resultado.size() - 1);
             } else {
                 return resultado.at(resultado.size() - 2) + "." + resultado.at(resultado.size() - 1);

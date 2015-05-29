@@ -4,6 +4,9 @@ teste
 haarp/haarp
 etc/haarp/haarpclean
 Makefile
+haarp/Makefile
+haarp/plugins/Makefile
 *.log
 default.h
 config.status
+config.log

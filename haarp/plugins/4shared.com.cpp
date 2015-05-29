@@ -54,21 +54,20 @@ string get_filename(string url, bool *pre, int *ra, int *rb) {
 	}
 	return "";
 }
+//http://dc342.4shared.com/img/1026923787/3b07d7f4/dlink__2Fdownload_2F_5Ftxkuq_5F1_2FGuns_5FAnd_5FRoses_5F-_5FYesterday.mp3_3Ftsid_3D20150524-014002-6f9caeb1_26lgfp_3D1000_26sbsr_3D085e811f83de4dd19c794d61f5988b92398dde9351c0de5e/preview.waveform
 
 extern "C" resposta hgetmatch2(const string url) {
-    resposta r;
+	resposta r;
 	r.range_min = 0;
 	r.range_max = 0;
 	
 	bool preview;
 	//~ 
-	if ( (url.find("preview.flv?file=") == string::npos)
-	) {
-		
-	    r.file = get_filename(url, &preview, &r.range_min, &r.range_max);
+	if ( (url.find("preview") == string::npos) ) {
+		r.file = get_filename(url, &preview, &r.range_min, &r.range_max);
 		if (!r.file.empty()) {
 			r.match = true;
-				r.domain = "4shared";
+			r.domain = "4shared";
 		} else {
 			r.match = false;
 		}
