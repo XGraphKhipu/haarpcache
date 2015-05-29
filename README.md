@@ -10,6 +10,7 @@ Installing
 
 * For Debian systems:
 
+
 	su
 	apt-get update 
 	apt-get upgrade
@@ -24,6 +25,7 @@ Installing
 	mysql -u root -p < haarp.sql
 	cd /etc/init.d
 	update-rc.d haarp defaults 98
+
 
 * Configure your /etc/haarp/haarp.conf:
 		
