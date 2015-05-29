@@ -8,13 +8,13 @@ HaarpCache is a robust static and dynamic cache that provides support to the DAS
 Installing
 --------
 
-	cd /tmp/
-	git clone https://github.com/keikurono/haarpcache.git
-	cd haarpcache
-	./configure CXX=g++-4.4 (recommended install g++-4.4)
-	make
-	make install
-	mysql -u root -p < haarp.sql
+		cd /tmp/
+		git clone https://github.com/keikurono/haarpcache.git
+		cd haarpcache
+		./configure CXX=g++-4.4 (recommended install g++-4.4)
+		make
+		make install
+		mysql -u root -p < haarp.sql
 
 
 * Configure your /etc/haarp/haarp.conf:
@@ -47,54 +47,54 @@ List of Plugins
 * Currently Haarp supports:
 
 
-		Youtube (https not supported),
-		DoubleClick (Block of ADS),
-		Googlevideo,
-		Dailymotion,
-		AOL,
-		Vimeo,
-		Metacafe,
-		Bitgravity,
-		Globo,
-		Terra,
-		Viddler,
-		Justin,
-		Edgecastcdn,
-		Youku,
-		Wrzuta,
-		5min,
-		Tumblr,
-		Facebook (https not supported);
-		
-		4shared,
-		Mediafire,
-		Etrustdownloads,
-		Ziddu;
-		
-		Issuu,
-		Ytimg,
-		Submanga,
-		Blogspot;
-		
-		Avast,
-		Avgate,
-		Eset,
-		Mcafee;
-		
-		Windowsupdate,
-		Adobe;
-		
-		Porntube,
-		Xvideos,	
-		Pornhub,
-		Redtube,
-		YouPorn,
-		Tube8;
-		
-		Juegosdiarios,
-		Juegosjuegos;
+	Youtube (https not supported),
+	DoubleClick (Block of ADS),
+	Googlevideo,
+	Dailymotion,
+	AOL,
+	Vimeo,
+	Metacafe,
+	Bitgravity,
+	Globo,
+	Terra,
+	Viddler,
+	Justin,
+	Edgecastcdn,
+	Youku,
+	Wrzuta,
+	5min,
+	Tumblr,
+	Facebook (https not supported);
 	
-		SpeedTest.
+	4shared,
+	Mediafire,
+	Etrustdownloads,
+	Ziddu;
+	
+	Issuu,
+	Ytimg,
+	Submanga,
+	Blogspot;
+	
+	Avast,
+	Avgate,
+	Eset,
+	Mcafee;
+	
+	Windowsupdate,
+	Adobe;
+	
+	Porntube,
+	Xvideos,	
+	Pornhub,
+	Redtube,
+	YouPorn,
+	Tube8;
+	
+	Juegosdiarios,
+	Juegosjuegos;
+
+	SpeedTest.
 	
 Configure your file /etc/haarp/haarp.lst to disable or enable the plugins.	
 
