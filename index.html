@@ -40,20 +40,28 @@
 <h2>
 <a id="installing" class="anchor" href="#installing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installing</h2>
 
-<pre><code>cd /tmp/
+<pre><code>su
+apt-get update 
+apt-get upgrade
+apt-get install build-essential mysql-server mysql-client php5 apache2 php5-mysql \ 
+libblkid-dev libcurl4-gnutls-dev libmysqlclient15-dev libapache2-mod-auth-mysql \
+libapache2-mod-php5 sharutils curl autoconf squid3
+cd /usr/src/
 git clone https://github.com/keikurono/haarpcache.git
 cd haarpcache
-./configure CXX=g++-4.4 (recommended install g++-4.4)
+./configure
 make
 make install
 mysql -u root -p &lt; haarp.sql
+cd /etc/init.d
+update-rc.d haarp defaults 98
 </code></pre>
 
 <ul>
 <li>
 <p>Configure your /etc/haarp/haarp.conf:</p>
 
-<pre><code>CACHEDIR &lt;dir&gt;  
+<pre><code>CACHEDIR &lt;dir_1&gt;|&lt;dir_2&gt;|&lt;dir_3&gt; ...    
 MYSQL_USER &lt;user_mysql&gt;
 MYSQL_PASS &lt;pass_mysql&gt;
 </code></pre>
@@ -69,15 +77,23 @@ cache_peer_access 127.0.0.1 allow haarp_lst
 cache_peer_access 127.0.0.1 deny all
 </code></pre>
 </li>
-</ul>
+<li>
+<p>On squid.conf Comment the line:</p>
 
-<p>You can change the address 127.0.0.1 for the IP of you server haarp.</p>
-
-<ul>
+<pre><code>#hierarchy_stoplist cgi-bin ?
+</code></pre>
+</li>
 <li>
 <p>On crontab add the line:</p>
 
 <pre><code>50 12     * * *   root    /etc/init.d/haarpclean
+</code></pre>
+</li>
+<li>
+<p>Finally:</p>
+
+<pre><code>/etc/init.d/haarp restart
+squid -k reconfigure
 </code></pre>
 </li>
 </ul>
