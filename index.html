@@ -4,49 +4,41 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <title>Haarpcache by keikurono</title>
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="javascripts/respond.js"></script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <!--[if lt IE 8]>
-    <link rel="stylesheet" href="stylesheets/ie.css">
-    <![endif]-->
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
   </head>
   <body>
-      <div id="header">
-        <nav>
-          <li class="fork"><a href="https://github.com/keikurono/haarpcache">View On GitHub</a></li>
-          <li class="downloads"><a href="https://github.com/keikurono/haarpcache/zipball/master">ZIP</a></li>
-          <li class="downloads"><a href="https://github.com/keikurono/haarpcache/tarball/master">TAR</a></li>
-          <li class="title">DOWNLOADS</li>
-        </nav>
-      </div><!-- end header -->
-
     <div class="wrapper">
+      <header>
+        <h1 class="header">Haarpcache</h1>
+        <p class="header">Fork of thundercache, haarpcache one smart cache.</p>
 
+        <ul>
+          <li class="download"><a class="buttons" href="https://github.com/keikurono/haarpcache/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/keikurono/haarpcache/tarball/master">Download TAR</a></li>
+          <li><a class="buttons github" href="https://github.com/keikurono/haarpcache">View On GitHub</a></li>
+        </ul>
+
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/keikurono">keikurono</a></p>
+
+
+      </header>
       <section>
-        <div id="title">
-          <h1>Haarpcache</h1>
-          <p>Fork of thundercache, haarpcache one smart cache.</p>
-          <hr>
-          <span class="credits left">Project maintained by <a href="https://github.com/keikurono">keikurono</a></span>
-          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
-        </div>
-
         <h2>
-<a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>Introduction</h2>
+<a id="introduction" class="anchor" href="#introduction" aria-hidden="true"><span class="octicon octicon-link"></span></a>Introduction</h2>
 
 <p>Proxy HaarpCache is a fork of ThunderCache.</p>
 
 <p>HaarpCache is a robust static and dynamic cache that provides support to the DASH technology.</p>
 
 <h2>
-<a name="installing" class="anchor" href="#installing"><span class="octicon octicon-link"></span></a>Installing</h2>
+<a id="installing" class="anchor" href="#installing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installing</h2>
 
 <pre><code>cd /tmp/
 git clone https://github.com/keikurono/haarpcache.git
@@ -54,9 +46,18 @@ cd haarpcache
 ./configure CXX=g++-4.4 (recommended install g++-4.4)
 make
 make install
+mysql -u root -p &lt; haarp.sql
 </code></pre>
 
 <ul>
+<li>
+<p>Configure your /etc/haarp/haarp.conf:</p>
+
+<pre><code>CACHEDIR &lt;dir&gt;  
+MYSQL_USER &lt;user_mysql&gt;
+MYSQL_PASS &lt;pass_mysql&gt;
+</code></pre>
+</li>
 <li>
 <p>Copy &amp; page this, in the file of configuration: squid.conf (install squid)</p>
 
@@ -68,20 +69,30 @@ cache_peer_access 127.0.0.1 allow haarp_lst
 cache_peer_access 127.0.0.1 deny all
 </code></pre>
 </li>
-</ul><p>You can change the address 127.0.0.1 for the IP of you server haarp.</p>
+</ul>
+
+<p>You can change the address 127.0.0.1 for the IP of you server haarp.</p>
 
 <ul>
-<li>To clean: make clean</li>
-</ul><h2>
-<a name="list-of-plugins" class="anchor" href="#list-of-plugins"><span class="octicon octicon-link"></span></a>List of Plugins</h2>
+<li>
+<p>On crontab add the line:</p>
+
+<pre><code>50 12     * * *   root    /etc/init.d/haarpclean
+</code></pre>
+</li>
+</ul>
+
+<h2>
+<a id="list-of-plugins" class="anchor" href="#list-of-plugins" aria-hidden="true"><span class="octicon octicon-link"></span></a>List of Plugins</h2>
 
 <ul>
 <li>
 <p>Currently Haarp supports:</p>
 
-<p>Youtube,
-DoubleClick (Action of Blocked of the ADS),
+<pre><code>Youtube (https not supported),
+DoubleClick (Block of ADS),
 Googlevideo,
+Dailymotion,
 AOL,
 Vimeo,
 Metacafe,
@@ -93,36 +104,59 @@ Justin,
 Edgecastcdn,
 Youku,
 Wrzuta,
-Ytimg,
+5min,
 Tumblr,
-Facebook (https not supported);</p>
+Facebook (https not supported);
 
-<p>4shared,
+4shared,
 Mediafire,
 Etrustdownloads,
-Ziddu;</p>
+Ziddu;
 
-<p>Avast,
+Issuu,
+Ytimg,
+Submanga,
+Blogspot;
+
+Avast,
 Avgate,
 Eset,
-Mcafee;</p>
+Mcafee;
 
-<p>Windowsupdate,
-Adobe;</p>
+Windowsupdate,
+Adobe;
 
-<p>Porntube,
-Xvideos,<br>
+Porntube,
+Xvideos,    
 Pornhub,
 Redtube,
-Tube8;</p>
+YouPorn,
+Tube8;
 
-<p>Juegosdiarios,
-Juegosjuegos.</p>
+Juegosdiarios,
+Juegosjuegos;
+
+SpeedTest.
+</code></pre>
 </li>
-</ul><p>Configure your file /etc/haarp/haarp.lst to disable or enable the plugins.  </p>
+</ul>
+
+<p>Configure your file /etc/haarp/haarp.lst to disable or enable the plugins.  </p>
 
 <h2>
-<a name="changelog" class="anchor" href="#changelog"><span class="octicon octicon-link"></span></a>Changelog</h2>
+<a id="changelog" class="anchor" href="#changelog" aria-hidden="true"><span class="octicon octicon-link"></span></a>Changelog</h2>
+
+<p><strong>Version 1.2.1</strong>
+<em>Thanks to Samuel Espinoza, Oscar Vaquero y Fernando Maniglia.</em></p>
+
+<p>2015/05/29</p>
+
+<ul>
+<li>Fix concurrent caching of files.</li>
+<li>Update haarpclean script.</li>
+<li>Update some plugins: Youtube, Dailymotion, 4shared, Issuu, Avgate, Submanga, YourPorn, PornHub, Xvideos, PornTube, Tube8. </li>
+<li>Files of youtube are cached with the watch ID from the URL.</li>
+</ul>
 
 <p><strong>Version 1.2</strong></p>
 
@@ -134,7 +168,9 @@ Juegosjuegos.</p>
 <li>Differentiation of the header for the chrome browser.</li>
 <li>Update of haarpclean script for the cleaning the cache.</li>
 <li>Synchronous to the storage of the cache in an only file.</li>
-</ul><p><strong>Version 1.1</strong></p>
+</ul>
+
+<p><strong>Version 1.1</strong></p>
 
 <p>2013/02/09</p>
 
@@ -144,7 +180,9 @@ Juegosjuegos.</p>
 <li>Multidisc.</li>
 <li>Blocking advertising to Youtube.</li>
 <li>Cache of videos in html5 for Youtube.</li>
-</ul><p>Fork created by</p>
+</ul>
+
+<p>Fork created by</p>
 
 <p>Manolo Canales</p>
 
@@ -157,7 +195,7 @@ Juegosjuegos.</p>
 <div align="center">
 <p></p>
 <h6>
-<a name="if-you-find-this-code-useful-or-wish-to-fund-further-developmentyou-can-use-paypal-to-donate-to-the-haarpcache-project" class="anchor" href="#if-you-find-this-code-useful-or-wish-to-fund-further-developmentyou-can-use-paypal-to-donate-to-the-haarpcache-project"><span class="octicon octicon-link"></span></a>If you find this code useful, or wish to fund further development,
+<a id="if-you-find-this-code-useful-or-wish-to-fund-further-developmentyou-can-use-paypal-to-donate-to-the-haarpcache-project" class="anchor" href="#if-you-find-this-code-useful-or-wish-to-fund-further-developmentyou-can-use-paypal-to-donate-to-the-haarpcache-project" aria-hidden="true"><span class="octicon octicon-link"></span></a>If you find this code useful, or wish to fund further development,
 you can use PayPal to donate to the HaarpCache project:</h6>
 <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=QYCCSYYGW52QU"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif"></a>
 </div>
@@ -165,9 +203,21 @@ you can use PayPal to donate to the HaarpCache project:</h6>
 
 <p></p>
       </section>
-
+      <footer>
+        <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+      </footer>
     </div>
     <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-    
+		          <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-63531854-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
   </body>
 </html>
