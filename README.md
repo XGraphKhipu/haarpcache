@@ -8,13 +8,13 @@ HaarpCache is a robust static and dynamic cache that provides support to the DAS
 Installing
 --------
 
-		cd /tmp/
-		git clone https://github.com/keikurono/haarpcache.git
-		cd haarpcache
-		./configure CXX=g++-4.4 (recommended install g++-4.4)
-		make
-		make install
-		mysql -u root -p < haarp.sql
+	cd /tmp/
+	git clone https://github.com/keikurono/haarpcache.git
+	cd haarpcache
+	./configure CXX=g++-4.4 (recommended install g++-4.4)
+	make
+	make install
+	mysql -u root -p < haarp.sql
 
 
 * Configure your /etc/haarp/haarp.conf:
