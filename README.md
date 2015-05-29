@@ -19,10 +19,9 @@ Installing
 
 * Configure your /etc/haarp/haarp.conf:
 
-	Edit: 
-	CACHEDIR <dir>	
-	MYSQL_USER <user_mysql>
-	MYSQL_PASS <pass_mysql>
+		CACHEDIR <dir>	
+		MYSQL_USER <user_mysql>
+		MYSQL_PASS <pass_mysql>
 
 
 * Copy & page this, in the file of configuration: squid.conf (install squid)
@@ -39,7 +38,7 @@ You can change the address 127.0.0.1 for the IP of you server haarp.
 
 * On crontab add the line:
 	
-	50 12     * * *   root    /etc/init.d/haarpclean
+		50 12     * * *   root    /etc/init.d/haarpclean
 
  
 List of Plugins
@@ -48,54 +47,54 @@ List of Plugins
 * Currently Haarp supports:
 
 
-	Youtube (https not supported),
-	DoubleClick (Block of ADS),
-	Googlevideo,
-	Dailymotion,
-	AOL,
-	Vimeo,
-	Metacafe,
-	Bitgravity,
-	Globo,
-	Terra,
-	Viddler,
-	Justin,
-	Edgecastcdn,
-	Youku,
-	Wrzuta,
-	5min,
-	Tumblr,
-	Facebook (https not supported);
+		Youtube (https not supported),
+		DoubleClick (Block of ADS),
+		Googlevideo,
+		Dailymotion,
+		AOL,
+		Vimeo,
+		Metacafe,
+		Bitgravity,
+		Globo,
+		Terra,
+		Viddler,
+		Justin,
+		Edgecastcdn,
+		Youku,
+		Wrzuta,
+		5min,
+		Tumblr,
+		Facebook (https not supported);
+		
+		4shared,
+		Mediafire,
+		Etrustdownloads,
+		Ziddu;
+		
+		Issuu,
+		Ytimg,
+		Submanga,
+		Blogspot;
+		
+		Avast,
+		Avgate,
+		Eset,
+		Mcafee;
+		
+		Windowsupdate,
+		Adobe;
+		
+		Porntube,
+		Xvideos,	
+		Pornhub,
+		Redtube,
+		YouPorn,
+		Tube8;
+		
+		Juegosdiarios,
+		Juegosjuegos;
 	
-	4shared,
-	Mediafire,
-	Etrustdownloads,
-	Ziddu;
-	
-	Issuu,
-	Ytimg,
-	Submanga,
-	Blogspot;
-	
-	Avast,
-	Avgate,
-	Eset,
-	Mcafee;
-	
-	Windowsupdate,
-	Adobe;
-	
-	Porntube,
-	Xvideos,	
-	Pornhub,
-	Redtube,
-	YouPorn,
-	Tube8;
-	
-	Juegosdiarios,
-	Juegosjuegos;
-
-	SpeedTest.
+		SpeedTest.
 	
 Configure your file /etc/haarp/haarp.lst to disable or enable the plugins.	
 
