@@ -8,18 +8,26 @@ HaarpCache is a robust static and dynamic cache that provides support to the DAS
 Installing
 --------
 
-	cd /tmp/
+* For Debian systems:
+
+	su
+	apt-get update 
+	apt-get upgrade
+	apt-get install build-essential mysql-server mysql-client php5 apache2 php5-mysql libblkid-dev \
+	libcurl4-gnutls-dev libmysqlclient15-dev libapache2-mod-auth-mysql libapache2-mod-php5 \
+	 sharutils curl autoconf squid3
 	git clone https://github.com/keikurono/haarpcache.git
 	cd haarpcache
-	./configure CXX=g++-4.4 (recommended install g++-4.4)
+	./configure
 	make
 	make install
 	mysql -u root -p < haarp.sql
-
+	cd /etc/init.d
+	update-rc.d haarp defaults 98
 
 * Configure your /etc/haarp/haarp.conf:
-
-		CACHEDIR <dir>	
+		
+		CACHEDIR <dir_1>|<dir_2>|<dir_3> ...	
 		MYSQL_USER <user_mysql>
 		MYSQL_PASS <pass_mysql>
 
@@ -32,15 +40,22 @@ Installing
 		dead_peer_timeout 2 seconds
 		cache_peer_access 127.0.0.1 allow haarp_lst
 		cache_peer_access 127.0.0.1 deny all
-
-
-You can change the address 127.0.0.1 for the IP of you server haarp.
+	
+	You can change the address 127.0.0.1 for the IP of you server haarp.		
+	
+* On squid.conf Comment the line:
+		
+		#hierarchy_stoplist cgi-bin ?
 
 * On crontab add the line:
 	
 		50 12     * * *   root    /etc/init.d/haarpclean
 
- 
+ * Finally:
+ 	
+		/etc/init.d/haarp restart
+		squid -k reconfigure
+
 List of Plugins
 --------------
 
