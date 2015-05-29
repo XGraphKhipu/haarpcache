@@ -41,8 +41,6 @@ Installing
 		cache_peer_access 127.0.0.1 allow haarp_lst
 		cache_peer_access 127.0.0.1 deny all
 	
-	You can change the address 127.0.0.1 for the IP of you server haarp.		
-	
 * On squid.conf Comment the line:
 		
 		#hierarchy_stoplist cgi-bin ?
