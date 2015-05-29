@@ -8,9 +8,6 @@ HaarpCache is a robust static and dynamic cache that provides support to the DAS
 Installing
 --------
 
-* For Debian systems:
-
-
 	su
 	apt-get update 
 	apt-get upgrade
