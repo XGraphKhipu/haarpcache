@@ -11,9 +11,10 @@ Installing
 	su
 	apt-get update 
 	apt-get upgrade
-	apt-get install build-essential mysql-server mysql-client php5 apache2 php5-mysql libblkid-dev \
-	libcurl4-gnutls-dev libmysqlclient15-dev libapache2-mod-auth-mysql libapache2-mod-php5 \
-	 sharutils curl autoconf squid3
+	apt-get install build-essential mysql-server mysql-client php5 apache2 php5-mysql \ 
+	libblkid-dev libcurl4-gnutls-dev libmysqlclient15-dev libapache2-mod-auth-mysql \
+	libapache2-mod-php5 sharutils curl autoconf squid3
+	cd /usr/src/
 	git clone https://github.com/keikurono/haarpcache.git
 	cd haarpcache
 	./configure
@@ -50,7 +51,7 @@ Installing
 	
 		50 12     * * *   root    /etc/init.d/haarpclean
 
- * Finally:
+* Finally:
  	
 		/etc/init.d/haarp restart
 		squid -k reconfigure
