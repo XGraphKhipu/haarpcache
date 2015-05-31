@@ -38,7 +38,7 @@ void get_videoid(string url, string &file, int *a, int *b) {
 				file = "";
 				return;
 		    }
-		    if (valor.at(0) == "id" || valor.at(0) == "video_id" && !watchID) {
+		    if ((valor.at(0) == "id" || valor.at(0) == "video_id") && !watchID) {
 			    file  = valor.at(1);
 			    if ( file.size() > 40 ) { // For videos with variables id.
 					file = "";

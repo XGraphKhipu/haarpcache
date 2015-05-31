@@ -1,4 +1,4 @@
-CXX = g++-4.4
+CXX = g++
 
 OBJECTS = tube8.com.so \
 	grandchase.com.br.so \

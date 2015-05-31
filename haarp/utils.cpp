@@ -41,254 +41,202 @@ bool remove_param(string &curl, string param) {
 	return true;
 }
 
-bool is_all_hit(llista *p) {
-	llista *n = p;
-	while(n) {
-		if( n-> p < 0 )
+bool is_all_hit(lintervalPositionByteDisk listIntervalPositionByteDisk, lintervalPositionByteDisk::iterator it) {
+	while(it != listIntervalPositionByteDisk.end()) {
+		if(it->position < 0)
 			return false;
-		n = n->next;
+		++it;
 	}
 	return true;
 }
-long int getFileSize(llista *primer) {
-	llista *n = primer;
+long int getFileSize(lintervalPositionByteDisk listIntervalPositionByteDisk) {
+	lintervalPositionByteDisk::iterator it = listIntervalPositionByteDisk.begin();
 	long int re = 0;
-	while(n) {
-		re += n->b - n->a + 1; 
-		n = n->next;
+	while(it != listIntervalPositionByteDisk.end()) {
+		re = it->b - it->a + 1;
+		++it;
 	}
 	return re;
 }
 
-int getExtremeb(llista *primer){
-	llista *n = primer;
+int getExtremeb(lintervalPositionByteDisk listIntervalPositionByteDisk) {
 	int max = -1;
-	while(n){
-		if( n->b > max )
-			max = n->b;
-		n = n->next;
+	lintervalPositionByteDisk::iterator it = listIntervalPositionByteDisk.begin();
+	while(it != listIntervalPositionByteDisk.end()) {
+		if( it->b > max )
+			max = it->b;
+		++it;
 	}
 	return max;
 }
 
-llista *getlastnode(llista *primer){
-	llista *n, *m;
-	int max; 
+lintervalPositionByteDisk::iterator getlastnode(lintervalPositionByteDisk listIntervalPositionByteDisk) {
+	lintervalPositionByteDisk::iterator iteratorListOfRanges, iteratorLastRangeBytes;
+	iteratorListOfRanges = listIntervalPositionByteDisk.begin();
 	
-	n = primer;
-	m = n;
-	max = n->p;	
-	while(n){
-		if(n->p >  max)
+	int max_position = iteratorListOfRanges->position;
+	iteratorLastRangeBytes = iteratorListOfRanges;
+	while( ++iteratorListOfRanges != listIntervalPositionByteDisk.end() ) {
+		if(iteratorListOfRanges->position >  max_position)
 		{
-			max = n->p;
-			m = n;
+			max_position = iteratorListOfRanges->p;
+			iteratorLastRangeBytes = iteratorListOfRanges;
 		}
-		n = n->next;
 	}
-	return m;
+	return iteratorLastRangeBytes;
 }
-bool appendNode(llista **primer, llista *n) {
-	llista *last;
-	
-	if(!n)
+bool appendNode(lintervalPositionByteDisk &listIntervalPositionByteDisk, intervalPositionByteDisk newInterval) {	
+	if (newInterval.position < 0)
 		return false;
-	if(!*primer){
-		llista *nn = (llista *)malloc(sizeof(llista));
-		nn->a = n->a;
-		nn->b = n->b;
-		nn->p = n->p;
-		nn->next = NULL;
-		
-		*primer = nn;
+	if (listIntervalPositionByteDisk.empty()) {
+		listIntervalPositionByteDisk.push_front(newInterval);
 		return true;
 	}
-	last = getlastnode(*primer);
-	if( last->b + 1 == n->a ){
-		last->b = n->b;
+	lintervalPositionByteDisk::iterator iteratorLastInterval = getlastnode(listIntervalPositionByteDisk);
+	if( iteratorLastRangeBytes->b + 1 == newInterval.a ){
+		iteratorLastRangeBytes->b = newInterval.b;
 		return true;
 	}
-	llista *nn = (llista *)malloc(sizeof(llista));
-	nn->a = n->a;
-	nn->b = n->b;
-	nn->p = n->p;
-	
-	nn->next = last->next;	
-	last->next = nn;	
+	listIntervalPositionByteDisk.insert(++iteratorLastInterval, newInterval);
 	return true;	
 }
-bool appendSubNode(llista **primer, llista *n, int lenght_) {
-	llista *last;
+
+bool appendSubNode(lintervalPositionByteDisk &listIntervalPositionByteDisk, intervalPositionByteDisk newInterval, int lenght_) {
 	
-	if(!n)
+	if (newInterval.position < 0)
 		return false;
-	if(!*primer) {
-		llista *nn = (llista *)malloc(sizeof(llista));
-		nn->a = n->a;
-		nn->b = lenght_ + n->a - 1;
-		nn->p = n->p;
-		nn->next = NULL;
-		
-		*primer = nn;
+	if (listIntervalPositionByteDisk.empty()) {
+		listIntervalPositionByteDisk.push_front(newInterval);
 		return true;
 	}
-	last = getlastnode(*primer);
-	if( last->b + 1 == n->a ) {
-		last->b = lenght_ + n->a - 1;
+	lintervalPositionByteDisk::iterator iteratorLastInterval = getlastnode(listIntervalPositionByteDisk);
+	if( iteratorLastRangeBytes->b + 1 == newInterval.a ){
+		iteratorLastRangeBytes->b = lenght_ + newInterval.a - 1;
 		return true;
 	}
-	llista *nn = (llista *)malloc(sizeof(llista));
-	nn->a = n->a;
-	nn->b = lenght_ + n->a - 1;
-	nn->p = n->p;
-	
-	nn->next = last->next;	
-	last->next = nn;	
-	return true;	
+	newInterval.b = length_ + newInterval.a - 1;
+	listIntervalPositionByteDisk.insert(++iteratorLastInterval, newInterval);
+	return true;
 }
 /*
  * Retorna el último lugar entero de bytes donde se pueden escribir más datos .
  */
-int getPointEnd(llista *primer) {
-	llista *n = primer;
-	if(!n)
+int getPointEnd(lintervalPositionByteDisk listIntervalPositionByteDisk) {
+	if(listIntervalPositionByteDisk.empty())
 		return 0;
-	int max = n->p;
-	int interval = n->b - n->a;
-	while(n) {
-		if(n->p > max) {
-			max = n->p;
-			interval = n->b - n->a;
-		}
-		n = n->next;
-	}
-	return max + interval + 1;
+	lintervalPositionByteDisk::iterator iteratorLastInterval = getlastnode(listIntervalPositionByteDisk);
+	return iteratorLastInterval->position + iteratorLastInterval->b - iteratorLastInterval->a + 1;
+}
+bool compareIntervals(intervalPositionByteDisk &i1, intervalPositionByteDisk &i2) {
+	return i1.a < i2.a;
 }
 /*
- * Consigue una lista de nodos del tipo llista
- * que contiene el orden de los nodos a trabajar (cada nodo es un bloque de datos de un archivo)
- * getRangeWork retorna el valor hit, y la lista de bloques a trabajar.
+ * Consigue una lista de nodos del tipo llista.
+ * Esta contiene el orden de los nodos a trabajar (cada nodo es un bloque de datos de un archivo).
+ * getRangeWork retorna el valor hit y la lista de bloques a trabajar.
  * 
  */
-llista *getRangeWork(llista **primer, int ra, int rb, bool *hit) {
-	ordenar(primer);
+lintervalPositionByteDisk getRangeWork(lintervalPositionByteDisk listIntervalPositionByteDisk, int interval_a, int interval_b, bool *hit) {
+	listIntervalPositionByteDisk.sort(compareIntervals);
+	lintervalPositionByteDisk::iterator itIntervalPos = listIntervalPositionByteDisk.begin(); 	
 	
-	llista *pr = NULL;
-	llista *ult = NULL;
-	
-	llista *n = *primer;
+	lintervalPositionByteDisk pr;
 	*hit = 1;
 	int tope = -1;
-	while(n) {
-		if( ra < n->a )
+	while ( itIntervalPos != listIntervalPositionByteDisk.end() ) {
+		if ( interval_a < itIntervalPos->a )
 		{
-			tope = ra;
+			tope = interval_a;
 			break;
 		}
 		else
 		{
-			if( ra >= n->a && ra <= n->b )
+			if ( interval_a >= itIntervalPos->a && interval_a <= itIntervalPos->b )
 			{
-				llista * nn = (llista *)malloc(sizeof(llista));
-				if( rb <= n->b )
+				if( interval_b <= itIntervalPos->b )
 				{
-					nn->a = ra;
-					nn->b = rb;
-					nn->p = n->p + ra - n->a;
-					nn->next = NULL;
+					pr.clear();
+					intervalPositionByteDisk nn;
+					nn.a = interval_a;
+					nn.b = interval_b;
+					nn.position = itIntervalPos->position + interval_a - itIntervalPos->a;
+					pr.push_front(nn);
 					*hit = 1;
-					return nn;
+					return pr;
 				}
-				nn->a = ra;
-				nn->b = n->b;
-				nn->p = n->p + ra - n->a;
-				nn->next = NULL;
-				pr = nn;
-				ult = nn;
-				tope = n->b + 1;
-				n = n->next;
+				intervalPositionByteDisk nn;
+				nn.a = interval_a;
+				nn.b = itIntervalPos->b;
+				nn.position = itIntervalPos->position + interval_a - itIntervalPos->a;
+				pr.push_front(nn);
+				tope = itIntervalPos->b + 1;
+				++itIntervalPos;
 				break;
 			}
 		}
-		n = n->next;
+		++itIntervalPos;
 	}
-	while( tope >= 0 && n )
+	while( tope >= 0 && itIntervalPos !=  listIntervalPositionByteDisk.end() )
 	{
-		if( rb < n->a )
+		if ( interval_b < itIntervalPos->a )
 		{
-			llista * nn = (llista *)malloc(sizeof(llista));
+			intervalPositionByteDisk nn;
 			nn->a = tope;
-			nn->b = rb;
-			nn->p = -1;
-			nn->next = NULL;
-			if(ult)
-				ult->next = nn;			
-			else
-				pr = nn;
+			nn->b = interval_b;
+			nn->position = -1;
+			pr.push_back(nn);
 			*hit = 0;
-			tope = rb + 1;
+			tope = interval_b + 1;
 			break;
 		}
-		else{
-			if( tope < n->a ){
-				llista * nn = (llista *)malloc(sizeof(llista));
+		else {
+			if ( tope < itIntervalPos->a ) {
+				intervalPositionByteDisk nn;
 				nn->a = tope;
-				nn->b = n->a - 1;
-				nn->p = -1;
-				nn->next = NULL;
-				if(ult)
-					ult->next = nn;
-				else			
-					pr = nn;
-				ult = nn;
-				tope = n->a;
+				nn->b = itIntervalPos->a - 1;
+				nn->position = -1;
+				pr.push_back(nn);
+				tope = itIntervalPos->a;
 				*hit = 0;
 			}
-			if( rb >= n->a && rb <= n->b)
+			else {
+				//waning
+			}
+			if( interval_b >= itIntervalPos->a && interval_b <= itIntervalPos->b)
 			{
-				llista * nn = (llista *)malloc(sizeof(llista));
+				intervalPositionByteDisk nn;
 				nn->a = tope;
-				nn->b = rb;
-				nn->p = n->p;
-				nn->next = NULL;
-				ult->next = nn;				
-				tope = n->b + 1;
+				nn->b = interval_b;
+				nn->position = itIntervalPos->position;
+				tope = itIntervalPos->b + 1;
 				break;
 			}
 			else
-			{
-				llista * nn = (llista *)malloc(sizeof(llista));
-				nn->a = n->a;
-				nn->b = n->b;
-				nn->p = n->p;
-				nn->next = NULL;
-				ult->next = nn;
-				ult = nn;
-			}
+				pr.push_back(*itIntervalPos);
 		}
-		tope = n->b + 1;
-		n = n->next;	
+		tope = itIntervalPos->b + 1;
+		++itIntervalPos;
 	}
 
 	if(tope == -1)
 	{
-		llista * nn = (llista *)malloc(sizeof(llista));
-		nn->a = ra;
-		nn->b = rb;
-		nn->p = -1;
+		pr.clear();
+		intervalPositionByteDisk nn;
+		nn->a = interval_a;
+		nn->b = interval_b;
+		nn->position = -1;
 		*hit = 0;
-		nn->next = NULL;
-		return nn;
+		pr.push_back(nn);
+		return pr;
 	}
-	if( rb > tope )
+	if( interval_b > tope )
 	{
-		llista * nn = (llista *)malloc(sizeof(llista));
+		intervalPositionByteDisk nn;
 		nn->a = tope;
-		nn->b = rb;
-		nn->p = -1;
-		nn->next = NULL;
-		ult->next = nn;
+		nn->b = interval_b;
+		nn->position = -1;
 		*hit = 0;
+		pr.push_back(nn);
 	}
 	return pr;	
 }
@@ -298,105 +246,43 @@ string trimstr(string str) {
 		return "";
 	return str.substr(pos,str.find_last_not_of(" \t") - pos + 1);
 }
-//~ Convert "123-200,11-22,.." + "0,123,444..." hacia lista
-int generateList(string ranges, string parts, llista **primer){
-	*primer = NULL;
+//~ Convert "123-200,11-22,.." + "0,123,444..." to list
+int generateList(string ranges, string parts, lintervalPositionByteDisk &listIntervalPositionByteDisk) {
+	listIntervalPositionByteDisk.clear();
 	vector<string> resul,rang,part;
 	stringexplode(ranges,",",&resul);
 	stringexplode(parts,",",&part);
 	if( part.size() != resul.size() )
-	{
 		return 0;
-	}
-	int i;
-	for(i=0;i<(int)resul.size();i++)
+	for( int i=0; i < (int)resul.size(); i++ )
 	{
-		lista * n = (lista *)malloc(sizeof(lista));
+		intervalPositionByteDisk n;
 		stringexplode(resul.at(i),"-",&rang);
 		if(rang.size() < 2)
-		{
 			return 0;
-		}
-		n->a = atoi(rang.at(0).c_str());
-		n->b = atoi(rang.at(1).c_str());
-		if(n->a > n->b)
-		{
+		n.a = atoi(rang.at(0).c_str());
+		n.b = atoi(rang.at(1).c_str());
+		if(n.a > n.b)
 			return 0;
-		}
-		n->p = atoi(part.at(i).c_str());
-		n->next = NULL;
-		if(*primer)
-			n->next = *primer;
-		*primer = n;
+		n.position = atoi(part.at(i).c_str());
+		listIntervalPositionByteDisk.push_front(n);
 		rang.clear();
 	}
 	return 1;
 }
 
-void list_clear(llista **primer){
-	llista *n = *primer;
-	while(n)
-	{
-		llista *tmp = n;
-		n = n->next;
-		free(tmp);
-	}
-	*primer = NULL;
-}
-/*
- * Ordena la lista primer por el valor a
- * */
-void ordenar(llista **primer){
-	llista *es;
-	llista *pas = *primer;
-	llista *ini = *primer;
-	llista *prev;
-	llista *prevtmp;
-	llista *previni = NULL;
-	int min;
-	while(ini)
-	{
-		es = NULL;		
-		pas = ini;
-		min = pas->a;
-		while(pas)
-		{
-			if(pas->a < min)
-			{
-				min = pas->a;
-				es = pas;
-				prev = prevtmp;
-			}
-			prevtmp = pas;
-			pas = pas->next;			
-		}
-		if(es)
-		{
-			prev->next = es->next;
-			es->next = ini;
-			if(!previni)
-				*primer = es;
-			else
-				previni->next = es;
-			ini = es;
-		}
-		previni = ini;
-		ini = ini->next;
-	}
-}
-
-void list2string(llista *primer,string &s1, string &s2){
+void list2string(lintervalPositionByteDisk listIntervalPositionByteDisk, string &intervals, string &positions) {
 	stringstream out,out1;
-	llista *n = primer;
+	lintervalPositionByteDisk::iterator it = listIntervalPositionByteDisk.begin();
 	string coma = "";
-	while(n){
-		out<<coma<<n->a<<"-"<<n->b;
-		out1<<coma<<n->p;
+	while ( it != listIntervalPositionByteDisk.end() ) {
+		out<<coma<<it->a<<"-"<<it->b;
+		out1<<coma<<it->position;
 		coma = ",";
-		n = n->next;
+		++it;
 	}
-	s1 = out.str();
-	s2 = out1.str();
+	intervals = out.str();
+	positions = out1.str();
 }
 
 string UpperCase(string CaseString) {

@@ -83,19 +83,19 @@ void ConnectionToHTTP2::Cache2( int cl ) {
 	}
 	if( range_max <= 0 ) {
 		range_max = cl + range_min - 1;
-		list_clear(&lrangeswork);
+		lrangeswork.clear();
 	}
 	else {
 		if( range_max != cl + range_min - 1 )
 		{
 			range_max = cl + range_min - 1;
-			list_clear(&lrangeswork);
+			lrangeswork.clear();
 		}
 	}
 	filesizeneto = cl;
-	if( !lrangeswork )
+	if( lrangeswork.empty() )
 	{
-		lrangeswork = getRangeWork(&lranges, range_min, range_max, &hit); // update HIT?.
+		lrangeswork = getRangeWork(lranges, range_min, range_max, &hit); // update HIT?.
 		//~ if ( !hit ) 
 			//~ if ( BusyFile() ) {
 				//~ r.match = false; /* Go direct to internet */
@@ -135,7 +135,7 @@ void ConnectionToHTTP2::Update(){
 				cachefile.flush();
 			}
 			brange->b = brange->a + acumulate - 1;
-			if(!appendNode(&lranges, brange))			
+			if(!appendNode(lranges, *brange))			
 				if (LL > 1) LogFile::ErrorMessage("Error!, block range is NULL and acumulate not is empty!\n");
 
 		}
@@ -154,8 +154,8 @@ void ConnectionToHTTP2::Update(){
 		}
 		acumulate = 0;
 	}
-        list_clear(&lranges);
-        list_clear(&lrangeswork);
+	lranges.clear();
+	lrangeswork.clear();
 }
 void ConnectionToHTTP2::SubUpdate() {
 	string rang_, part_;
@@ -202,7 +202,10 @@ void ConnectionToHTTP2::Cache() {
     hit = downloading = r.match = rewrited = resuming = passouheader = general = etag = closed = false;
     limit = 0;
     np = 0;
-    lranges = brange = lrangeswork = NULL;
+    lrangeswork.clear();
+    lranges.clear();
+    brange = NULL;
+    //~ lranges = brange = lrangeswork = NULL;
      
     filesizeneto = size_orig_file = filedownloaded = filesended = expiration = 0;
     
@@ -290,9 +293,9 @@ void ConnectionToHTTP2::Cache() {
         } else if (!file_in_cache) { /* the file not are in disk - MISS!!?? */
 			if (LL > 0) LogFile::AccessMessage("The file NOT is ON disk\n");
 			/* MISS */
-			lranges = NULL;
+			lranges.clear();
 			if( range_max > 0 ) {
-				lrangeswork = getRangeWork(&lranges, range_min, range_max, &hit);
+				lrangeswork = getRangeWork(lranges, range_min, range_max, &hit);
 			}
             if (disco_con_espacio) {
                 domaindb.set("DELETE FROM haarp WHERE domain='" + r.domain + "' and file='" +  domaindb.sqlconv(r.file) + "';");
@@ -335,9 +338,9 @@ void ConnectionToHTTP2::Cache() {
             if (domaindb.get_num_rows() == 0) // No existe en la db, pero sí en disco, entonces crear nueva entrada en la db.
             {
 				/* MISS */
-				lranges = NULL;
+				lranges.clear();
 				if( range_max > 0 ) {
-					lrangeswork = getRangeWork(&lranges, range_min, range_max, &hit);
+					lrangeswork = getRangeWork(lranges, range_min, range_max, &hit);
 					//~ if ( BusyFile() ) {
 						//~ r.match = false; /* Go direct to internet */
 						//~ if(!file_in_edition) liberate_edition();
@@ -354,11 +357,11 @@ void ConnectionToHTTP2::Cache() {
 				string position = domaindb.get("pos", 1);
 				if (LL > 0) LogFile::AccessMessage("In DB: ranges ('%s') and position ('%s')\n", ranges.c_str(), position.c_str());
 				
-				if( !generateList(ranges, position, &lranges) ) { //raro que entre
+				if( !generateList(ranges, position, lranges) ) { //raro que entre
 					if (LL > 0) LogFile::ErrorMessage("Format incorrect: Ranges=%s, Parts=%s\n", ranges.c_str(), position.c_str());
 					if (LL > 1) LogFile::AccessMessage("Format incorrect!: Reset ranges and positions in the DB\n");
 					domaindb.set("UPDATE haarp set rg='', pos='' WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';");
-					lranges = NULL;
+					lranges.clear();
 				}
 				if( size_orig_file ) {
 					if( range_max <= 0  )
@@ -368,7 +371,7 @@ void ConnectionToHTTP2::Cache() {
 						if (LL > 1) LogFile::AccessMessage("Maximum range, trucate to: %i\n", range_max);
 					}
 					filesizeneto = range_max - range_min + 1;
-					lrangeswork = getRangeWork(&lranges, range_min, range_max, &hit); /* hit, can not change it later */
+					lrangeswork = getRangeWork(lranges, range_min, range_max, &hit); /* hit, can not change it later */
 					//~ if ( !hit ) 
 						//~ if ( BusyFile() ) {
 							//~ r.match = false; /* Go direct to internet */
@@ -377,7 +380,7 @@ void ConnectionToHTTP2::Cache() {
 				}
 				else {
 					if ( range_max > 0 && ( getExtremeb(lranges) < range_min || range_max <= getExtremeb(lranges) ) ) {
-						lrangeswork = getRangeWork(&lranges, range_min, range_max, &hit); /* hit, can not change it later */
+						lrangeswork = getRangeWork(lranges, range_min, range_max, &hit); /* hit, can not change it later */
 						//~ if ( !hit ) {
 							//~ if ( BusyFile() ) {
 								//~ r.match = false; /* Go direct to internet */
@@ -601,7 +604,7 @@ bool ConnectionToHTTP2::ReadHeader(string &headerT) {
 		{
 			return result;
 		}
-		Cache2(cl);//generate lrangeswork!
+		Cache2(cl); // generate lrangeswork!
 	}
     if (resuming) { // no entra casi nunca!!!
         string headertmp = "";
@@ -841,15 +844,15 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 				bwrite = 0;
                 cachefile.open(string(completefilepath).c_str(), ios::in | ios::binary);
                 /**/
-				brange = lrangeswork;
+				brange = lrangeswork.begin();
 				acumulate = 0;
-				if( brange->p < 0 )
+				if( brange->position < 0 )
 				{
 					BodyLength = -1;
 					cachefile.close();
 					break;
 				}
-				cachefile.seekg(brange->p, ios::beg);
+				cachefile.seekg(brange->position, ios::beg);
 				limit = brange->b - brange->a + 1;
 				/**/
                 timeout = timerecord = time(NULL);
@@ -866,10 +869,10 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 				bodyT.append(memblock, BodyLength);
 				if(acumulate == limit)
 				{
-					brange = brange->next;
+					++brange;
 					acumulate = 0;
-					if(brange) {
-						cachefile.seekg(brange->p, ios::beg);
+					if ( brange != lrangeswork.end() ) {
+						cachefile.seekg(brange->position, ios::beg);
 						limit = brange->b - brange->a + 1;
 					}
 				}
@@ -882,13 +885,13 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
                 cachefile.close();
                 return -1;
             }
-            if( brange == NULL && filesended == filesizeneto )
+            if( brange == lrangeswork.end() && filesended == filesizeneto )
             {
 				cachefile.close();
                 break;
 			}
 			else			
-				if( brange == NULL || filesended == filesizeneto )
+				if( brange == lrangeswork.end() || filesended == filesizeneto )
 				{
 					BodyLength = -1;
 					cachefile.close();
@@ -900,15 +903,16 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
         ssize_t BodyLengthTmp = 0;
         BodyLength = ConnectionToHTTP::ReadBodyPart(bodyT, Chunked);
         BodyLengthTmp = BodyLength;
-	// HACEMOS UN TRACK DEL VIDEO
-	if (r.domain.find("youtube_IDs") != string::npos) 
-	{	
-		bodyTTemp = bodyT;
-		SearchReplace(bodyTTemp ,"videoplayback%3F","TEMPORAL");
-		SearchReplace(bodyTTemp ,"TEMPORAL","videoplayback%3Fwatchid%3D"+r.file+"%26");
-			
-		bodyT = bodyTTemp;
-	}
+		// HACEMOS UN TRACK DEL VIDEO
+		if (r.domain.find("youtube_IDs") != string::npos) 
+		{	
+			bodyTTemp = bodyT;
+			SearchReplace(bodyTTemp ,"videoplayback%3F","TEMPORAL");
+			SearchReplace(bodyTTemp ,"TEMPORAL","videoplayback%3Fwatchid%3D"+r.file+"%26");
+				
+			bodyT = bodyTTemp;
+		}
+		//
         else if (r.match) {
             if ( !cachefile.is_open() ) {
 		if ( !file_exists(completefilepath) ) {
@@ -918,12 +922,12 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
                 cachefile.open(string(completefilepath).c_str(), ios::out | ios::binary | ios::in);
                 /**/
                 bwrite = 0;
-				brange = lrangeswork;
-				if( brange->p < 0 ) {
-					brange->p = getPointEnd(lranges);
+				brange = lrangeswork.begin();
+				if( brange->position < 0 ) {
+					brange->position = getPointEnd(lranges);
 					bwrite = 1;
 				}
-				cachefile.seekp(brange->p, ios::beg);
+				cachefile.seekp(brange->position, ios::beg);
 				acumulate = 0;
 				limit = brange->b - brange->a + 1;
                 /**/                
@@ -939,14 +943,14 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 					acumulate = 0;
 					if( bwrite ) { //1 - block miss
 						np++;
-						if(!appendNode( &lranges, brange )) {
+						if ( !appendNode( lranges, *brange ) ) {
 							if (LL > 1) LogFile::ErrorMessage("Error, adicionando bloque en cachefile!\n");
 						}
 					}
 					bwrite = 0;
-					brange = brange->next;
+					++brange;
 					if( !brange ) {
-						if (LL > 0) LogFile::ErrorMessage("Error, el archivo descargado contiene más informacion de losesperado!\n");
+						if (LL > 0) LogFile::ErrorMessage("Error, el archivo descargado contiene más informacion de lo esperado!\n");
 						cachefile.close();
 						return -1;
 					}
@@ -973,27 +977,27 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 							if (LL > 0) LogFile::ErrorMessage("Error!, Adicionando bloque en cachefile!\n");
 						}
 					}
-					brange = brange->next;
-					if( brange == NULL && filesended == filesizeneto )
+					++brange;
+					if( brange == lrangeswork.end() && filesended == filesizeneto )
 					{
 						return BodyLengthTmp;
 					}
 					else
-						if( brange == NULL || filesended == filesizeneto )
+						if( brange == lrangeswork.end() || filesended == filesizeneto )
 						{
 							cachefile.close();
 							return -1;
 						}
 					bwrite = 0;
-					if( brange->p < 0 ){
+					if( brange->position < 0 ) {
 						// np++;
-						brange->p = getPointEnd(lranges);
+						brange->position = getPointEnd(lranges);
 						bwrite = 1;
 					}
-					cachefile.seekp(brange->p,ios::beg);
+					cachefile.seekp(brange->position,ios::beg);
 					limit = brange->b - brange->a + 1;
 					/**/
-					if( !bwrite && is_all_hit(brange) ) {
+					if ( !bwrite && is_all_hit(lrangeswork, brange) ) {
 						miss2hit = 1;
 					}
 				}
@@ -1004,9 +1008,9 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
                     if( ++count_wait > 9 && acumulate && bwrite )
 					{
 						count_wait = 0;
-						appendSubNode( &lranges, brange, acumulate );
+						appendSubNode( lranges, *brange, acumulate );
 						brange->a += acumulate;
-						brange->p += acumulate;
+						brange->position += acumulate;
 						limit -= acumulate;
 						acumulate = 0;
 						SubUpdate();

@@ -19,7 +19,8 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
         Database domaindb;
         bool passouheader,closed;
     public:
-		llista *lranges, *brange, *lrangeswork;
+		lintervalPositionByteDisk lranges, lrangeswork;
+		lintervalPositionByteDisk::iterator brange;
 		int range_min, range_max;//ADD
 		int acumulate;
 		int bwrite;
@@ -42,7 +43,7 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
 		
         string domain,request,msghit;
 		int port;
-	string origin_header;
+		string origin_header;
         resposta r;
         int64_t size_orig_file,filedownloaded,filesended,expiration,filesizeneto;
         bool hit,downloading,rewrited,resuming,general,etag;        

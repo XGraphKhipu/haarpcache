@@ -252,7 +252,7 @@ int ProxyHandler::CommunicationHTTP()
     //Send header to server
     if ( ToServer.SendHeader( HeaderToServer, DropBrowser, ToBrowser.GetRequest() ) == false ) //posible llamar a Cache()
     {
-        if (LL>0) LogFile::ErrorMessage("(%s) Could not send header to server (%s/%s:%d)\n", ToServer.GetIP().c_str(), ToBrowser.GetIP().c_str(), ToBrowser.GetHost().c_str(), ToBrowser.GetPort());
+        if (LL>0) LogFile::ErrorMessage("(%s) Could not send header to server (%s/%s:%d) - DropBrowser = %d -\n", ToServer.GetIP().c_str(), ToBrowser.GetIP().c_str(), ToBrowser.GetHost().c_str(), ToBrowser.GetPort(), (int)DropBrowser);
         DropServer = true;
         return -60;
     }

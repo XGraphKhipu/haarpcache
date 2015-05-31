@@ -16,25 +16,28 @@ struct resposta {
 	int range_min;
 	int range_max;
 };
-typedef struct lista {
-	int a;
-	int b;
-	int p;
-	struct lista * next;
-} llista;
 
-int getExtremeb(llista *primer);
-int generateList(string ranges, string parts, llista **primer);
-int getPointEnd(llista *primer);
-llista *getRangeWork(llista **primer,int ra, int rb, bool *hit);
-llista *getlastnode(llista *primer);
-bool appendNode(llista **primer, llista *n);
-bool appendSubNode(llista **primer, llista *n, int lenght_);
-void ordenar(llista **primer);
-void list2string(llista *primer,string &s1, string &s2);
-void list_clear(llista **primer);
-long int getFileSize(llista *primer);
-bool is_all_hit(llista *p);
+class intervalPositionByteDisk {
+	public:
+		int a;
+		int b;
+		int position;
+};	
+typedef list<intervalPositionByteDisk>  lintervalPositionByteDisk;
+
+long int getFileSize(lintervalPositionByteDisk listIntervalPositionByteDisk);
+bool is_all_hit(lintervalPositionByteDisk listIntervalPositionByteDisk, lintervalPositionByteDisk::iterator it);
+int getExtremeb(lintervalPositionByteDisk listIntervalPositionByteDisk);
+intervalPositionByteDisk getlastnode(lintervalPositionByteDisk listIntervalPositionByteDisk);
+int generateList(string ranges, string parts, lintervalPositionByteDisk &listIntervalPositionByteDisk);
+int getPointEnd(lintervalPositionByteDisk listIntervalPositionByteDisk);
+lintervalPositionByteDisk getRangeWork(lintervalPositionByteDisk listIntervalPositionByteDisk,int ra, int rb, bool *hit);
+bool appendNode(lintervalPositionByteDisk listIntervalPositionByteDisk, lintervalPositionByteDisk &n);
+bool appendSubNode(lintervalPositionByteDisk listIntervalPositionByteDisk, lintervalPositionByteDisk &n, int lenght_);
+void ordenar(lintervalPositionByteDisk listIntervalPositionByteDisk);
+bool compareIntervals(intervalPositionByteDisk &a, intervalPositionByteDisk &b);
+void list2string(lintervalPositionByteDisk listIntervalPositionByteDisk,string &s1, string &s2);
+
 string trimstr(string str);
 
 static const std::string base64_chars = 
