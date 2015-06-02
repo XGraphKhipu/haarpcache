@@ -90,6 +90,17 @@ cache_peer_access 127.0.0.1 deny all
 </code></pre>
 </li>
 <li>
+<p>View reports of your cache system:</p>
+
+<pre><code>cp /usr/src/haarpcache/etc/haarp/haarp.php /var/www/
+</code></pre>
+
+<p>Change the line 24 of the file haarp.php with your user and password for your database haarpcache.</p>
+
+<pre><code> if (!( $db = new PDO('mysql:host=localhost;dbname=haarp', 'haarp_user','haarpcache_password') ) )
+</code></pre>
+</li>
+<li>
 <p>Finally:</p>
 
 <pre><code>/etc/init.d/haarp restart
