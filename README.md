@@ -54,6 +54,7 @@ Installing
 		cp /usr/src/haarpcache/etc/haarp/haarp.php /var/www/
 	
 	Change the line 24 of the file haarp.php with your user and password for your database haarpcache.
+	
 		 if (!( $db = new PDO('mysql:host=localhost;dbname=haarp', 'haarp_user','haarpcache_password') ) )
 
 * Finally:
