@@ -62,6 +62,22 @@ Installing
 		/etc/init.d/haarp restart
 		squid -k reconfigure
 
+* Handling QoS can be done by making a marking of packages based on the search for the string "X-Cache: HIT from HAARP" or "HAARP: HIT from" in the packet header. Thus a possible handling may carried out as follows:
+
+		IF_LAN=eth0
+		MAX_DOWN=1300kbps
+		MIN_CACHE_DOWN=1000kbps
+		MAX_CACHE_DOWN=1100kbps
+		 
+		iptables -A OUTPUT -t mangle -o $IF_LAN -p tcp -m string --string "X-Cache: HIT from Haarp" --algo kmp -j MARK --set-mark 666
+		 
+		tc qdisc add dev $IF_LAN root handle 1:0 htb default 10 r2q 15
+		tc class add dev $IF_LAN parent 1:0 classid 1:1 htb rate $MAX_DOWN ceil $MAX_DOWN
+		tc class add dev $IF_LAN parent 1:1 classid 1:66 htb rate $MIN_CACHE_DOWN ceil $MAX_CACHE_DOWN
+		tc qdisc add dev $IF_LAN parent 1:66 handle 66:0 sfq perturb 30
+		tc filter add dev $IF_LAN protocol ip parent 1:0 handle 666 fw classid 1:66
+
+
 List of Plugins
 --------------
 
