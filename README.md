@@ -139,6 +139,12 @@ Configure your file /etc/haarp/haarp.lst to disable or enable the plugins.
 Changelog
 ---------
 
+__Version 1.3__
+
+2015/06/12
+
+* Fix Problem with concurrent caching of files.
+
 __Version 1.2.1__
 _Thanks to Samuel Espinoza, Oscar Vaquero y Fernando Maniglia._
 

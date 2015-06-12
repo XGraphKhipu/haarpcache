@@ -15,15 +15,13 @@ void get_videoid(string url, string &file, bool *exist_range, int *a, int *b) {
 	bool exist_cm2, range, watchID;
 	int size, clen;
 	
-	clen = 0;
 	watchID = false;
 
 	sclen = file = itag = mime = "";
 
 	*exist_range = exist_cm2 = range = false;
 	
-	SearchReplace(url,"?","&");
-	stringexplode(url, "/", &resultado);
+	stringexplode(url, "?", &resultado);
 	size = resultado.size();
 	if ( size > 1 ) {
 	    url = resultado.at(size - 1);
@@ -123,7 +121,6 @@ extern "C" resposta hgetmatch2(string url) {
     resposta r;
 	r.range_min = 0;
 	r.range_max = 0;
-
 	r.exist_range = false;
 	
 	if ( regex_match("[\\?&]begin=[0-9]*[1-9]+[0-9]*", url) == "" && regex_match("[\\?&]cms_redirect=yes(&.*)?$", url) == "" && regex_match("[\\?&]redirect_counter=1(&.*)?$", url) == "" &&  url.find("&ir=1") == string::npos && url.find("&rr=12") == string::npos && url.find("videoplayback") != string::npos ) {

@@ -8,13 +8,17 @@
 #include "database_mysql.h"
 #include "utils.h"
 
-int Database::open(string host,string username,string password,string database){
+int Database::open(string host,string username,string password,string database) {
     mysql_init(&conn);
     if (mysql_real_connect(&conn, host.c_str(), username.c_str(), password.c_str(), database.c_str(), 0, NULL, 0)) {
         //mysql_autocommit(&conn,1);
         connected = true;
         return 0;
     } else return -1;
+}
+
+long int Database::getID() {
+	return mysql_thread_id(&conn);
 }
 
 int Database::set(string sql) {  //o ok, -1 no ok

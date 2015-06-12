@@ -18,6 +18,7 @@ extern int LL; //LogLevel
 
 void ConnectionToHTTP2::getLimitBytes(string &header) {
 	//~ if (LL > 0) LogFile::AccessMessage("******************** NEW CONNECTION ********************\n");
+	if (LL > 0) LogFile::ErrorMessage("******************** NEW CONNECTION ********************\n");
 	range_min = 0;
 	range_max = 0;
 	np = 0;
@@ -96,12 +97,6 @@ void ConnectionToHTTP2::Cache2( int cl ) {
 	if( !lrangeswork )
 	{
 		lrangeswork = getRangeWork(&lranges, range_min, range_max, &hit); // update HIT?.
-		//~ if ( !hit ) 
-			//~ if ( BusyFile() ) {
-				//~ r.match = false; /* Go direct to internet */
-				//~ if(!exists_transaction_editing_file) liberate_edition();
-			//~ }
-			
 		if( hit ) {
 			msghit = "HIT";
 			//~ if(!exists_transaction_editing_file) liberate_edition();
@@ -129,6 +124,7 @@ void ConnectionToHTTP2::UpdateFileSizeinPartial( string header ) {
 }
 void ConnectionToHTTP2::Update(){
 	string rang_, part_;
+	if (LL > 0) LogFile::ErrorMessage("[DEBUG] Update() ---- ..(%li).. ---- \n", domaindb.getID());
 	if( r.match && !hit ) {
 		if( acumulate && bwrite ) {
 			if (cachefile.is_open()) {
@@ -154,6 +150,9 @@ void ConnectionToHTTP2::Update(){
 		}
 		acumulate = 0;
 	}
+	if ( r.match )
+		if(!exists_transaction_editing_file) liberate_edition();
+	if (LL > 2) LogFile::ErrorMessage("[DEBUG] Update() ---- ..for clear list of information of parts.. ---- \n");
 	list_clear(&lranges);
 	list_clear(&lrangeswork);
 }
@@ -168,74 +167,87 @@ void ConnectionToHTTP2::SubUpdate() {
 	if(domaindb.set("UPDATE haarp set modified=now(), rg='" + rang_ + "', pos='" + part_ + "', filesize='" + stmp0.str() + "', np=np+" + stmp1.str() + " WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") < 0)
 		if (LL > 1) LogFile::ErrorMessage("Error, in sub-updating the data base: '%s' \n",domaindb.getError().c_str());
 }
-short ConnectionToHTTP2::BusyFile() {
-	string query = "SELECT abs(unix_timestamp(now()) - UNIX_TIMESTAMP(modified))<=30 as difftime FROM haarp WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';";
-	if(domaindb.get(query))
-		if (LL > 1) LogFile::ErrorMessage("Error, in BusyFile() function: '%s', query:'%s' \n",domaindb.getError().c_str(), query.c_str());
-	string res = domaindb.get("difftime", 1);
-	if ( res != "" ) {
-		if ( atoi(res.c_str()) || ( (now() - file_getmodif(completefilepath)) <= 30.0 ) ) { // After of 30 seconds without modifications, is secure that the file not is working as cache.
-			if(LL > 1) LogFile::ErrorMessage("Warning: file '%s' with persistent changes\n", r.file.c_str());
-			if(LL > 1) LogFile::AccessMessage("The file on disk is working as cache, go direct to internet.\n");
+
+/* 
+ * return '-1' for error of mysql, '1' for OK, and '0' for not OK.
+ * */
+int ConnectionToHTTP2::lockFile() {
+	if ( domaindb.set("START TRANSACTION;") != 0 ) 
+		return -1;
+	
+	if ( domaindb.get("SELECT * FROM haarp WHERE file='" + domaindb.sqlconv(r.file) + "' and domain='" + r.domain + "' FOR UPDATE;") != 0 ) {
+		domaindb.set("ROLLBACK;");
+		return -1;
+	}
+	if ( !domaindb.get_num_rows() ) {
+		if (LL > 2) LogFile::ErrorMessage("[DEBUG] File %s [%i-%i] NOT EXISTS ON DB =========================.===========\n", r.file.c_str(), range_min, range_max);
+		if ( domaindb.set("INSERT INTO haarp (domain, file, size, modified, downloaded, requested, last_request, file_used) VALUES ('" + r.domain + "', '" + domaindb.sqlconv(r.file) + "', 0, now(),now(),0,now(), 1);") != 0) {
+			domaindb.set("ROLLBACK;");
+			LogFile::ErrorMessage("[DEBUG] File %s [%i-%i] Error on INSERT! (NOT EXISTS FILE ON DB) ========.=======\n", r.file.c_str(), range_min, range_max);
+			return -1;
+		}
+		domaindb.set("COMMIT;");
+		return 1;
+	} else {
+		if (LL > 2) LogFile::ErrorMessage("[DEBUG] File %s [%i-%i] EXISTS ON DB =============================.===========\n", r.file.c_str(), range_min, range_max);
+		if( domaindb.get("SELECT abs(unix_timestamp(now()) - UNIX_TIMESTAMP(modified))<=30 as difftime, file_used FROM haarp WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") != 0 ) {
+			domaindb.set("ROLLBACK;");
+			return -1;
+		}
+		string difftime  = domaindb.get("difftime",  1);
+		string file_used = domaindb.get("file_used", 1);
+		if( !atoi(file_used.c_str()) ) {
+			if ( domaindb.set("UPDATE haarp set modified=now(), file_used=1 WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") != 0 ) {
+				if (LL > 2) LogFile::ErrorMessage("[DEBUG] File %s [%i-%i] status is ..... BLOCKED or ERROR MYSQL!.\n", r.file.c_str(), range_min, range_max);	
+				domaindb.set("ROLLBACK;");
+				return -1;
+			}
+			if (LL > 2) LogFile::ErrorMessage("[DEBUG] File %s [%i-%i] BLOCKING from mysql.\n", r.file.c_str(), range_min, range_max);	
+			domaindb.set("COMMIT;");
 			return 1;
 		}
-	} else 
-		if(LL > 1) LogFile::ErrorMessage("Warning: not exist the file '%s' in the DB?, please check your column 'modified'.\n", r.file.c_str());
+		if ( difftime != "" ) {
+			if ( atoi(difftime.c_str()) ) { // After of 30 seconds without modifications, is secure that the file not is working as cache.
+				if(LL > 1) LogFile::ErrorMessage("Warning: file '%s' with persistent changes\n", r.file.c_str());
+				if(LL > 1) LogFile::AccessMessage("The file on disk is working as cache, go direct to internet.\n");
+				domaindb.set("COMMIT;");
+				return 0;
+			} else {
+				if( domaindb.set("UPDATE haarp set modified=now(), file_used=1 WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") != 0 ) {
+					domaindb.set("ROLLBACK;");
+					return -1;
+				}
+				if (LL > 2) LogFile::ErrorMessage("[DEBUG] File %s [%i-%i] BLOCKING STRICT from mysql.\n", r.file.c_str(), range_min, range_max);
+				domaindb.set("COMMIT;");
+				return 1;
+			}
+		} else { 
+			if(LL > 1) LogFile::ErrorMessage("Warning: not exist the file '%s' in the DB?, please check your column 'modified'.\n", r.file.c_str());
+			domaindb.set("ROLLBACK;");
+			return -1;
+		}
+	}
+	domaindb.set("COMMIT;");
 	return 0;
 }
-// true - ok row is blocked, else return false.
-bool ConnectionToHTTP2::lock_row_exclusive() {
-	int re = domaindb.set("UPDATE haarp set file_used=1 WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "' and file_used=0;");
-	if ( !re &&  domaindb.get_affect_rows() == 1 ) {
-		if (LL > 2) LogFile::ErrorMessage("File %s [%i-%i] BLOCKING edition from mysql.\n", r.file.c_str(), range_min, range_max);	
-	}
-	else {
-		if (LL > 2) LogFile::ErrorMessage("File %s [%i-%i] status is ..... BLOCKED or ERROR MYSQL!.\n", r.file.c_str(), range_min, range_max);	
-		return false;
-	}
-	return true;
-}
-bool ConnectionToHTTP2::lock_row_exclusive_strict() {
-	int re = domaindb.set("UPDATE haarp set file_used=1 WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';");
-	if ( !re ) {
-		if (LL > 2) LogFile::ErrorMessage("File %s [%i-%i] BLOCKING STRICT from mysql.\n", r.file.c_str(), range_min, range_max);	
-	}
-	else
-		if (LL > 2) LogFile::ErrorMessage("File %s [%i-%i] status is ..... BLOCKED_strict_ or ERROR MYSQL!.\n", r.file.c_str(), range_min, range_max);	
-	//borramos el if(!exists_transaction_editing_file) :
-	//~ was_liberate = false;
-	return (re == 0);
-}
+
 bool ConnectionToHTTP2::liberate_edition() {
 	if( was_liberate ) 
 		return true;
 	bool re = domaindb.set("UPDATE haarp set file_used=0 WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';");
-	if (LL > 2) LogFile::ErrorMessage("File %s [%i-%i] LIBERATE edition from mysql.\n", r.file.c_str(), range_min, range_max);
+	if (LL > 2) LogFile::ErrorMessage("[DEBUG] File %s [%i-%i] LIBERATE edition from mysql.\n", r.file.c_str(), range_min, range_max);
 	if ( !re ) 
 		was_liberate = true;
 	return re;
 }
-int ConnectionToHTTP2::FileInEdition() {
-	if (domaindb.get("SELECT file_used FROM haarp WHERE file='" + domaindb.sqlconv(r.file) + "' and domain='" + r.domain + "';") != 0) {
-		LogFile::ErrorMessage("Error select mysql: %s [%i-%i]\n", domaindb.getError().c_str(), range_min, range_max);
-		return 0;
-	}
-	int file_used = atoi((domaindb.get("file_used", 1)).c_str());
-	if(file_used) {
-		if (LL > 2) LogFile::ErrorMessage("File %s [%i-%i] status ..... BLOCKING.\n", r.file.c_str(), range_min, range_max);
-	}
-	else
-		if (LL > 2) LogFile::ErrorMessage("File %s [%i-%i] status ..... FREE.\n", r.file.c_str(), range_min, range_max);
-	return file_used;
-}
- 
+
 void ConnectionToHTTP2::Cache() {
     msghit = "MISS";
     hasupdate = false;
     unlimit = false;
     miss2hit = false;
     count_wait = 0;
-    exists_transaction_editing_file = false;
+    exists_transaction_editing_file = true;
     was_liberate = false;
     hit = downloading = r.match = rewrited = resuming = passouheader = general = etag = closed = false;
     limit = 0;
@@ -290,6 +302,17 @@ void ConnectionToHTTP2::Cache() {
     }
 	
     if (r.match) { // Es la url de un dominio
+		
+		int lfile = lockFile();
+		
+		if ( lfile <= 0 ) {
+			if( lfile == -1 ) LogFile::ErrorMessage("Error mysql: '%s'\n", domaindb.getError().c_str());			
+			exists_transaction_editing_file = true;
+			r.match = hit = false;
+			return;
+		}
+		exists_transaction_editing_file = false;
+		
         subdir = ConvertChar(r.file);
         
         vector<string> list_dir;
@@ -339,15 +362,17 @@ void ConnectionToHTTP2::Cache() {
 				lrangeswork = getRangeWork(&lranges, range_min, range_max, &hit);
 			}
             if (disco_con_espacio) {
-                domaindb.set("DELETE FROM haarp WHERE domain='" + r.domain + "' and file='" +  domaindb.sqlconv(r.file) + "';");
-                /* ... and file is blocked (file_used) */
-                domaindb.set("INSERT INTO haarp (domain, file, size, modified, downloaded, requested, last_request, file_used) VALUES ('" + r.domain + "', '" + domaindb.sqlconv(r.file) + "', 0, '1980-01-01 00:00:00',now(),0,now(), 1);");
-                if (LL > 2) LogFile::ErrorMessage("File %s BLOCKED edition from mysql -inserting new row-.\n", r.file.c_str());
-		if (!file_exists(completepath + "/" + subdir + "/")) {
-			mkdir_p(completepath + "/" + subdir + "/");
+				if( domaindb.set("UPDATE haarp SET modified=now(), last_request=now(), rg='', pos='', np=0, deleted=0, static=0 WHERE domain='" + r.domain + "' and file='" +  domaindb.sqlconv(r.file) + "';") != 0 ) {
+					LogFile::ErrorMessage("Error, it can not update the record of mysql: '%s'\n", domaindb.getError().c_str());
+					r.match = hit = false;
+					return;
+				}
+                if (LL > 2) LogFile::ErrorMessage("[DEBUG] File %s BLOCKED edition from mysql -inserting new row-.\n", r.file.c_str());
+				if (!file_exists(completepath + "/" + subdir + "/")) {
+					mkdir_p(completepath + "/" + subdir + "/");
                 }
                 if (LL > 0) LogFile::AccessMessage("MISS: Domain: %s File: %s\n", r.domain.c_str(), r.file.c_str());
-                if (LL > 2) LogFile::ErrorMessage("MISS: Domain: %s File: %s\n", r.domain.c_str(), r.file.c_str());
+                if (LL > 2) LogFile::ErrorMessage("[DEBUG] MISS: Domain: %s File: %s\n", r.domain.c_str(), r.file.c_str());
             } else {
                 hit = r.match = false;
             }
@@ -355,41 +380,21 @@ void ConnectionToHTTP2::Cache() {
         } else { /* The file are in disk */
 			
 			if (LL > 1) LogFile::AccessMessage("The file is ON disk!\n");
-			
-			if( !lock_row_exclusive() ) {
-				 if ( BusyFile() ) {
-					 exists_transaction_editing_file = 1;
-					 r.match = hit = false;
-					 return;
-				 }
-				 else 
-					lock_row_exclusive_strict();
-			}
-			exists_transaction_editing_file = 0;
-					
-            if (domaindb.get("SELECT size, rg, pos FROM haarp WHERE file='" + domaindb.sqlconv(r.file) + "' and domain='" + r.domain + "';") != 0) {
+
+            if ( domaindb.get("SELECT size, rg, pos FROM haarp WHERE file='" + domaindb.sqlconv(r.file) + "' and domain='" + r.domain + "';") != 0 ) {
                 LogFile::ErrorMessage("Error select mysql: %s\n", domaindb.getError().c_str());
                 r.match = hit = false;
                 /* Free use of file from mysql */
                 if(!exists_transaction_editing_file) liberate_edition();
                 return;
             }
-            if (domaindb.get_num_rows() == 0) // No existe en la db, pero sí en disco, entonces crear nueva entrada en la db.
-            {
-				/* MISS */
-				lranges = NULL;
-				if( range_max > 0 ) {
-					lrangeswork = getRangeWork(&lranges, range_min, range_max, &hit);
-					//~ if ( BusyFile() ) {
-						//~ r.match = false; /* Go direct to internet */
-						//~ if(!exists_transaction_editing_file) liberate_edition();
-					//~ }
-				}
-				/* END */
-                domaindb.set("INSERT INTO haarp (domain, file, size, modified, downloaded, requested, last_request, file_used) VALUES ('" + r.domain + "', '" + domaindb.sqlconv(r.file) + "', 0, '1980-01-01 00:00:00',now(),0,now(), 1);");
-                if (LL > 2) LogFile::ErrorMessage("File %s BLOCKED edition from mysql -inserting new row-.\n", r.file.c_str());
-                if (LL > 0) LogFile::AccessMessage("MISS DB: Domain: %s File: %s\n", r.domain.c_str(), r.file.c_str());
-            } else { // Existe el archivo en disco y en la base de datos, miss o hit?.
+            if ( domaindb.get_num_rows() == 0 ) { // No existe en la db, pero sí en disco.
+				LogFile::ErrorMessage("Error, the row of the file '%s' not exist on the db!", r.file.c_str());
+				r.match = hit = false;
+				if(!exists_transaction_editing_file) liberate_edition();
+				return;
+			}
+            else { // Existe el archivo en disco y en la base de datos, miss o hit?.
 				/* 'size' es el tamaño del archivo, si estubiera entero (como en el mismo servidor de video)*/
 				size_orig_file = atol(domaindb.get("size", 1).c_str());
 				
@@ -413,21 +418,10 @@ void ConnectionToHTTP2::Cache() {
 					}
 					filesizeneto = range_max - range_min + 1;
 					lrangeswork = getRangeWork(&lranges, range_min, range_max, &hit); /* hit, can not change it later */
-					//~ if ( !hit ) 
-						//~ if ( BusyFile() ) {
-							//~ r.match = false; /* Go direct to internet */
-							//~ if(!exists_transaction_editing_file) liberate_edition();
-						//~ }
 				}
 				else {
 					if ( range_max > 0 && ( getExtremeb(lranges) < range_min || range_max <= getExtremeb(lranges) ) ) {
 						lrangeswork = getRangeWork(&lranges, range_min, range_max, &hit); /* hit, can not change it later */
-						//~ if ( !hit ) {
-							//~ if ( BusyFile() ) {
-								//~ r.match = false; /* Go direct to internet */
-								//~ if(!exists_transaction_editing_file) liberate_edition();
-							//~ }
-						//~ }
 					}
 					else { // range_max <= 0 || range_min <= exteme < range_max
 						hit = false; /* can be changed later (function Cache2) */
@@ -836,7 +830,7 @@ string ConnectionToHTTP2::PrepareHeaderForBrowser() {
 }
 int ConnectionToHTTP2::GetResponse() {
 	//if (LL > 0) LogFile::AccessMessage("Pasando por GetResponse (8)\n");
-	if ( LL > 2 ) LogFile::ErrorMessage("Pasando por GetResponse (8)\n");
+	if ( LL > 2 ) LogFile::ErrorMessage("[DEBUG] Pasando por GetResponse (8)\n");
     int retorno;
     if ( hit ) retorno = 200;
     else if ( !hit && r.match ) {
@@ -846,7 +840,7 @@ int ConnectionToHTTP2::GetResponse() {
             if ( !exists_transaction_editing_file ) liberate_edition();
         }
     } else retorno = ConnectionToHTTP::GetResponse();
-    if ( LL > 2 ) LogFile::ErrorMessage("Pasando por GetResponse (8) - retorno = %i\n", retorno);
+    //if ( LL > 2 ) LogFile::ErrorMessage("Pasando por GetResponse (8) - retorno = %i\n", retorno);
     return retorno;
 }
 bool ConnectionToHTTP2::CheckForData(int timeout) {
@@ -1077,15 +1071,18 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 }
 
 void ConnectionToHTTP2::Close() {
-    if (LL > 2) LogFile::ErrorMessage("Closing Connection!\n");
-    Update();
-    if(!exists_transaction_editing_file) liberate_edition();
-    domaindb.close();
-    if (cachefile.is_open()) cachefile.close();
-    if (outfile.is_open()) outfile.close();
-    if ((filesended < filesizeneto) && ((r.match && !hit) || (r.match && resuming)))
-        file_setmodif(completefilepath, 1);
-    downloader.Close();
-    ConnectionToHTTP::Close();
+	if (LL > 2) LogFile::ErrorMessage("[DEBUG] Closing Connection!\n");
+	Update();
+	if(!exists_transaction_editing_file) liberate_edition();
+	if (LL > 2) LogFile::ErrorMessage("[DEBUG] Liberated edition from db\n");
+		domaindb.close();
+	if (cachefile.is_open()) cachefile.close();
+	if (outfile.is_open()) outfile.close();
+	if ((filesended < filesizeneto) && ((r.match && !hit) || (r.match && resuming)))
+		file_setmodif(completefilepath, 1);
+	if (LL > 1) LogFile::ErrorMessage("[DEBUG] Closed file, domaindb\n");
+	downloader.Close();
+	ConnectionToHTTP::Close();
+	if (LL > 1) LogFile::ErrorMessage("[DEBUG] Closed - BYE!.\n");
 }
 

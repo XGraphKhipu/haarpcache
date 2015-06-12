@@ -65,11 +65,8 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
         void pintarlista( llista *p, string c );
         void Update();
         void SubUpdate();
-        short BusyFile();
-        bool lock_row_exclusive();
-        bool lock_row_exclusive_strict();
         bool liberate_edition();
-        int FileInEdition();
+        int lockFile();
         void Close();
 };
 
