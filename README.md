@@ -141,9 +141,10 @@ Changelog
 
 __Version 1.3__
 
-2015/06/12
+2015/06/13
 
 * Fix Problem with concurrent caching of files.
+* Update the plugin Youtube. 
 
 __Version 1.2.1__
 _Thanks to Samuel Espinoza, Oscar Vaquero y Fernando Maniglia._
