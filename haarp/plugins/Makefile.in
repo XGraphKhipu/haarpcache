@@ -5,6 +5,8 @@ OBJECTS = grandchase.com.br.so \
         vimeo.com.so \
 	kaspersky.com.so \
 	xvideos.com.so \
+	bitdefender.net.so \
+	bitdefender.com.so \
 	globo.com.so \
 	vsh.r7.com.so \
 	4shared.com.so \
