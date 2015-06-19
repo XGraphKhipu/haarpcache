@@ -59,15 +59,27 @@ update-rc.d haarp defaults 98
 
 <ul>
 <li>
-<p>Configure your /etc/haarp/haarp.conf:</p>
+<p>Create a user for database of haarpcache:</p>
 
-<pre><code>CACHEDIR &lt;dir_1&gt;|&lt;dir_2&gt;|&lt;dir_3&gt; ...    
-MYSQL_USER &lt;user_mysql&gt;
-MYSQL_PASS &lt;pass_mysql&gt;
+<pre><code>mysql -u root -p
+grant all privileges on haarp.* to haarp_user@localhost identified by 'haarpcache_password';
 </code></pre>
+
+<p>Change the username ('haarp_user') and password ('haarpcache_password') for which you want.</p>
 </li>
 <li>
-<p>Copy &amp; page this, in the file of configuration: squid.conf (install squid)</p>
+<p>Configure your /etc/haarp/haarp.conf</p>
+
+<pre><code>CACHEDIR &lt;dir_1&gt;|&lt;dir_2&gt;|&lt;dir_3&gt; ...    
+MYSQL_USER &lt;haarp_user&gt;
+MYSQL_PASS &lt;haarpcache_password&gt;
+</code></pre>
+
+<p><code>&lt;dir_1&gt;</code>, <code>&lt;dir_2&gt;</code>,... are the directories where cache files will be stored, for default '/haarp/'.
+<code>&lt;haarp_user&gt;</code> and <code>&lt;haarpcache_password&gt;</code> are the user and password for the database of haarpcache defined above.</p>
+</li>
+<li>
+<p>Copy and paste the line above at the end of the file 'squid.conf' (or 'squid3.conf' which is in operation):</p>
 
 <pre><code>acl haarp_lst url_regex -i "/etc/haarp/haarp.lst"
 cache deny haarp_lst
@@ -99,6 +111,22 @@ cache_peer_access 127.0.0.1 deny all
 
 <pre><code> if (!( $db = new PDO('mysql:host=localhost;dbname=haarp', 'haarp_user','haarpcache_password') ) )
 </code></pre>
+</li>
+<li>
+<p>Your viewer:</p>
+
+<pre><code>http://&lt;IP_Your_Server&gt;/haarp.php
+</code></pre>
+</li>
+<li>
+<p>Security:</p>
+
+<pre><code>iptables -I INPUT 1 -i &lt;eth_wan_1&gt; -m tcp -p tcp --dport 8080 -m state --state NEW -j DROP
+iptables -I INPUT 1 -i &lt;eth_wan_2&gt; -m tcp -p tcp --dport 8080 -m state --state NEW -j DROP
+...
+</code></pre>
+
+<p>The port 8080 is of your haarpcache server. You can change this editing the file /etc/haarp/haarp.conf. </p>
 </li>
 <li>
 <p>Finally:</p>
@@ -188,6 +216,15 @@ Juegosjuegos;</p>
 
 <h2>
 <a id="changelog" class="anchor" href="#changelog" aria-hidden="true"><span class="octicon octicon-link"></span></a>Changelog</h2>
+
+<p><strong>Version 1.3</strong></p>
+
+<p>2015/06/13</p>
+
+<ul>
+<li>Fix Problem with concurrent caching of files.</li>
+<li>Update the plugin Youtube. </li>
+</ul>
 
 <p><strong>Version 1.2.1</strong>
 <em>Thanks to Samuel Espinoza, Oscar Vaquero y Fernando Maniglia.</em></p>
