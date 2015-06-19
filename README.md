@@ -50,7 +50,18 @@ Installing
 		dead_peer_timeout 2 seconds
 		cache_peer_access 127.0.0.1 allow haarp_lst
 		cache_peer_access 127.0.0.1 deny all
-	
+		
+* Below the line of the `http_port` configuration, add: 
+
+		acl google url_regex -i (googlevideo.com|www.youtube.com)
+		acl iphone browser -i regexp (iPhone|iPad)
+		acl BB browser -i regexp (BlackBerry|PlayBook)
+		acl Winphone browser -i regexp (Windows.*Phone|Trident|IEMobile)
+		acl Android browser -i regexp Android
+		request_header_access User-Agent deny google !iphone !BB !Winphone !Android
+		request_header_replace User-Agent Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)
+	with this we avoid redirects `HTTP` to `HTTPS` in `youtube.com`. Only works for PC's, and when you enter to `http://www.youtube.com` from the address bar (of your browser).
+
 * On squid.conf Comment the line:
 		
 		#hierarchy_stoplist cgi-bin ?
@@ -79,6 +90,16 @@ Installing
 	
 	The port 8080 is of your haarpcache server. You can change this editing the file /etc/haarp/haarp.conf. 
 
+* Avoid the `QUIC` protocol connections on `www.youtube.com`
+
+		iptables -A FORWARD -i <eth_lan> -p udp -m udp --dport 80 -j REJECT --reject-with icmp-port-unreachable
+		iptables -A FORWARD -i <eth_lan> -p udp -m udp --dport 443 -j REJECT --reject-with icmp-port-unreachable
+		
+	add the following line in `squid.conf`:
+	
+		# Disable alternate protocols
+		reply_header_access Alternate-Protocol deny all
+		
 * Finally:
  	
 		/etc/init.d/haarp restart
@@ -98,6 +119,7 @@ Installing
 		tc class add dev $IF_LAN parent 1:1 classid 1:66 htb rate $MIN_CACHE_DOWN ceil $MAX_CACHE_DOWN
 		tc qdisc add dev $IF_LAN parent 1:66 handle 66:0 sfq perturb 30
 		tc filter add dev $IF_LAN protocol ip parent 1:0 handle 666 fw classid 1:66
+		
 
 Reinstall or Update
 ---------------------
