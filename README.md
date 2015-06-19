@@ -23,16 +23,25 @@ Installing
 	mysql -u root -p < haarp.sql
 	cd /etc/init.d
 	update-rc.d haarp defaults 98
+	
+	Create a user for database of haarpcache:
+	
+		mysql -u root -p
+		grant all privileges on haarp.* to haarp_user@localhost identified by 'haarpcache_password';
+		
+	Change the username ('haarp_user') and password ('haarpcache_password') for which you want.
+	
 
-
-* Configure your /etc/haarp/haarp.conf:
+* Configure your /etc/haarp/haarp.conf
 		
 		CACHEDIR <dir_1>|<dir_2>|<dir_3> ...	
-		MYSQL_USER <user_mysql>
-		MYSQL_PASS <pass_mysql>
+		MYSQL_USER <haarp_user>
+		MYSQL_PASS <haarpcache_password>
 
+	<dir_1>, <dir_2>,... are the directories where cache files will be stored, for default '/haarp/'.
+	<haarp_user> and <haarpcache_password> are the user and password for the database of haarpcache defined above.
 
-* Copy & page this, in the file of configuration: squid.conf (install squid)
+* Copy and paste the line above at the end of the file 'squid.conf' (or 'squid3.conf' which is in operation):
 
 		acl haarp_lst url_regex -i "/etc/haarp/haarp.lst"
 		cache deny haarp_lst
@@ -57,11 +66,15 @@ Installing
 	
 		 if (!( $db = new PDO('mysql:host=localhost;dbname=haarp', 'haarp_user','haarpcache_password') ) )
 
+* Your viewer:
+
+		http://<IP_Of_Server>/haarp.php
+
 * Finally:
  	
 		/etc/init.d/haarp restart
 		squid -k reconfigure
-
+		
 * Handling QoS can be done by making a marking of packages based on the search for the string "X-Cache: HIT from HAARP" or "HAARP: HIT from" in the packet header. Thus a possible handling may carried out as follows:
 
 		IF_LAN=eth0
