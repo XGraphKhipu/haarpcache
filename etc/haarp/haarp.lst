@@ -1,3 +1,4 @@
+^http.{3,4}install\.avira-update\.com\/package\/((\w|\_|-)*\/){3}(\w|\_|-)*(\.exe)$
 ^http.{3,4}download\.bitdefender\.com\/((\w|\_|-)*\/){7}(\w|\_|-)*(\.exe)$
 ^http.{3,10}patches.{1,40}\.bitdefender\.net\/.*\/patches\/.*(\.gzip|\.zip)$
 ^http.{1,15}\.4shared\.com.*(\.exe|\.iso|\.torrent|\.zip|\.rar|\.pdf|\.doc|\.tar|\.mp3|\.mp4|\.avi|\.wmv|\.mpg)
