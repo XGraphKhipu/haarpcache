@@ -60,7 +60,7 @@ Installing
 		acl Android browser -i regexp Android
 		request_header_access User-Agent deny google !iphone !BB !Winphone !Android
 		request_header_replace User-Agent Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)
-	with this we avoid redirects `HTTP` to `HTTPS` in `youtube.com`. Only works for PC's, and when you enter to `http://www.youtube.com` from the address bar (of your browser).
+	with this we avoid the redirects `HTTP` to `HTTPS` in `youtube.com`. Only works for PC's, and when you enter to `http://www.youtube.com` from the address bar (of your browser) or from `www.google.com`.
 
 * On squid.conf Comment the line:
 		
