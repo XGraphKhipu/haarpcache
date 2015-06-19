@@ -24,7 +24,8 @@ Installing
 	cd /etc/init.d
 	update-rc.d haarp defaults 98
 	
-	Create a user for database of haarpcache:
+	
+* Create a user for database of haarpcache:
 	
 		mysql -u root -p
 		grant all privileges on haarp.* to haarp_user@localhost identified by 'haarpcache_password';
@@ -38,8 +39,8 @@ Installing
 		MYSQL_USER <haarp_user>
 		MYSQL_PASS <haarpcache_password>
 
-	<dir_1>, <dir_2>,... are the directories where cache files will be stored, for default '/haarp/'.
-	<haarp_user> and <haarpcache_password> are the user and password for the database of haarpcache defined above.
+	`<dir_1>`, `<dir_2>`,... are the directories where cache files will be stored, for default '/haarp/'.
+	`<haarp_user>` and `<haarpcache_password>` are the user and password for the database of haarpcache defined above.
 
 * Copy and paste the line above at the end of the file 'squid.conf' (or 'squid3.conf' which is in operation):
 
@@ -70,6 +71,14 @@ Installing
 
 		http://<IP_Of_Server>/haarp.php
 
+* Security:
+	
+		iptables -I INPUT 1 -i <eth_wan_1> -m tcp -p tcp --dport 8080 -m state --state NEW -j DROP
+		iptables -I INPUT 1 -i <eth_wan_2> -m tcp -p tcp --dport 8080 -m state --state NEW -j DROP
+		...
+	
+	The port 8080 is of your haarpcache server. You can change this editing the file of configuration /etc/haarp/haarp.conf. 
+
 * Finally:
  	
 		/etc/init.d/haarp restart
@@ -91,6 +100,8 @@ Installing
 		tc filter add dev $IF_LAN protocol ip parent 1:0 handle 666 fw classid 1:66
 
 
+	
+	
 List of Plugins
 --------------
 
