@@ -99,9 +99,32 @@ Installing
 		tc qdisc add dev $IF_LAN parent 1:66 handle 66:0 sfq perturb 30
 		tc filter add dev $IF_LAN protocol ip parent 1:0 handle 666 fw classid 1:66
 
+Reinstall or Update
+---------------------
 
+For a common update:
 	
+		su
+		cd /usr/src/
+		git clone https://github.com/keikurono/haarpcache.git
+		cd haarpcache
+		./configure
+		make
+		make install
+		cp -b etc/haarp/haarp.lst /etc/haarp/haarp.lst
+		/etc/init.d/haarp restart
+		squid -k reconfigure
 	
+Monitoring Logs
+-------------------
+
+Depending on the location of the logs defined in the file `/etc/haarp/haarp.conf`:
+
+		tail -f /var/log/haarp/access.log
+		tail -f /var/log/haarp/error.log
+
+Level information in the logs: change the `LEVEL_LOG` on `/etc/haarp/haarp.conf`.
+
 List of Plugins
 --------------
 
