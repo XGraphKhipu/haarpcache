@@ -69,7 +69,7 @@ Installing
 
 * Your viewer:
 
-		http://<IP_Of_Server>/haarp.php
+		http://<IP_Your_Server>/haarp.php
 
 * Security:
 	
@@ -77,7 +77,7 @@ Installing
 		iptables -I INPUT 1 -i <eth_wan_2> -m tcp -p tcp --dport 8080 -m state --state NEW -j DROP
 		...
 	
-	The port 8080 is of your haarpcache server. You can change this editing the file of configuration /etc/haarp/haarp.conf. 
+	The port 8080 is of your haarpcache server. You can change this editing the file /etc/haarp/haarp.conf. 
 
 * Finally:
  	
