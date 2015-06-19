@@ -90,6 +90,20 @@ cache_peer_access 127.0.0.1 deny all
 </code></pre>
 </li>
 <li>
+<p>Below the line of the <code>http_port</code> configuration, add: </p>
+
+<pre><code>acl google url_regex -i (googlevideo.com|www.youtube.com)
+acl iphone browser -i regexp (iPhone|iPad)
+acl BB browser -i regexp (BlackBerry|PlayBook)
+acl Winphone browser -i regexp (Windows.*Phone|Trident|IEMobile)
+acl Android browser -i regexp Android
+request_header_access User-Agent deny google !iphone !BB !Winphone !Android
+request_header_replace User-Agent Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)
+</code></pre>
+
+<p>with this we avoid the redirects <code>HTTP</code> to <code>HTTPS</code> in <code>youtube.com</code>. Only works for PC's, and when you enter to <code>http://www.youtube.com</code> from the address bar (of your browser) or from <code>www.google.com</code>.</p>
+</li>
+<li>
 <p>On squid.conf Comment the line:</p>
 
 <pre><code>#hierarchy_stoplist cgi-bin ?
@@ -127,6 +141,19 @@ iptables -I INPUT 1 -i &lt;eth_wan_2&gt; -m tcp -p tcp --dport 8080 -m state --s
 </code></pre>
 
 <p>The port 8080 is of your haarpcache server. You can change this editing the file /etc/haarp/haarp.conf. </p>
+</li>
+<li>
+<p>Avoid the <code>QUIC</code> protocol connections on <code>www.youtube.com</code></p>
+
+<pre><code>iptables -A FORWARD -i &lt;eth_lan&gt; -p udp -m udp --dport 80 -j REJECT --reject-with icmp-port-unreachable
+iptables -A FORWARD -i &lt;eth_lan&gt; -p udp -m udp --dport 443 -j REJECT --reject-with icmp-port-unreachable
+</code></pre>
+
+<p>add the following line in <code>squid.conf</code>:</p>
+
+<pre><code># Disable alternate protocols
+reply_header_access Alternate-Protocol deny all
+</code></pre>
 </li>
 <li>
 <p>Finally:</p>
