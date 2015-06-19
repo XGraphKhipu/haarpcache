@@ -155,6 +155,34 @@ tc filter add dev $IF_LAN protocol ip parent 1:0 handle 666 fw classid 1:66
 </ul>
 
 <h2>
+<a id="reinstall-or-update" class="anchor" href="#reinstall-or-update" aria-hidden="true"><span class="octicon octicon-link"></span></a>Reinstall or Update</h2>
+
+<p>For a common update:</p>
+
+<pre><code>    su
+    cd /usr/src/
+    git clone https://github.com/keikurono/haarpcache.git
+    cd haarpcache
+    ./configure
+    make
+    make install
+    cp -b etc/haarp/haarp.lst /etc/haarp/haarp.lst
+    /etc/init.d/haarp restart
+    squid -k reconfigure
+</code></pre>
+
+<h2>
+<a id="monitoring-logs" class="anchor" href="#monitoring-logs" aria-hidden="true"><span class="octicon octicon-link"></span></a>Monitoring Logs</h2>
+
+<p>Depending on the location of the logs defined in the file <code>/etc/haarp/haarp.conf</code>:</p>
+
+<pre><code>    tail -f /var/log/haarp/access.log
+    tail -f /var/log/haarp/error.log
+</code></pre>
+
+<p>Level information in the logs: change the <code>LEVEL_LOG</code> on <code>/etc/haarp/haarp.conf</code>.</p>
+
+<h2>
 <a id="list-of-plugins" class="anchor" href="#list-of-plugins" aria-hidden="true"><span class="octicon octicon-link"></span></a>List of Plugins</h2>
 
 <ul>
