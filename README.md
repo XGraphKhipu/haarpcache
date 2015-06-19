@@ -123,7 +123,7 @@ Depending on the location of the logs defined in the file `/etc/haarp/haarp.conf
 		tail -f /var/log/haarp/access.log
 		tail -f /var/log/haarp/error.log
 
-Level information in the logs: change the `LEVEL_LOG` on `/etc/haarp/haarp.conf`.
+Level information in the logs: change the `LOGLEVEL` on `/etc/haarp/haarp.conf`.
 
 List of Plugins
 --------------
