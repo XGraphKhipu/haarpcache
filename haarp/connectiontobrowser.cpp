@@ -179,15 +179,15 @@ string ConnectionToBrowser::PrepareHeaderForServer( bool UseParentProxy )
         {
             continue;
         }
-	else if ( MatchBegin( it, "ACCEPT-ENCODING", 15 ) && 
-			(UpperCase(Host) == "WWW.YOUTUBE.COM") && 
-			(UpperCase(Request).find("/WATCH?") != string::npos) 
-		)
-	{
-		*itvec = "Accept-Encoding: ";
-	}
-
-
+		else if ( MatchBegin( it, "ACCEPT-ENCODING", 15 ) ) {
+				if ( ( UpperCase(Host) == "WWW.YOUTUBE.COM" && UpperCase(Request).find("/WATCH?") != string::npos) ||
+					 ( UpperCase(Host) == "WWW.NETFLIX.COM" && UpperCase(Request).find("/WATCH/") != string::npos) || 
+					 ( UpperCase(Host) == "SECURE.NETFLIX.COM" && UpperCase(Request).find("/PLAYER/HTML/WWWPLAYER-") != string::npos )
+				 )
+				{
+					*itvec = "Accept-Encoding: ";
+				}	
+		}
         header += *itvec;
         header += "\r\n";
     }

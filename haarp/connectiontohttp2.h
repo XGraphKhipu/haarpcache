@@ -26,6 +26,7 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
 		int bwrite;
 		int limit;
 		int np;
+		int fileHeaderLengthUnread; 
 		int count_wait;
 		bool ext_webm; 
 		bool hasupdate;
@@ -35,6 +36,8 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
 		bool bchrome;
 		bool miss2hit;
 		bool exists_transaction_editing_file; //This process blocked the edition the of file?
+		int64_t contentLengthServer;
+		int64_t acumulateBodyLength;
 		
 		void UpdateFileSizeinPartial( string header );
 		void getLimitBytes(string &header);
@@ -42,6 +45,7 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
 		void Cache2( int cl );
 		
         string domain,request,msghit;
+        string readFileHeader;
 		int port;
 	string origin_header;
         resposta r;

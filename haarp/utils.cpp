@@ -409,13 +409,16 @@ string UpperCase(string CaseString) {
     return CaseString;
 }
 
-void SearchReplace(string &source, string search, string replace) {
+int SearchReplace(string &source, string search, string replace) {
+	int numberReplace = 0;
     string::size_type position = source.find(search);
 
     while (position != string::npos) {
         source.replace(position, search.size(), replace);
         position = source.find(search);
+        numberReplace++;
     }
+    return numberReplace;
 }
 
 int select_eintr(int fds, fd_set *readfds, fd_set *writefds, fd_set *errorfds, struct timeval *timeout) {
@@ -489,10 +492,9 @@ void stringexplodetrim(string str, string separator, vector<string>* results) {
 string getdomain(string url) {
     if (regex_match("^74\\.125\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?$)", url) != "") return "youtube.com";
     if (regex_match("^(205\\.196\\.|199\\.91\\.)[0-9]{2,3}\\.[0-9]{1,3}", url) != "") return "mediafire.com";
-	//if (regex_match("^speedtest[0-9]*(\\.|[a-z]|[0-9])+", url) != "") return "speedtest.net";
     if (regex_match("^(\\.|[a-z]|[0-9]|-)+(\\/\\w+)?(\\/speedtest)+\\/(random[0-9]+x[0-9]+\\.jpg|latency\\.txt)", url) != "") return "speedtest.net";
     if (regex_match("^[0-9]{2,3}\\.[0-9]{2,3}\\.[0-9]{2,3}\\.[0-9]{1,3}\\/youku\\/", url) != "") return "youku.com";
-    
+    if (regex_match("198\\.38\\.(9[6-9]|1[0-2][0-9])\\.[0-9]{1,3}\\/range\\/", url) != "") return "netflix.com";
 
 	
     vector<string> resultado;
@@ -571,6 +573,22 @@ string regex_match(string er, string line) {
     regmatch_t match;
     regex_t reg;
     if ((regcomp(&reg, er.c_str(), REG_EXTENDED | REG_NEWLINE)) == 0) {
+        error = regexec(&reg, line.c_str(), 1, &match, 0);
+        if (error == 0) {
+            //cout << "Tamanho: " << line.size() << " Inicio: " << match.rm_so << " Fim: " << match.rm_eo << endl;
+            return line.substr(match.rm_so, match.rm_eo - match.rm_so);
+        } else {
+            return "";
+        }
+    } else {
+        return "";
+    }
+}
+string regex_match_nocase(string er, string line) {
+    int error;
+    regmatch_t match;
+    regex_t reg;
+    if ((regcomp(&reg, er.c_str(), REG_EXTENDED | REG_NEWLINE | REG_ICASE)) == 0) {
         error = regexec(&reg, line.c_str(), 1, &match, 0);
         if (error == 0) {
             //cout << "Tamanho: " << line.size() << " Inicio: " << match.rm_so << " Fim: " << match.rm_eo << endl;

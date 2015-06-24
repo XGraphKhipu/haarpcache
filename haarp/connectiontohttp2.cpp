@@ -17,7 +17,6 @@ extern int LL; //LogLevel
 
 
 void ConnectionToHTTP2::getLimitBytes(string &header) {
-	//~ if (LL > 0) LogFile::AccessMessage("******************** NEW CONNECTION ********************\n");
 	if (LL > 0) LogFile::ErrorMessage("******************** NEW CONNECTION ********************\n");
 	range_min = 0;
 	range_max = 0;
@@ -253,7 +252,12 @@ void ConnectionToHTTP2::Cache() {
     limit = 0;
     np = 0;
     lranges = brange = lrangeswork = NULL;
-     
+	
+	fileHeaderLengthUnread = LENGTHHEADERFILE;
+	contentLengthServer = 0;
+	acumulateBodyLength = 0;
+	readFileHeader = "";
+	
     filesizeneto = size_orig_file = filedownloaded = filesended = expiration = 0;
     
     srand(time(0));
@@ -690,49 +694,19 @@ bool ConnectionToHTTP2::ReadHeader(string &headerT) {
             tmp << "HTTP/1.0 200 OK\r\n";
         else
             tmp << "HTTP/1.0 206 Partial\r\n";
-        //tmp << "Content-Disposition: attachment; filename=\"" + r.file + "\"\r\n";
-        
-		/*if( r.domain == "youtube" && (r.file).find("-") != string::npos ) {
-			char p[500];
-			strcpy(p,(r.file).c_str());
-			char *q = strstr(p, "-");
-			*q = '\0';
-			char *q1 = strstr(++q,".");
-			*q1 = '\0';
-			int itag = atoi(q);
-			if (LL > 1) LogFile::AccessMessage("Youtube - ITAG: '%i'(char:%s)\n", itag, q);
-			if(itag == 5 || itag == 34 || itag == 35)
-				tmp << "Content-Type: video/x-flv\r\n";
-			else if(itag == 17)
-				tmp << "Content-Type: video/3gpp\r\n";
-			else if( itag == 18 || itag == 22 || itag == 37 || itag == 38 || (itag >= 82 && itag <= 85) || (itag >= 133 && itag <= 137) || itag == 160 )
-				tmp << "Content-Type: video/mp4\r\n";
-			else if( itag >= 139 && itag <= 141 )
-				tmp << "Content-Type: audio/mp4\r\n";
-			else if( (itag >= 43 && itag <= 46) || (itag == 100 && itag == 102) )
-				tmp << "Content-Type: video/webm\r\n";
-			else if( (itag >= 171 && itag <= 172) )
-				tmp << "Content-Type: audio/webm\r\n";
-			else if( (itag >= 242 && itag <= 248) )
-				tmp << "Content-Type: video/webm\r\n";
-			else
-				tmp << "Content-Type: application/octet-stream\r\n";
-			if (LL > 1) LogFile::AccessMessage("Youtube - CABECERA_TMP: \n'%s'\n", (tmp.str()).c_str());
-		} else {        */
-			if (getFileExtension(r.file) == "SWF")
-				tmp << "Content-Type: application/x-shockwave-flash\r\n";
-			else if (getFileExtension(r.file) == "FLV")
-				//tmp << "Content-Type: video/x-flv\r\n";
-				tmp << "Content-Type: application/octet-stream\r\n";
-			else if (getFileExtension(r.file) == "MP4")
-				tmp << "Content-Type: video/mp4\r\n";
-			else if (getFileExtension(r.file) == "MP4A" && r.domain == "youtube")
-				tmp << "Content-Type: audio/mp4\r\n";
-			else if (getFileExtension(r.file) == "WEBM")
-				tmp << "Content-Type: video/webm\r\n";
-			else
-				tmp << "Content-Type: application/octet-stream\r\n";
-		//}
+            
+		if (getFileExtension(r.file) == "SWF")
+			tmp << "Content-Type: application/x-shockwave-flash\r\n";
+		else if (getFileExtension(r.file) == "FLV")
+			tmp << "Content-Type: application/octet-stream\r\n";
+		else if (getFileExtension(r.file) == "MP4")
+			tmp << "Content-Type: video/mp4\r\n";
+		else if (getFileExtension(r.file) == "MP4A" && r.domain == "youtube")
+			tmp << "Content-Type: audio/mp4\r\n";
+		else if (getFileExtension(r.file) == "WEBM")
+			tmp << "Content-Type: video/webm\r\n";
+		else
+			tmp << "Content-Type: application/octet-stream\r\n";
         tmp << "Content-Length: ";
         tmp << filesizeneto;
         tmp << "\r\n";
@@ -742,23 +716,37 @@ bool ConnectionToHTTP2::ReadHeader(string &headerT) {
         }
         tmp << "X-Cache: HIT from Haarp\r\n";
         tmp << "Haarp: HIT from " << r.domain << "\r\n";
-	//tmp << "Access-Control-Allow-Credentials: false\r\n";
-	if(r.domain == "youtube") {
-		tmp << "Accept-Ranges:bytes\r\n";
-		tmp << "Alternate-Protocol:80:quic\r\n";
-	}
-	if( origin_header != "" ) {
-		tmp << "Access-Control-Allow-Credentials:true\r\n";
-		tmp << "Access-Control-Allow-Origin:" << origin_header << "\r\n";	
-		tmp << "Timing-Allow-Origin:" << origin_header << "\r\n";
-	}
-        headerT = tmp.str();
-        return true;
+		//tmp << "Access-Control-Allow-Credentials: false\r\n";
+		if(r.domain == "youtube") {
+			tmp << "Accept-Ranges:bytes\r\n";
+			tmp << "Alternate-Protocol:80:quic\r\n";
+		}
+		if( origin_header != "" ) {
+			tmp << "Access-Control-Allow-Credentials:true\r\n";
+			tmp << "Access-Control-Allow-Origin:" << origin_header << "\r\n";	
+			tmp << "Timing-Allow-Origin:" << origin_header << "\r\n";
+		}
+		headerT = tmp.str();
+		return true;
 
     } else {
 		if(result)
 			return true;
 		bool re = ConnectionToHTTP2::ReadHeaderFromServer(headerT);
+		if(r.domain.find("NetflixID") != string::npos || r.domain.find("NetflixjsID") != string::npos) {
+			string clength = regex_match("Content-Length: [0-9]+(\r|\n|\t)*", headerT);
+			if (LL > 2) LogFile::ErrorMessage("clength = '%s'\n", clength.c_str());
+			if(clength != "") {
+				char c1[20], c2[30];
+				sscanf(clength.c_str(), "%s %s", c1, c2);
+				string sc1,sc2;
+				sc1 = c1;
+				sc2 = c2;
+				SearchReplace(headerT, sc1 + " " + sc2, sc1 + " " + itoa(atoi(c2) + 3000));
+				sc1 = sc1 + " " + itoa(atoi(c2) + 3000);
+				if (LL > 2) LogFile::ErrorMessage("clength_new = '%s'\n", sc1.c_str());
+			}
+		}
 		return re;
 	}
 	
@@ -780,8 +768,9 @@ int64_t ConnectionToHTTP2::GetContentLength() {
 	if (hit)
         	tmp = filesizeneto;
 	else {
-        	int64_t ContentLengthReference;
+		int64_t ContentLengthReference;
 		ContentLengthReference = ConnectionToHTTP::GetContentLength(); //del server..
+		contentLengthServer = ContentLengthReference;
 		if (LL > 2) LogFile::ErrorMessage("ContentLength: "LLD"\n", ContentLengthReference);
 		if (r.match) {
 			if ((
@@ -793,15 +782,19 @@ int64_t ConnectionToHTTP2::GetContentLength() {
 						Params::GetConfigInt(UpperCase(r.domain) + "_MAX") > 0
 					)
 				)
-			)  
+			)
 			{
 				r.match = general = false;
 				if(!exists_transaction_editing_file) liberate_edition();
-                		if (LL > 0) LogFile::AccessMessage("MAXMIN CANCEL: Domain: %s File: %s Size: "LLD"\n", r.domain.c_str(), r.file.c_str(), filesizeneto);
-            		}
-        	}
-        	tmp = ContentLengthReference;
-    	}
+				if (LL > 0) LogFile::AccessMessage("MAXMIN CANCEL: Domain: %s File: %s Size: "LLD"\n", r.domain.c_str(), r.file.c_str(), filesizeneto);
+			}
+		}
+		//~ else {
+			//~ if ( r.domain.find("NetflixID") != string::npos || r.domain.find("NetflixjsID") != string::npos )
+				//~ ContentLengthReference += 3000;
+		//~ }
+		tmp = ContentLengthReference;
+    }
 	return tmp;
 }
 bool ConnectionToHTTP2::IsItChunked() {
@@ -861,18 +854,18 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
     string bodyTTemp = "";
 
     if (resuming) {
-	if (LL > 0) LogFile::AccessMessage("Pasando por ReadBodyPart -RESUMING!- (10)\n");
-        string bodyTmp = "";
-        BodyLength = downloader.ReadBodyPart(bodyTmp, Chunked);
-        if (!outfile.is_open()) {
-            outfile.open(string(completefilepath).c_str(), ios::out | ios::app | ios::binary);
-        }
-        if (BodyLength > 0)
-            outfile.write(bodyTmp.c_str(), BodyLength);
-        if ((time(NULL) - timerecord2) > 1) {
-            outfile.flush();
-            file_setmodif(completefilepath);
-        }
+		if (LL > 0) LogFile::AccessMessage("Pasando por ReadBodyPart -RESUMING!- (10)\n");
+			string bodyTmp = "";
+			BodyLength = downloader.ReadBodyPart(bodyTmp, Chunked);
+			if (!outfile.is_open()) {
+				outfile.open(string(completefilepath).c_str(), ios::out | ios::app | ios::binary);
+			}
+			if (BodyLength > 0)
+				outfile.write(bodyTmp.c_str(), BodyLength);
+			if ((time(NULL) - timerecord2) > 1) {
+				outfile.flush();
+				file_setmodif(completefilepath);
+			}
     }
 
     
@@ -948,20 +941,264 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
         BodyLengthTmp = BodyLength;
 		// HACEMOS UN TRACK DEL VIDEO
 		if (r.domain.find("youtube_IDs") != string::npos) 
-		{	
+		{
 			bodyTTemp = bodyT;
 			SearchReplace(bodyTTemp ,"videoplayback%3F","TEMPORAL");
 			SearchReplace(bodyTTemp ,"TEMPORAL","videoplayback%3Fwatchid%3D"+r.file+"%26");
 				
 			bodyT = bodyTTemp;
+		} else if (r.domain.find("NetflixID") != string::npos)
+		{
+			bodyTTemp = bodyT;
+			string strobject = "wwwplayer-2.0000.262.011.js\"";
+			string strreplace = "wwwplayer-2.0000.262.011.js?watchid=" + r.file + "\"";
+			int n = SearchReplace(bodyTTemp , strobject, strreplace);
+			bodyT = bodyTTemp;
+			BodyLength += n*(strreplace.size() - strobject.size());
+			acumulateBodyLength += BodyLength;
+			int64_t diffLength = contentLengthServer - acumulateBodyLength;
+			if (LL > 2) LogFile::ErrorMessage("[DEBUG]BodyLength: '%i', acuBodyLength: "LLD", contentLengthServer: "LLD"\n", BodyLength, acumulateBodyLength, contentLengthServer);
+			if( diffLength <= 3000) {
+				//~ if (LL > 2) LogFile::ErrorMessage("[DEBUG] OK entro!!!!: diff : "LLD"\n", diffLength);
+				string spaces(diffLength, ' ');
+				bodyT += spaces;
+				BodyLength += spaces.size();
+				acumulateBodyLength += spaces.size();
+				if (LL > 2) LogFile::ErrorMessage("[DEBUG]Entro! BodyLength: '%i', acuBodyLength: "LLD", contentLengthServer: "LLD"\n", \ 
+																BodyLength, acumulateBodyLength, contentLengthServer);
+				if (LL > 2) LogFile::ErrorMessage("[DEBUG] OK entro!!!!: BODY[%i]\n", BodyLength);
+			} else {
+				//~ if (LL > 2) LogFile::ErrorMessage("[DEBUG] No entro!: diff : "LLD"\n", diffLength);
+			}
+		} else if (r.domain.find("NetflixjsID") != string::npos)
+		{
+			int n;
+			string strobject, strreplace;
+			bodyTTemp = bodyT;
+			
+			//~ strobject = "function fd(a,b,c,d){var";
+			//~ //string strreplace = "function fd(a,b,c,d){console.log(b);if(b.search(\"?o=\")>=0){b+='&watchid=" + r.file + "';} var";
+			//~ strreplace = "function fd(a,b,c,d){console.dir('url=\"'+b+'\"'); console.dir('a=\"'+a+'\"');var ";
+			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
+			//~ BodyLength += n*(strreplace.size() - strobject.size());
+
+			/*strobject = "};yd(u(f)&&!c.test(f));";
+			strreplace = "};console.dir('vd(),f:');console.dir(f);yd(u(f)&&!c.test(f));console.dir('pos yd(u())');console.dir(f);";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
+			*/
+			//~ strobject = "I;h.B(Gl,D,!0);";
+			//~ strreplace = "I;console.dir('***************');console.dir('D_1.url='+D.url);h.B(Gl,D,!0);console.dir('D_2.url='+D.url);console.log('b_Antes='+b.url);";
+			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
+			//~ BodyLength += n*(strreplace.size() - strobject.size());
+			
+			//~ strobject = "D=function(){var";
+			//~ strreplace = "D=function(){console.dir('Entro!'); var";
+			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
+			//~ BodyLength += n*(strreplace.size() - strobject.size());
+			
+			//~ strobject = "q(L.rl)});return D";
+			//~ strreplace = "q(L.rl)});console.log('D_3.url='+D.url);return D";
+			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
+			//~ BodyLength += n*(strreplace.size() - strobject.size());
+			
+			/*strobject = ",fd(B,A,!1,b),p(";
+			strreplace = ",console.dir('fd()-Antes='+A), fd(B, A, !1, b), console.dir('fd()-Depois='+A), p(";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
+			
+			strobject = "if(a(b.url))try{Ad(b,D),";
+			strreplace = "if(a(b.url))try{console.dir('b-ants='+b.url),Ad(b, D),console.dir('b-des='+b.url),";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
+			
+			strobject = "r,O:function(b,c,n){fun";
+			strreplace = "r,O:function(b,c,n){console.dir('_-_INIT_-_b.url='+b.url);fun";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
+			
+			strobject = "Af(a){Yc.O";
+			strreplace = "Af(a){console.dir('Af()|x.xg=\"'+x.xg+'\"');Yc.O";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
+			
+			strobject = "function(c,d){c.Ha=a;";
+			strreplace = "function(c,d){console.dir('CF()-c.url='+c.url);c.Ha=a;";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
+			
+			strobject = "tion(b,c){b.Ha=a;";
+			strreplace = "tion(b,c){console.dir('we()-b.url='+b.url);b.Ha=a;";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
+			
+			strobject = "c,d){if(c.R";
+			strreplace = "c,d){console.dir('b()_url='+c.Ra[a.id]);if(c.R";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
+			
+			strobject = "a.O(ua,d),n())}";
+			strreplace = "a.O(ua,d),n());console.dir('q().url='+ua.url);}";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
+			
+			strobject = "a.O(ua,d),n())}";
+			strreplace = "a.O(ua,d),n());console.dir('q().url='+ua.url);}";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
+			
+			strobject = "};c.va.O(n,";
+			strreplace = "};console.dir('n.url='+n.url);c.va.O(n,";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
+			*/
+			//~ strobject = "O(r,g));Ga(";
+			//~ strreplace = "O(r,g));console.dir('le()_z.url='+z.url);console.dir('le()_r.url='+r.url);Ga(";
+			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
+			//~ BodyLength += n*(strreplace.size() - strobject.size());
+			//~ 
+			//~ strobject = "O(r,g));Ga(";
+			//~ strreplace = "O(r,g));console.dir('le()_z.url='+z.url);console.dir('le()_r.url='+r.url);Ga(";
+			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
+			//~ BodyLength += n*(strreplace.size() - strobject.size());
+			/*
+			strobject = ":l.length});r.O";
+			strreplace = ":l.length});console.dir('$f()-url='+l.url);r.O";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
+			
+			strobject = "),r.O(l,g)}";
+			strreplace = "),r.O(l,g);console.dir('$f()pos-url='+l.url);}";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
+			*/
+			//~ strobject = "});u.O(m,h)}";
+			//~ strreplace = "});console.dir('of().url='+m.url);u.O(m,h)}";
+			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
+			//~ BodyLength += n*(strreplace.size() - strobject.size());
+			//~ 
+			//~ strobject = ",u.O(m,k)}}";
+			//~ strreplace = ",u.O(m,k);console.dir('of()_pos.url='+m.url);}}";
+			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
+			//~ BodyLength += n*(strreplace.size() - strobject.size());
+			
+			//~ strobject = "w});z={t";
+			//~ strreplace = "w});console.dir('h().url='+d.url);z={t";
+			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
+			//~ BodyLength += n*(strreplace.size() - strobject.size());
+			//~ ********************
+			/*strobject = "response=k.O(t,c);a.";
+			strreplace = "response=k.O(t,c);console.dir('f(a)c(a).url='+t.url);a.";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
+			
+			strobject = "g;g.response=h.O(c";
+			strreplace = "g;console.dir('f(a)-_-url='+c.url);g.response=h.O(c";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
+			
+			strobject = "};a.va.O(f";
+			strreplace = "};console.dir('r(a)-_-url='+f.url);a.va.O(f";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
+			
+			strobject = "1);a.va.O(d,";
+			strreplace = "1);console.dir('w(b,c)-_-url='+d.url);a.va.O(d,";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
+			
+			strobject = "u);a.va.O({";
+			strreplace = "u);console.dir('l(b)-_-url='+b.url);a.va.O({";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
+			
+			strobject = "b;var f=d.O(a,";
+			strreplace = "b;console.dir('c(b)-_-url='+b.url);var f=d.O(a,";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
+			
+			strobject = "}));l.O({";
+			strreplace = "}));console.dir('p(b)-_-url='+q);l.O({";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
+			*/
+			//~ strobject = ",p),u.O(m,k)}";
+			//~ strreplace = ",p),u.O(m,k);console.dir('of()_pos.url='+m.url);}";
+			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
+			//~ BodyLength += n*(strreplace.size() - strobject.size());
+			
+			/*strobject = "nction bd(a,b,c){var d";
+			//~ strreplace = "nction bd(a,b,c){console.dir('bd()_b');console.dir(b);console.dir('bd()_c.id=\"'+c.id+'\"');console.dir(c);var d";
+			strreplace = "nction bd(a,b,c){console.dir('bd()_b');console.dir(b);console.log('bd()_c:');console.dir(c);var d";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
+			
+			strobject = "p,l){function q(a,h)";
+			strreplace = "p,l){console.log('TE()_p=');console.dir(p);function q(a,h)";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
+			
+			strobject = "k++){var n=new qd(this,";
+			strreplace = "k++){console.dir('Pc()_this:');console.dir(this);var n=new qd(this,";
+			//~ strreplace = "k++){console.dir('Pc()_this:');console.dir(this);console.dir(this.Gc());console.dir(this.Gc().jf);var n=new qd(this,";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
+			
+			strobject = "ction qd(a,b,c){function d";
+			strreplace = "ction qd(a,b,c){console.dir('qd()_a.Gc()');console.dir(a.Gc());console.dir(a);function d";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
+			
+			strobject = "on f(a){function c(a)";
+			strreplace = "on f(a){console.dir('pasando por f(a)_:');console.dir(a);function c(a)";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
+			*/
+			//~ strobject = "){var a=w.Gc();if";
+			//~ strreplace = "){var a=w.Gc();console.dir('Detective...a=');console.dir(a);if";
+			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
+			//~ BodyLength += n*(strreplace.size() - strobject.size());
+			
+			
+			//~ *************************************************************************************
+			//~ strobject = "h.B(Fl,D,!0)}func";
+			//~ strreplace = "h.B(Fl,D,!0); console.dir('D_in_l2()'); console.dir(D.url);}func";
+			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
+			//~ BodyLength += n*(strreplace.size() - strobject.size());
+			//~ 
+			//~ strobject = "l(){l=";
+			//~ strreplace = "l(){console.dir('D_in_l1()'); console.dir(D.url);l=";
+			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
+			//~ BodyLength += n*(strreplace.size() - strobject.size());
+			
+			//~ strobject = "}var w=b.Ha&&";
+			//~ strreplace = "}console.dir('antes_D:');console.dir(D);var w=b.Ha&&";
+			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
+			//~ BodyLength += n*(strreplace.size() - strobject.size());
+			
+			acumulateBodyLength += BodyLength;
+			bodyT = bodyTTemp;
+			int64_t diffLength = contentLengthServer - acumulateBodyLength;
+			if (LL > 2) LogFile::ErrorMessage("[DEBUG]BodyLength: '%i', acuBodyLength: "LLD", contentLengthServer: "LLD"\n", BodyLength, acumulateBodyLength, contentLengthServer);
+			if( diffLength <= 3000) {
+				string spaces(diffLength, ' ');
+				bodyT += spaces;
+				BodyLength += spaces.size();
+				acumulateBodyLength += spaces.size();
+				if (LL > 2) LogFile::ErrorMessage("[DEBUG]Entro! BodyLength: '%i', acuBodyLength: "LLD", contentLengthServer: "LLD"\n", \ 
+																BodyLength, acumulateBodyLength, contentLengthServer);
+				if (LL > 2) LogFile::ErrorMessage("[DEBUG] OK entro!!!!: BODY[%i]\n", BodyLength);
+			} else {
+				if (LL > 2) LogFile::ErrorMessage("[DEBUG] No entro!: diff : "LLD"\n", diffLength);
+			}
 		}
 		//
         else if (r.match) {
             if ( !cachefile.is_open() ) {
-		if ( !file_exists(completefilepath) ) {
-			cachefile.open(string(completefilepath).c_str(), ios::out | ios::binary);
-			cachefile.close();
-		}
+				if ( !file_exists(completefilepath) ) {
+					cachefile.open(string(completefilepath).c_str(), ios::out | ios::binary);
+					cachefile.close();
+				}
                 cachefile.open(string(completefilepath).c_str(), ios::out | ios::binary | ios::in);
                 /**/
                 bwrite = 0;

@@ -44,7 +44,7 @@ static const std::string base64_chars =
              "012!34jklmA*BCDEVWXYZ56/";
 
 string UpperCase( string CaseString );
-void SearchReplace( string &source, string search, string replace );
+int SearchReplace( string &source, string search, string replace );
 int select_eintr( int fds, fd_set *readfds, fd_set *writefds, fd_set *errorfds, struct timeval *timeout );
 bool MatchSubstr(string &hay, const char* needle, int startpos);
 bool MatchBegin(string &hay, const char *needle, int needlelength);
@@ -57,6 +57,7 @@ void mkdir_p(const string &pathname);
 string getfilepath(string path);
 string getfilename(string path);
 string regex_match(string er, string line);
+string regex_match_nocase(string er, string line);
 string itoa(int val);
 double now();
 long file_getmodif( string szFileName );

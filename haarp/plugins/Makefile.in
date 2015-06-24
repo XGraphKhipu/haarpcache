@@ -4,9 +4,12 @@ OBJECTS = grandchase.com.br.so \
 	eset.com.so \
         vimeo.com.so \
 	kaspersky.com.so \
+	netflix.com.so \
 	xvideos.com.so \
 	bitdefender.net.so \
 	bitdefender.com.so \
+	avira-update.com.so \
+	nflximg.net.so \
 	globo.com.so \
 	vsh.r7.com.so \
 	4shared.com.so \
@@ -56,7 +59,7 @@ all: plugins cteste copiar
 
 plugins: $(OBJECTS)
 
-%.so: %.cpp 
+%.so: %.cpp  ../utils.cpp ../utils.h
 	$(CXX) -I. -fPIC -shared -O2 -o $@ $<
 	
 cteste: teste.c ../utils.cpp ../utils.h
@@ -76,6 +79,7 @@ copiar:
 	cp orkut.com.so orkut.com.br.so
 	cp speedtest.net.so testdevelocidad.es.so
 	cp vimeo.com.so vimeocdn.com.so
+	cp nflximg.net.so nflximg.com.so
 
 clean:
 	rm -f *.so
