@@ -19,7 +19,7 @@
 //~ http://av.vimeo.com/17006/420/87032681.mp4?aktimeoffset=274.17&aksessionid=67f6a706ff68cb7d536d4780a6a4b547&token=1360340090_df3e2e41cd75dedd44cdf2b34b09e894
 //~ http://pdl.vimeocdn.com/18839/916/216734641.mp4?token2=1389465784_7d86f62d3a036e2ca2957653fb1b54af&aksessionid=03eae128c014a885
 //~ ^http.{1,4}(\w|\.|-)*\.vimeo(cdn)?.com\/.*\.mp4(\?.*)?$
-string get_filename(string url, int *ra, int *rb) {
+string get_filename(string url, long long int *ra, long long int *rb) {
 	vector<string> resultado;
 	stringexplode(url,"/",&resultado);
 	url = resultado.at(resultado.size() - 1);

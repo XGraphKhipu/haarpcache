@@ -7,34 +7,38 @@
 #include <string>
 #include <vector>
 
+//~ typedef long long int LLI;
+
 using namespace std;
+
+#define DELIM "_-DELHAARP-_"
 
 struct resposta {
 	bool match;
 	string domain;
 	string file;
-	int range_min;
-	int range_max;
+	long long int range_min;
+	long long int range_max;
 	bool exist_range;	
 };
 typedef struct lista {
-	int a;
-	int b;
-	int p;
+	long long int a;
+	long long int b;
+	long long int p;
 	struct lista * next;
 } llista;
 
-int getExtremeb(llista *primer);
+long long int getExtremeb(llista *primer);
 int generateList(string ranges, string parts, llista **primer);
-int getPointEnd(llista *primer);
-llista *getRangeWork(llista **primer,int ra, int rb, bool *hit);
+long long int getPointEnd(llista *primer);
+llista *getRangeWork(llista **primer,long long int ra, long long int rb, bool *hit);
 llista *getlastnode(llista *primer);
 bool appendNode(llista **primer, llista *n);
-bool appendSubNode(llista **primer, llista *n, int lenght_);
+bool appendSubNode(llista **primer, llista *n, long long int lenght_);
 void ordenar(llista **primer);
 void list2string(llista *primer,string &s1, string &s2);
 void list_clear(llista **primer);
-long int getFileSize(llista *primer);
+long long int getFileSize(llista *primer);
 bool is_all_hit(llista *p);
 string trimstr(string str);
 
@@ -50,6 +54,7 @@ bool MatchSubstr(string &hay, const char* needle, int startpos);
 bool MatchBegin(string &hay, const char *needle, int needlelength);
 void stringexplode(string str, string separator, vector<string>* results);
 void stringexplodetrim(string str, string separator, vector<string>* results);
+void splitstring(string str, string separator, vector<string>* results);
 string getdomain(string url);
 bool file_exists(string strFilename);
 int64_t file_size( string szFileName );

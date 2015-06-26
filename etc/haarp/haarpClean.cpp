@@ -63,7 +63,7 @@ int main(int carg, char **varg) {
         vector<string> list_dir;
 	bool limit_surpassed=false;
 	double expected_deletion=0;
-	double disk_occupied_space;
+	//~ double disk_occupied_space;
 	double disk_space;
 	double use_percent;
 
@@ -84,7 +84,7 @@ int main(int carg, char **varg) {
 	stringexplode(cachedir,"|",&list_dir);
         for(int i=0;i < (int)list_dir.size();i++) {
 
-		disk_occupied_space=disk_occupation(list_dir.at(i));
+		//~ disk_occupied_space=disk_occupation(list_dir.at(i));
 		disk_space=disk_size(list_dir.at(i));
 		use_percent=disk_use(list_dir.at(i));
 		printf("Disk size : %.2lf MB, %.2lf GB\n",disk_space/(1048576),disk_space/(1073741824));
@@ -138,20 +138,29 @@ int main(int carg, char **varg) {
                 }
 		//mysql_query(connect,"select domain,file,last_request,filesize,requested from haarp where deleted=0 order by last_request, requested, filesize DESC limit 10");
 		res = mysql_store_result(connect);
-
+		char fname[800];
 		while ((r = mysql_fetch_row(res)) != NULL && use_percent >= atof(cachelimit.c_str()) && deleted <= expected_deletion) {
 			nloop++;
+			strcpy(fname, r[1]);
 			strcpy(file,"\0");
-			subdir = ConvertChar(r[1]);
+			if(!strcmp(r[0],"netflix")) {
+				vector<string> lfname;
+				splitstring(fname, DELIM, &lfname);
+				if( lfname.size() < 3 )
+					continue;
+				string fnewname = lfname.at(0) + DELIM + lfname.at(1);
+				strcpy(fname, fnewname.c_str());
+			}
+			subdir = ConvertChar(fname);
 			for(int j = 0;j < (int)list_dir.size();j++) {
-				sprintf(file,"%s%s/%s/%s",(list_dir.at(j)).c_str(),r[0],subdir.c_str(),r[1]);
+				sprintf(file,"%s%s/%s/%s",(list_dir.at(j)).c_str(),r[0],subdir.c_str(),fname);
 				if(file_exists(string(file)))
 					break;
 			}
 			if(!file)
 				continue;
 			//sprintf(query,"update haarp set deleted=1 where file='%s' and domain='%s'",sqlconv(r[1]).c_str(),r[0]);
-			sprintf(query,"DELETE FROM haarp where file='%s' and domain='%s'",sqlconv2(r[1]).c_str(),r[0]);
+			sprintf(query,"DELETE FROM haarp where file='%s' and domain='%s'",sqlconv2(fname).c_str(),r[0]);
 			if(mysql_query(connect,query)) {
 				cout<<"MYSQL Error: Query: '"<<query<<"'; "<<mysql_error(connect)<<endl;
 				continue;

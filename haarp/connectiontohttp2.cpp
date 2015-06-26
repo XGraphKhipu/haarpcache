@@ -40,12 +40,12 @@ void ConnectionToHTTP2::getLimitBytes(string &header) {
 			if(!rangeb.size())
 				continue;
 			if(rangeb.size() == 1) {
-				range_min = atoi(rangeb.at(0).c_str());
+				range_min = atoll(rangeb.at(0).c_str());
 				range_max = -1;
 			}
 			else {
-				range_min = atoi(rangeb.at(0).c_str());
-				range_max = atoi(rangeb.at(1).c_str());
+				range_min = atoll(rangeb.at(0).c_str());
+				range_max = atoll(rangeb.at(1).c_str());
 			}
 			//break;
 		}
@@ -54,16 +54,16 @@ void ConnectionToHTTP2::getLimitBytes(string &header) {
 		}
 	}
 }
-int ConnectionToHTTP2::getOnlyContentLength( string header ) {
+long long int ConnectionToHTTP2::getOnlyContentLength( string header ) {
 	vector<string> lines, value;
 	stringexplode(header, "\r\n", &lines);
-	int result = -1;
+	long long int result = -1;
 	for (int i = 0; i <= (int)lines.size() - 1; i++) {
 		if (lines.at(i).find("HTTP") == 0 && lines.at(i).find("200") == string::npos && lines.at(i).find("206") == string::npos)
 			return -1;		
 		if (lines.at(i).find("Content-Length:") == 0) {
 			stringexplode(lines.at(i), ":", &value);
-			result = atoi(value.at(1).c_str());
+			result = atoll(value.at(1).c_str());
 		}
 	}
 	return result;
@@ -72,7 +72,7 @@ int ConnectionToHTTP2::getOnlyContentLength( string header ) {
  * size_orig_file es el tamaño del archivo en disco.
  * size es el tamaño del archivo real, en el servidor (0: desconocido).
  */
-void ConnectionToHTTP2::Cache2( int cl ) {
+void ConnectionToHTTP2::Cache2( long long int cl ) {
 	
 	if( !size_orig_file && range_max <= 0) {
 		size_orig_file = cl + range_min;
@@ -137,7 +137,7 @@ void ConnectionToHTTP2::Update(){
 		if( !hasupdate )
 		{
 			list2string(lranges,rang_,part_);
-			long int f_n = getFileSize(lranges);
+			long long int f_n = getFileSize(lranges);
 			stringstream stmp0,stmp1;
 			stmp0<<f_n;
 			stmp1<<np;
@@ -158,7 +158,7 @@ void ConnectionToHTTP2::Update(){
 void ConnectionToHTTP2::SubUpdate() {
 	string rang_, part_;
 	list2string(lranges,rang_,part_);
-	long int f_n = getFileSize(lranges);
+	long long int f_n = getFileSize(lranges);
 	stringstream stmp0,stmp1;
 	stmp0<<f_n;
 	stmp1<<np;
@@ -170,38 +170,65 @@ void ConnectionToHTTP2::SubUpdate() {
 /* 
  * return '-1' for error of mysql, '1' for OK, and '0' for not OK.
  * */
-int ConnectionToHTTP2::lockFile() {
+int ConnectionToHTTP2::lockFile(int singleDomain) {
+	vector<string> lname;
+	
+	if(singleDomain) splitstring(r.file, DELIM, &lname);
+	
+	if ( singleDomain && lname.size() == 1 ) {
+		if(LL > 2) LogFile::ErrorMessage("[DEBUG] Problem with the file '%s', format not correct!\n", r.file.c_str());
+		return 0;
+	} else if(singleDomain) {
+		if(LL > 2) LogFile::ErrorMessage("[DEBUG] file '%s', parts: '%s', '%s'!\n", r.file.c_str(), lname.at(0).c_str(), lname.at(1).c_str());
+	}
 	if ( domaindb.set("START TRANSACTION;") != 0 ) 
 		return -1;
 	
-	if ( domaindb.get("SELECT * FROM haarp WHERE file='" + domaindb.sqlconv(r.file) + "' and domain='" + r.domain + "' FOR UPDATE;") != 0 ) {
-		domaindb.set("ROLLBACK;");
-		return -1;
-	}
-	if ( !domaindb.get_num_rows() ) {
-		if (LL > 2) LogFile::ErrorMessage("[DEBUG] File %s [%i-%i] NOT EXISTS ON DB =========================.===========\n", r.file.c_str(), range_min, range_max);
-		if ( domaindb.set("INSERT INTO haarp (domain, file, size, modified, downloaded, requested, last_request, file_used) VALUES ('" + r.domain + "', '" + domaindb.sqlconv(r.file) + "', 0, now(),now(),0,now(), 1);") != 0) {
+	if(singleDomain == 0) {
+		if ( domaindb.get("SELECT * FROM haarp WHERE file='" + domaindb.sqlconv(r.file) + "' and domain='" + r.domain + "' FOR UPDATE;") != 0 ) {
 			domaindb.set("ROLLBACK;");
-			LogFile::ErrorMessage("[DEBUG] File %s [%i-%i] Error on INSERT! (NOT EXISTS FILE ON DB) ========.=======\n", r.file.c_str(), range_min, range_max);
 			return -1;
 		}
+	}
+	else {
+		string query_mysql = "SELECT * FROM haarp WHERE file like '" + domaindb.sqlconv(lname.at(0)) + DELIM"%"DELIM + domaindb.sqlconv(lname.at(1)) + "' and domain='" + r.domain + "' FOR UPDATE;";
+		if ( domaindb.get(query_mysql) != 0 ) {
+			if(LL > 2) LogFile::ErrorMessage("[DEBUG] Error, mysql query: '%s'!!\n", query_mysql.c_str());
+			domaindb.set("ROLLBACK;");
+			return -1;
+		}
+	}
+	if ( !domaindb.get_num_rows() ) {
+		if (LL > 2) LogFile::ErrorMessage("[DEBUG] File %s [%lli-%lli] NOT EXISTS ON DB =========================.===========\n", r.file.c_str(), range_min, range_max);
+		if ( singleDomain == 0 )
+			if ( domaindb.set("INSERT INTO haarp (domain, file, size, modified, downloaded, requested, last_request, file_used) VALUES ('" + r.domain + "', '" + domaindb.sqlconv(r.file) + "', 0, now(),now(),0,now(), 1);") != 0) {
+				domaindb.set("ROLLBACK;");
+				LogFile::ErrorMessage("[DEBUG] File %s [%lli-%lli] Error on INSERT! (NOT EXISTS FILE ON DB) ========.=======\n", r.file.c_str(), range_min, range_max);
+				return -1;
+			}
 		domaindb.set("COMMIT;");
 		return 1;
 	} else {
-		if (LL > 2) LogFile::ErrorMessage("[DEBUG] File %s [%i-%i] EXISTS ON DB =============================.===========\n", r.file.c_str(), range_min, range_max);
-		if( domaindb.get("SELECT abs(unix_timestamp(now()) - UNIX_TIMESTAMP(modified))<=30 as difftime, file_used FROM haarp WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") != 0 ) {
+		if (LL > 2) LogFile::ErrorMessage("[DEBUG] File %s [%lli-%lli] EXISTS ON DB =============================.===========\n", r.file.c_str(), range_min, range_max);
+		if ( singleDomain ) {
+			if(LL > 2) LogFile::ErrorMessage("[DEBUG] Change r.file for netflix; old name: '%s'\n", r.file.c_str());
+			r.file = domaindb.get("file", 1);
+			if(LL > 2) LogFile::ErrorMessage("[DEBUG] Change r.file for netflix; new name: '%s'\n", r.file.c_str());
+		}
+		string mysql_query = "SELECT abs(unix_timestamp(now()) - UNIX_TIMESTAMP(modified))<=30 as difftime, file_used FROM haarp WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';";
+		if ( domaindb.get(mysql_query) != 0 ) {
 			domaindb.set("ROLLBACK;");
 			return -1;
 		}
 		string difftime  = domaindb.get("difftime",  1);
 		string file_used = domaindb.get("file_used", 1);
-		if( !atoi(file_used.c_str()) ) {
+		if ( !atoi(file_used.c_str()) ) {
 			if ( domaindb.set("UPDATE haarp set modified=now(), file_used=1 WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") != 0 ) {
-				if (LL > 2) LogFile::ErrorMessage("[DEBUG] File %s [%i-%i] status is ..... BLOCKED or ERROR MYSQL!.\n", r.file.c_str(), range_min, range_max);	
+				if (LL > 2) LogFile::ErrorMessage("[DEBUG] File %s [%lli-%lli] status is ..... BLOCKED or ERROR MYSQL!.\n", r.file.c_str(), range_min, range_max);	
 				domaindb.set("ROLLBACK;");
 				return -1;
 			}
-			if (LL > 2) LogFile::ErrorMessage("[DEBUG] File %s [%i-%i] BLOCKING from mysql.\n", r.file.c_str(), range_min, range_max);	
+			if (LL > 2) LogFile::ErrorMessage("[DEBUG] File %s [%lli-%lli] BLOCKING from mysql.\n", r.file.c_str(), range_min, range_max);	
 			domaindb.set("COMMIT;");
 			return 1;
 		}
@@ -216,11 +243,11 @@ int ConnectionToHTTP2::lockFile() {
 					domaindb.set("ROLLBACK;");
 					return -1;
 				}
-				if (LL > 2) LogFile::ErrorMessage("[DEBUG] File %s [%i-%i] BLOCKING STRICT from mysql.\n", r.file.c_str(), range_min, range_max);
+				if (LL > 2) LogFile::ErrorMessage("[DEBUG] File %s [%lli-%lli] BLOCKING STRICT from mysql.\n", r.file.c_str(), range_min, range_max);
 				domaindb.set("COMMIT;");
 				return 1;
 			}
-		} else { 
+		} else {
 			if(LL > 1) LogFile::ErrorMessage("Warning: not exist the file '%s' in the DB?, please check your column 'modified'.\n", r.file.c_str());
 			domaindb.set("ROLLBACK;");
 			return -1;
@@ -234,17 +261,19 @@ bool ConnectionToHTTP2::liberate_edition() {
 	if( was_liberate ) 
 		return true;
 	bool re = domaindb.set("UPDATE haarp set file_used=0 WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';");
-	if (LL > 2) LogFile::ErrorMessage("[DEBUG] File %s [%i-%i] LIBERATE edition from mysql.\n", r.file.c_str(), range_min, range_max);
+	if (LL > 2) LogFile::ErrorMessage("[DEBUG] File %s [%lli-%lli] LIBERATE edition from mysql.\n", r.file.c_str(), range_min, range_max);
 	if ( !re ) 
 		was_liberate = true;
 	return re;
 }
 
 void ConnectionToHTTP2::Cache() {
+	if (LL > 2) LogFile::ErrorMessage("Pasando por Cache (1.2)\n");
     msghit = "MISS";
     hasupdate = false;
     unlimit = false;
     miss2hit = false;
+    haveUpdateDB = false;
     count_wait = 0;
     exists_transaction_editing_file = true;
     was_liberate = false;
@@ -263,11 +292,13 @@ void ConnectionToHTTP2::Cache() {
     srand(time(0));
     
     if (LL > 0) LogFile::AccessMessage("Url %s%s\n", domain.c_str(), request.c_str());
+    if (LL > 2) LogFile::ErrorMessage("[DEBUG_Cache] Url %s%s\n", domain.c_str(), request.c_str());
     string domaintmp = getdomain(domain + request); //youtube.com
     string pluginpath = pluginsdir + domaintmp + ".so";
 	
     if (file_exists(pluginpath)) {
         if (LL > 0) LogFile::AccessMessage("Loading plugin %s\n", pluginpath.c_str());
+        if (LL > 2) LogFile::ErrorMessage("[DEBUG_Cache] Loading plugin %s\n", pluginpath.c_str());
         void* handle = dlopen(pluginpath.c_str(), RTLD_LAZY);
         if (!handle) {
             if (LL > 0) LogFile::ErrorMessage("Cannot open library: %s\n", dlerror());
@@ -283,7 +314,7 @@ void ConnectionToHTTP2::Cache() {
 				range_min = r.range_min;
 				range_max = r.range_max;
 				if(partial)
-					if (LL > 2) LogFile::ErrorMessage("Partial file: '%s' [%i-%i]\n", (r.file).c_str(), range_min, range_max);
+					if (LL > 2) LogFile::ErrorMessage("Partial file: '%s' [%lli-%lli]\n", (r.file).c_str(), range_min, range_max);
 			}
 			else { //is partial and range_max != 0.
 				if( r.domain == "youtube" ) {
@@ -300,14 +331,20 @@ void ConnectionToHTTP2::Cache() {
 					r.file = "206-" + r.file;
 				
 			}
-			if (LL > 1) LogFile::AccessMessage("Ranges received: range_min=%d, range_max=%d\n", range_min, range_max);
+			if (LL > 1) LogFile::AccessMessage("Ranges received: range_min=%lli, range_max=%lli\n", range_min, range_max);
             if (LL > 0) LogFile::AccessMessage("Resposta Match %d Domain %s File %s\n", r.match, r.domain.c_str(), r.file.c_str());
+			if (LL > 2) LogFile::ErrorMessage("[DEBUG_Cache] Ranges received: range_min=%lli, range_max=%lli\n", range_min, range_max);
+            if (LL > 2) LogFile::ErrorMessage("[DEBUG_Cache] Resposta Match %d Domain %s File %s\n", r.match, r.domain.c_str(), r.file.c_str());
         }
     }
 	
     if (r.match) { // Es la url de un dominio
 		
-		int lfile = lockFile();
+		int lfile;
+		if(r.domain == "netflix")
+			lfile = lockFile(1);
+		else
+			lfile = lockFile(0);
 		
 		if ( lfile <= 0 ) {
 			if( lfile == -1 ) LogFile::ErrorMessage("Error mysql: '%s'\n", domaindb.getError().c_str());			
@@ -330,9 +367,22 @@ void ConnectionToHTTP2::Cache() {
 			directory = trimstr(list_dir.at(i));
 			
 			completepath = directory + r.domain;
-			
-			completefilepath = completepath + "/" + subdir + "/" + r.file;
-			
+			if(r.domain == "netflix") {
+				vector<string> lfilename;
+				string fnewname;
+				splitstring(r.file, DELIM, &lfilename);
+				if(lfilename.size() < 3) {
+					if (LL > 1) LogFile::ErrorMessage("Error with the Netflix domain: the file name ('%s') format unknow\n", r.file.c_str());
+					r.match = hit = false;
+					return;
+				}
+				fnewname = lfilename.at(0) + DELIM + lfilename.at(1);
+				subdir = ConvertChar(fnewname);
+				completefilepath = completepath + "/" + subdir + "/" + fnewname;
+				if (LL > 2) LogFile::ErrorMessage("[DEBUG-Cache] Netflix domain: the file path to cache, is '%s'\n", completefilepath.c_str());
+			} else {
+				completefilepath = completepath + "/" + subdir + "/" + r.file;
+			}
 			if(file_exists(completefilepath)) {
 				file_in_cache = true;
 				break;
@@ -531,8 +581,8 @@ bool ConnectionToHTTP2::SetDomainAndPort(string domainT, int portT, string reque
             Close();
         }
     domain = domainT;
-    request = requestT;
     port = portT;
+    request = requestT;
     pluginsdir = Params::GetConfigString("PLUGINSDIR");
     cachedir = Params::GetConfigString("CACHEDIR");
     cache_limit = Params::GetConfigInt("CACHE_LIMIT");
@@ -642,7 +692,7 @@ bool ConnectionToHTTP2::ReadHeader(string &headerT) {
 			if( range_max <= 0 )
 				range_max = size_orig_file - 1;
 		}
-		int cl = getOnlyContentLength(headerT);
+		long long int cl = getOnlyContentLength(headerT);
 		if(cl < 0)
 		{
 			return result;
@@ -950,8 +1000,8 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 		} else if (r.domain.find("NetflixID") != string::npos)
 		{
 			bodyTTemp = bodyT;
-			string strobject = "wwwplayer-2.0000.262.011.js\"";
-			string strreplace = "wwwplayer-2.0000.262.011.js?watchid=" + r.file + "\"";
+			string strobject = "wwwplayer-2.0000.267.011.js\"";
+			string strreplace = "wwwplayer-2.0000.267.011.js?watchid=" + r.file + "\"";
 			int n = SearchReplace(bodyTTemp , strobject, strreplace);
 			bodyT = bodyTTemp;
 			BodyLength += n*(strreplace.size() - strobject.size());
@@ -964,8 +1014,7 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 				bodyT += spaces;
 				BodyLength += spaces.size();
 				acumulateBodyLength += spaces.size();
-				if (LL > 2) LogFile::ErrorMessage("[DEBUG]Entro! BodyLength: '%i', acuBodyLength: "LLD", contentLengthServer: "LLD"\n", \ 
-																BodyLength, acumulateBodyLength, contentLengthServer);
+				if (LL > 2) LogFile::ErrorMessage("[DEBUG]Entro! BodyLength: '%i', acuBodyLength: "LLD", contentLengthServer: "LLD"\n",  BodyLength, acumulateBodyLength, contentLengthServer);
 				if (LL > 2) LogFile::ErrorMessage("[DEBUG] OK entro!!!!: BODY[%i]\n", BodyLength);
 			} else {
 				//~ if (LL > 2) LogFile::ErrorMessage("[DEBUG] No entro!: diff : "LLD"\n", diffLength);
@@ -976,206 +1025,12 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 			string strobject, strreplace;
 			bodyTTemp = bodyT;
 			
-			//~ strobject = "function fd(a,b,c,d){var";
-			//~ //string strreplace = "function fd(a,b,c,d){console.log(b);if(b.search(\"?o=\")>=0){b+='&watchid=" + r.file + "';} var";
-			//~ strreplace = "function fd(a,b,c,d){console.dir('url=\"'+b+'\"'); console.dir('a=\"'+a+'\"');var ";
-			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
-			//~ BodyLength += n*(strreplace.size() - strobject.size());
+			strobject  = "function fd(a,b,c,d){var f=";
+			//string strreplace = "function fd(a,b,c,d){console.log(b);if(b.search(\"?o=\")>=0){b+='&watchid=" + r.file + "';} var";
+			strreplace = "function fd(a,b,c,d){var urlcache=document.location.href;if(/^http.{3,4}www.netflix.com\\/watch\\/[0-9]+(\\?.*|$)/.test(urlcache) && /\\?o=/.test(b)){var watchid=(urlcache.split('?'))[0].split('watch/')[1];b+='&watchid='+watchid;}var f=";
+			n = SearchReplace(bodyTTemp , strobject, strreplace);
+			BodyLength += n*(strreplace.size() - strobject.size());
 
-			/*strobject = "};yd(u(f)&&!c.test(f));";
-			strreplace = "};console.dir('vd(),f:');console.dir(f);yd(u(f)&&!c.test(f));console.dir('pos yd(u())');console.dir(f);";
-			n = SearchReplace(bodyTTemp , strobject, strreplace);
-			BodyLength += n*(strreplace.size() - strobject.size());
-			*/
-			//~ strobject = "I;h.B(Gl,D,!0);";
-			//~ strreplace = "I;console.dir('***************');console.dir('D_1.url='+D.url);h.B(Gl,D,!0);console.dir('D_2.url='+D.url);console.log('b_Antes='+b.url);";
-			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
-			//~ BodyLength += n*(strreplace.size() - strobject.size());
-			
-			//~ strobject = "D=function(){var";
-			//~ strreplace = "D=function(){console.dir('Entro!'); var";
-			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
-			//~ BodyLength += n*(strreplace.size() - strobject.size());
-			
-			//~ strobject = "q(L.rl)});return D";
-			//~ strreplace = "q(L.rl)});console.log('D_3.url='+D.url);return D";
-			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
-			//~ BodyLength += n*(strreplace.size() - strobject.size());
-			
-			/*strobject = ",fd(B,A,!1,b),p(";
-			strreplace = ",console.dir('fd()-Antes='+A), fd(B, A, !1, b), console.dir('fd()-Depois='+A), p(";
-			n = SearchReplace(bodyTTemp , strobject, strreplace);
-			BodyLength += n*(strreplace.size() - strobject.size());
-			
-			strobject = "if(a(b.url))try{Ad(b,D),";
-			strreplace = "if(a(b.url))try{console.dir('b-ants='+b.url),Ad(b, D),console.dir('b-des='+b.url),";
-			n = SearchReplace(bodyTTemp , strobject, strreplace);
-			BodyLength += n*(strreplace.size() - strobject.size());
-			
-			strobject = "r,O:function(b,c,n){fun";
-			strreplace = "r,O:function(b,c,n){console.dir('_-_INIT_-_b.url='+b.url);fun";
-			n = SearchReplace(bodyTTemp , strobject, strreplace);
-			BodyLength += n*(strreplace.size() - strobject.size());
-			
-			strobject = "Af(a){Yc.O";
-			strreplace = "Af(a){console.dir('Af()|x.xg=\"'+x.xg+'\"');Yc.O";
-			n = SearchReplace(bodyTTemp , strobject, strreplace);
-			BodyLength += n*(strreplace.size() - strobject.size());
-			
-			strobject = "function(c,d){c.Ha=a;";
-			strreplace = "function(c,d){console.dir('CF()-c.url='+c.url);c.Ha=a;";
-			n = SearchReplace(bodyTTemp , strobject, strreplace);
-			BodyLength += n*(strreplace.size() - strobject.size());
-			
-			strobject = "tion(b,c){b.Ha=a;";
-			strreplace = "tion(b,c){console.dir('we()-b.url='+b.url);b.Ha=a;";
-			n = SearchReplace(bodyTTemp , strobject, strreplace);
-			BodyLength += n*(strreplace.size() - strobject.size());
-			
-			strobject = "c,d){if(c.R";
-			strreplace = "c,d){console.dir('b()_url='+c.Ra[a.id]);if(c.R";
-			n = SearchReplace(bodyTTemp , strobject, strreplace);
-			BodyLength += n*(strreplace.size() - strobject.size());
-			
-			strobject = "a.O(ua,d),n())}";
-			strreplace = "a.O(ua,d),n());console.dir('q().url='+ua.url);}";
-			n = SearchReplace(bodyTTemp , strobject, strreplace);
-			BodyLength += n*(strreplace.size() - strobject.size());
-			
-			strobject = "a.O(ua,d),n())}";
-			strreplace = "a.O(ua,d),n());console.dir('q().url='+ua.url);}";
-			n = SearchReplace(bodyTTemp , strobject, strreplace);
-			BodyLength += n*(strreplace.size() - strobject.size());
-			
-			strobject = "};c.va.O(n,";
-			strreplace = "};console.dir('n.url='+n.url);c.va.O(n,";
-			n = SearchReplace(bodyTTemp , strobject, strreplace);
-			BodyLength += n*(strreplace.size() - strobject.size());
-			*/
-			//~ strobject = "O(r,g));Ga(";
-			//~ strreplace = "O(r,g));console.dir('le()_z.url='+z.url);console.dir('le()_r.url='+r.url);Ga(";
-			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
-			//~ BodyLength += n*(strreplace.size() - strobject.size());
-			//~ 
-			//~ strobject = "O(r,g));Ga(";
-			//~ strreplace = "O(r,g));console.dir('le()_z.url='+z.url);console.dir('le()_r.url='+r.url);Ga(";
-			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
-			//~ BodyLength += n*(strreplace.size() - strobject.size());
-			/*
-			strobject = ":l.length});r.O";
-			strreplace = ":l.length});console.dir('$f()-url='+l.url);r.O";
-			n = SearchReplace(bodyTTemp , strobject, strreplace);
-			BodyLength += n*(strreplace.size() - strobject.size());
-			
-			strobject = "),r.O(l,g)}";
-			strreplace = "),r.O(l,g);console.dir('$f()pos-url='+l.url);}";
-			n = SearchReplace(bodyTTemp , strobject, strreplace);
-			BodyLength += n*(strreplace.size() - strobject.size());
-			*/
-			//~ strobject = "});u.O(m,h)}";
-			//~ strreplace = "});console.dir('of().url='+m.url);u.O(m,h)}";
-			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
-			//~ BodyLength += n*(strreplace.size() - strobject.size());
-			//~ 
-			//~ strobject = ",u.O(m,k)}}";
-			//~ strreplace = ",u.O(m,k);console.dir('of()_pos.url='+m.url);}}";
-			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
-			//~ BodyLength += n*(strreplace.size() - strobject.size());
-			
-			//~ strobject = "w});z={t";
-			//~ strreplace = "w});console.dir('h().url='+d.url);z={t";
-			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
-			//~ BodyLength += n*(strreplace.size() - strobject.size());
-			//~ ********************
-			/*strobject = "response=k.O(t,c);a.";
-			strreplace = "response=k.O(t,c);console.dir('f(a)c(a).url='+t.url);a.";
-			n = SearchReplace(bodyTTemp , strobject, strreplace);
-			BodyLength += n*(strreplace.size() - strobject.size());
-			
-			strobject = "g;g.response=h.O(c";
-			strreplace = "g;console.dir('f(a)-_-url='+c.url);g.response=h.O(c";
-			n = SearchReplace(bodyTTemp , strobject, strreplace);
-			BodyLength += n*(strreplace.size() - strobject.size());
-			
-			strobject = "};a.va.O(f";
-			strreplace = "};console.dir('r(a)-_-url='+f.url);a.va.O(f";
-			n = SearchReplace(bodyTTemp , strobject, strreplace);
-			BodyLength += n*(strreplace.size() - strobject.size());
-			
-			strobject = "1);a.va.O(d,";
-			strreplace = "1);console.dir('w(b,c)-_-url='+d.url);a.va.O(d,";
-			n = SearchReplace(bodyTTemp , strobject, strreplace);
-			BodyLength += n*(strreplace.size() - strobject.size());
-			
-			strobject = "u);a.va.O({";
-			strreplace = "u);console.dir('l(b)-_-url='+b.url);a.va.O({";
-			n = SearchReplace(bodyTTemp , strobject, strreplace);
-			BodyLength += n*(strreplace.size() - strobject.size());
-			
-			strobject = "b;var f=d.O(a,";
-			strreplace = "b;console.dir('c(b)-_-url='+b.url);var f=d.O(a,";
-			n = SearchReplace(bodyTTemp , strobject, strreplace);
-			BodyLength += n*(strreplace.size() - strobject.size());
-			
-			strobject = "}));l.O({";
-			strreplace = "}));console.dir('p(b)-_-url='+q);l.O({";
-			n = SearchReplace(bodyTTemp , strobject, strreplace);
-			BodyLength += n*(strreplace.size() - strobject.size());
-			*/
-			//~ strobject = ",p),u.O(m,k)}";
-			//~ strreplace = ",p),u.O(m,k);console.dir('of()_pos.url='+m.url);}";
-			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
-			//~ BodyLength += n*(strreplace.size() - strobject.size());
-			
-			/*strobject = "nction bd(a,b,c){var d";
-			//~ strreplace = "nction bd(a,b,c){console.dir('bd()_b');console.dir(b);console.dir('bd()_c.id=\"'+c.id+'\"');console.dir(c);var d";
-			strreplace = "nction bd(a,b,c){console.dir('bd()_b');console.dir(b);console.log('bd()_c:');console.dir(c);var d";
-			n = SearchReplace(bodyTTemp , strobject, strreplace);
-			BodyLength += n*(strreplace.size() - strobject.size());
-			
-			strobject = "p,l){function q(a,h)";
-			strreplace = "p,l){console.log('TE()_p=');console.dir(p);function q(a,h)";
-			n = SearchReplace(bodyTTemp , strobject, strreplace);
-			BodyLength += n*(strreplace.size() - strobject.size());
-			
-			strobject = "k++){var n=new qd(this,";
-			strreplace = "k++){console.dir('Pc()_this:');console.dir(this);var n=new qd(this,";
-			//~ strreplace = "k++){console.dir('Pc()_this:');console.dir(this);console.dir(this.Gc());console.dir(this.Gc().jf);var n=new qd(this,";
-			n = SearchReplace(bodyTTemp , strobject, strreplace);
-			BodyLength += n*(strreplace.size() - strobject.size());
-			
-			strobject = "ction qd(a,b,c){function d";
-			strreplace = "ction qd(a,b,c){console.dir('qd()_a.Gc()');console.dir(a.Gc());console.dir(a);function d";
-			n = SearchReplace(bodyTTemp , strobject, strreplace);
-			BodyLength += n*(strreplace.size() - strobject.size());
-			
-			strobject = "on f(a){function c(a)";
-			strreplace = "on f(a){console.dir('pasando por f(a)_:');console.dir(a);function c(a)";
-			n = SearchReplace(bodyTTemp , strobject, strreplace);
-			BodyLength += n*(strreplace.size() - strobject.size());
-			*/
-			//~ strobject = "){var a=w.Gc();if";
-			//~ strreplace = "){var a=w.Gc();console.dir('Detective...a=');console.dir(a);if";
-			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
-			//~ BodyLength += n*(strreplace.size() - strobject.size());
-			
-			
-			//~ *************************************************************************************
-			//~ strobject = "h.B(Fl,D,!0)}func";
-			//~ strreplace = "h.B(Fl,D,!0); console.dir('D_in_l2()'); console.dir(D.url);}func";
-			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
-			//~ BodyLength += n*(strreplace.size() - strobject.size());
-			//~ 
-			//~ strobject = "l(){l=";
-			//~ strreplace = "l(){console.dir('D_in_l1()'); console.dir(D.url);l=";
-			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
-			//~ BodyLength += n*(strreplace.size() - strobject.size());
-			
-			//~ strobject = "}var w=b.Ha&&";
-			//~ strreplace = "}console.dir('antes_D:');console.dir(D);var w=b.Ha&&";
-			//~ n = SearchReplace(bodyTTemp , strobject, strreplace);
-			//~ BodyLength += n*(strreplace.size() - strobject.size());
-			
 			acumulateBodyLength += BodyLength;
 			bodyT = bodyTTemp;
 			int64_t diffLength = contentLengthServer - acumulateBodyLength;
@@ -1185,11 +1040,62 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 				bodyT += spaces;
 				BodyLength += spaces.size();
 				acumulateBodyLength += spaces.size();
-				if (LL > 2) LogFile::ErrorMessage("[DEBUG]Entro! BodyLength: '%i', acuBodyLength: "LLD", contentLengthServer: "LLD"\n", \ 
-																BodyLength, acumulateBodyLength, contentLengthServer);
+				if (LL > 2) LogFile::ErrorMessage("[DEBUG]Entro! BodyLength: '%i', acuBodyLength: "LLD", contentLengthServer: "LLD"\n",  BodyLength, acumulateBodyLength, contentLengthServer);
 				if (LL > 2) LogFile::ErrorMessage("[DEBUG] OK entro!!!!: BODY[%i]\n", BodyLength);
 			} else {
 				if (LL > 2) LogFile::ErrorMessage("[DEBUG] No entro!: diff : "LLD"\n", diffLength);
+			}
+		} else if(r.domain == "netflix" && !r.match) {
+			if(LL > 2) LogFile::ErrorMessage("[DEBUG-readpart] On NETFLIX!! - file '%s'[%i](haveupdatedb: '%i', range_min: '%i') -- bodyT: [%i/%i]!\n", r.file.c_str(), BodyLength, haveUpdateDB, range_min, bodyT.size(),BodyLength);
+			//~ if(bodyT.size()>2)
+				//~ if(LL > 2) LogFile::ErrorMessage("[DEBUG-readpart] bodyT[0]:'%i', bodyT[1]:'%i'\n", bodyT[0], bodyT[1]);
+			acumulateBodyLength += BodyLength;
+			readFileHeader += bodyT;
+			if( readFileHeader.size() >= LENGTHHEADERFILE && !haveUpdateDB && !range_min ) {
+				vector<string> lname;
+				string partVideo = readFileHeader.substr(0, LENGTHHEADERFILE);
+				if( LL > 2 ) LogFile::ErrorMessage("[DEBUG-readpart] file '%s', partVideo: \"%s\"[%i]\n", r.file.c_str(), partVideo.c_str(),partVideo.size());
+
+				splitstring(r.file, DELIM, &lname);
+				if ( lname.size() == 1 ) {
+					if(LL > 2) LogFile::ErrorMessage("[DEBUG-readpart] Problem with the file: '%s'?, format not correct!\n", r.file.c_str());
+					return BodyLength;
+				}
+				if(LL > 2) LogFile::ErrorMessage("[DEBUG-readpart] file '%s', partsFileName: ('%s', '%s')!\n", r.file.c_str(), lname.at(0).c_str(), lname.at(1).c_str());
+				
+				if ( domaindb.set("START TRANSACTION;") != 0 ) {
+					if(LL > 1) LogFile::ErrorMessage("[DEBUG-readpart] Problem with the file '%s', error whit transaction on mysql:'%s'!\n", r.file.c_str(), domaindb.getError().c_str());
+					return BodyLength;
+				}
+				string peti = "SELECT * FROM haarp WHERE file like concat('" + domaindb.sqlconv(lname.at(0)) + "',"DELIM",md5('" + domaindb.getRealEscapeString(partVideo) + "'),'"DELIM"%') and domain='" + r.domain + "' FOR UPDATE;";
+				if ( domaindb.get(peti) != 0 ) {
+					if(LL > 2) LogFile::ErrorMessage("[DEBUG-readpart] Error mysql '%s', query: '%s'!\n",domaindb.getError().c_str(), peti.c_str());
+					domaindb.set("ROLLBACK;");
+					return BodyLength;
+				}
+				if(LL > 2) LogFile::ErrorMessage("[DEBUG-readpart] mysql query: '%s'!\n", peti.c_str());
+				if ( !domaindb.get_num_rows() ) {
+					if (LL > 2) LogFile::ErrorMessage("[DEBUG-readpart] File %s [%lli-%lli] NOT EXISTS ON DB =========================.===========\n", r.file.c_str(), range_min, range_max);
+					
+					string queryStr = "INSERT INTO haarp (domain, file, size, modified, downloaded, requested, last_request, file_used) VALUES ('" + r.domain + "', concat('" + domaindb.sqlconv(lname.at(0)) + "','"DELIM"',md5('" + domaindb.getRealEscapeString(partVideo) + "'),'"DELIM"','" + domaindb.sqlconv(lname.at(1)) + "'), 0, now(),now(),0,now(), 0);";
+					
+					if ( domaindb.set(queryStr) != 0 ) {
+						domaindb.set("ROLLBACK;");
+						LogFile::ErrorMessage("[DEBUG-readpart] File %s [%lli-%lli] Error on INSERT! (NOT EXISTS FILE ON DB): '%s'\n", r.file.c_str(), range_min, range_max, queryStr.c_str());
+						return BodyLength;
+					}
+				}
+				else {
+					if ( domaindb.set("UPDATE haarp set file=concat('" + domaindb.sqlconv(lname.at(0)) + "','"DELIM"',md5('" + domaindb.getRealEscapeString(partVideo) + "'),'"DELIM"','" + domaindb.sqlconv(lname.at(1)) + "'), modified=now(), file_used=0 WHERE domain='" + r.domain + "' and file like concat('" + domaindb.sqlconv(lname.at(0)) + "','"DELIM"',md5('" + domaindb.getRealEscapeString(partVideo) + "'),'"DELIM"%');") != 0 ) {
+						if (LL > 2) LogFile::ErrorMessage("[DEBUG-readpart] File %s [%lli-%lli] ERROR MYSQL: '%s'!.\n", r.file.c_str(), range_min, range_max, domaindb.getError().c_str());	
+						domaindb.set("ROLLBACK;");
+						return BodyLength;
+					}
+				}
+				if(LL > 2) LogFile::ErrorMessage("[DEBUG-readpart] file '%s'[%lli-%lli], COMMITING .... !\n", r.file.c_str(), range_min, range_max);
+				domaindb.set("COMMIT;");
+				if(LL > 2) LogFile::ErrorMessage("[DEBUG-readpart] file '%s'[%lli-%lli], COMMITING .... CHAO!!\n", r.file.c_str(), range_min, range_max);
+				haveUpdateDB = true;
 			}
 		}
 		//
@@ -1213,9 +1119,9 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
                 /**/                
             }
             if ( BodyLength > 0 ) {
-				int pos = 0;
+				long long int pos = 0;
 				while( acumulate + BodyLength > limit ) {
-					int btmp = limit - acumulate;
+					long long int btmp = limit - acumulate;
 					cachefile.write(bodyT.substr(pos).c_str(), btmp);
 					filesended += btmp;
 					BodyLength -=  btmp;

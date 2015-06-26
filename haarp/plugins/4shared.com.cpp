@@ -16,13 +16,13 @@ using namespace std;
 // use this line to compile
 // g++ -I. -fPIC -shared -g -o 4shared.com.so 4shared.com.cpp  
 //~ 
-string get_filename(string url, bool *pre, int *ra, int *rb) {
+string get_filename(string url, bool *pre, long long int *ra, long long int *rb) {
 	vector<string> resultado;
 	string::size_type pos = 0;
 	string sg = regex_match("[\\?&]start=[0-9]+",url);
 	if(sg != "") {
 		sg.erase(0,7);
-		*ra = atoi(sg.c_str());
+		*ra = atoll(sg.c_str());
 		*rb = -1;
 	}
 	if( url.find(".com/download/") != string::npos ) {

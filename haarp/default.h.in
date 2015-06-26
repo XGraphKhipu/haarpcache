@@ -49,7 +49,7 @@
 //Maximum length of http headers
 #define MAXHTTPHEADERLENGTH 65536
 
-#define LENGTHHEADERFILE 128
+#define LENGTHHEADERFILE 1024
 
 // DONT TOUCH - run configure
 #undef CONFIGFILE

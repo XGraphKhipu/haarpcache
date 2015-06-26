@@ -473,7 +473,7 @@ int ProxyHandler::CommunicationHTTP()
         //~ if (LL > 2) LogFile::ErrorMessage("[DEBUG] PASSO! por for;; - BODY-BROWSER-SEND\n");
         //File completely received?
         if ( ContentLength == ContentLengthReference ) break;
-		if (LL > 2) LogFile::ErrorMessage("[DEBUG] contentLength "LLD" != ContentLengthReference "LLD"\n", ContentLength, ContentLengthReference);
+		//~ if (LL > 2) LogFile::ErrorMessage("[DEBUG] contentLength "LLD" != ContentLengthReference "LLD"\n", ContentLength, ContentLengthReference);
         //Read more of body
         if ( (BodyLength = ToServer.ReadBodyPart( BodyTemp, ChunkedTransfer )) < 0 )
         {
@@ -481,7 +481,7 @@ int ProxyHandler::CommunicationHTTP()
             if (LL>0) LogFile::ErrorMessage("(%s) Could not read server body (%s/%s:%d)\n", ToServer.GetIP().c_str(), ToBrowser.GetIP().c_str(), ToBrowser.GetHost().c_str(), ToBrowser.GetPort());
             return -75;
         }
-        if (LL > 2) LogFile::ErrorMessage("[DEBUG] paso readbodypart %i!\n", BodyLength);
+        //~ if (LL > 2) LogFile::ErrorMessage("[DEBUG] paso readbodypart %i!\n", BodyLength);
         //if (LL > 0) LogFile::AccessMessage("Pasando por for;; - BODY-SERVER: '%s' \n", BodyTemp.c_str());
         //Server finished, end loop
         if ( BodyLength == 0 )
@@ -494,7 +494,7 @@ int ProxyHandler::CommunicationHTTP()
         }
         ContentLength += BodyLength;
         TransferredBody = ContentLength;
-		if (LL > 2) LogFile::ErrorMessage("[DEBUG] contentLength "LLD"\n", ContentLength);
+		//~ if (LL > 2) LogFile::ErrorMessage("[DEBUG] contentLength "LLD"\n", ContentLength);
         //Continue bodyloop..
     }
     ToServer.Update();

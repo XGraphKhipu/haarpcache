@@ -14,22 +14,22 @@
 // use this line to compile
 // g++ -I. -fPIC -shared -g -o rncdn3.com.so rncdn3.com.cpp
 //
-string get_filename(string url, int *ra, int *rb) {
-		vector<string> resultado;
-		stringexplode(url,"/",&resultado);
-		
-		url = resultado.at(resultado.size() - 1);
-		
-		resultado.clear();
+string get_filename(string url, long long int *ra, long long int *rb) {
+	vector<string> resultado;
+	stringexplode(url,"/",&resultado);
 
-		SearchReplace(url,"?","/");
-		stringexplode(url, "/", &resultado);
-		return resultado.at(0);
+	url = resultado.at(resultado.size() - 1);
+
+	resultado.clear();
+
+	SearchReplace(url,"?","/");
+	stringexplode(url, "/", &resultado);
+	return resultado.at(0);
 }
 
 extern "C" resposta hgetmatch2(const string url) {
 	resposta r;
-    	r.range_min = 0;
+    r.range_min = 0;
 	r.range_max = 0;
 	
 	r.file = get_filename(url, &r.range_min, &r.range_max);

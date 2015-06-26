@@ -6,7 +6,7 @@
 // use this line to compile
 // g++ -I. -fPIC -shared -g -o redtube.com.so redtube.com.cpp
 
-string get_filename(string url, int *ra, int *rb) {
+string get_filename(string url, long long int *ra, long long int *rb) {
 	vector<string> resultado;
 	string tmp;
 	if (url.find(".flv?") != string::npos) {

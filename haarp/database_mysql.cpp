@@ -89,6 +89,14 @@ const string Database::sqlconv(string sql) {
 	return sql;
 }
 
+string Database::getRealEscapeString(string source) {
+	char *end = new char[source.size()*2 + 1];
+	mysql_real_escape_string(&conn, end, source.c_str(), source.size());
+	string out(end);
+	delete [] end;
+	return out;
+}
+
 Database::Database() {
     connected = false;
 }

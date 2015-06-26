@@ -21,10 +21,10 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
         bool was_liberate;
     public:
 		llista *lranges, *brange, *lrangeswork;
-		int range_min, range_max;//ADD
-		int acumulate;
-		int bwrite;
-		int limit;
+		long long int range_min, range_max;//ADD
+		long long int acumulate;
+		long long int bwrite;
+		long long int limit;
 		int np;
 		int fileHeaderLengthUnread; 
 		int count_wait;
@@ -35,19 +35,20 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
 		//~ bool knowhitmiss;
 		bool bchrome;
 		bool miss2hit;
+		bool haveUpdateDB;
 		bool exists_transaction_editing_file; //This process blocked the edition the of file?
 		int64_t contentLengthServer;
 		int64_t acumulateBodyLength;
 		
 		void UpdateFileSizeinPartial( string header );
 		void getLimitBytes(string &header);
-		int getOnlyContentLength( string header );
-		void Cache2( int cl );
+		long long int getOnlyContentLength( string header );
+		void Cache2( long long int cl );
 		
-        string domain,request,msghit;
+        string request, domain,msghit;
         string readFileHeader;
 		int port;
-	string origin_header;
+		string origin_header;
         resposta r;
         int64_t size_orig_file,filedownloaded,filesended,expiration,filesizeneto;
         bool hit,downloading,rewrited,resuming,general,etag;        
@@ -70,7 +71,7 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
         void Update();
         void SubUpdate();
         bool liberate_edition();
-        int lockFile();
+        int lockFile(int singleDomain);
         void Close();
 };
 

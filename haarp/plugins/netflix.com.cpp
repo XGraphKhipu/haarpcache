@@ -33,7 +33,7 @@ string getNIDjs(string url) {
 	stringexplode(url, "=", &liststr);
 	return liststr.at(1);
 }
-string getNIDrange(string url, int *ra, int *rb) {
+string getNIDrange(string url, long long int *ra, long long int *rb) {
 	vector<string> lstr, lstr1, lstr2;
 	string nameID, code;
 	nameID = code = "";
@@ -45,8 +45,8 @@ string getNIDrange(string url, int *ra, int *rb) {
 	
 	stringexplode(s1, "/", &lstr);
 	stringexplode(lstr.at(lstr.size() - 1), "-", &lstr2);
-	*ra = atoi(lstr2.at(0).c_str());
-	*rb = atoi(lstr2.at(1).c_str());
+	*ra = atoll(lstr2.at(0).c_str());
+	*rb = atoll(lstr2.at(1).c_str());
 	lstr.clear(); lstr1.clear();
 	stringexplode(s2, "&", &lstr);
 	for( int i = 0; i < lstr.size(); i++ ){
@@ -59,8 +59,9 @@ string getNIDrange(string url, int *ra, int *rb) {
 			code = lstr1.at(1);
 		lstr1.clear();
 	}
-	if( !nameID.empty() && !code.empty() )
-		return nameID + "-" + code;
+	if( !nameID.empty() && !code.empty() ) {
+		return nameID + DELIM + code;
+	}
 	return "";
 }
 
@@ -68,27 +69,25 @@ extern "C" resposta hgetmatch2(const string url) {
 	resposta r;	
 	r.range_min = 0;
 	r.range_max = 0;
-	/*string t1 = "asdads:192912\r\naa222:22222\r\nContent-Length: 123456\r\nnuevo: val_nuevo\r\n";
-	string ss = regex_match("Content-Length: [0-9]+(\r|\n|\t)*",t1);
-	cout<<"ss:"<<ss<<endl;
-	SearchReplace(t1, ss, "");
-	cout<<"t1:"<<t1<<endl;*/
+
 	if( regex_match("\\/watch\\/[0-9]+", url) != "" ) {
 			r.file = getNID(url);
 			r.domain = "NetflixID";
 			r.match = false;
 	} else if( url.find("wwwplayer") != string::npos ) {
 			//r.file = getNIDjs(url);
-			r.file = "1987";
+			r.file = "NetflixjsID";
 			r.domain = "NetflixjsID";
 			r.match = false;
 	} else if( url.find("/range/") != string::npos ) {
 			r.file = getNIDrange(url, &r.range_min, &r.range_max);
-			if( !(r.file).empty() ) {
+			if( !(r.file).empty() && r.range_min ) {
 				r.domain = "netflix";
 				r.match = true;
-			} else
+			} else {
+				r.domain = "netflix";
 				r.match = false;
+			}
 	} else
 		r.match = false;
 	return r;

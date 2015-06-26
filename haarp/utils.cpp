@@ -44,15 +44,15 @@ bool remove_param(string &curl, string param) {
 bool is_all_hit(llista *p) {
 	llista *n = p;
 	while(n) {
-		if( n-> p < 0 )
+		if( n->p < 0 )
 			return false;
 		n = n->next;
 	}
 	return true;
 }
-long int getFileSize(llista *primer) {
+long long int getFileSize(llista *primer) {
 	llista *n = primer;
-	long int re = 0;
+	long long int re = 0;
 	while(n) {
 		re += n->b - n->a + 1; 
 		n = n->next;
@@ -60,9 +60,9 @@ long int getFileSize(llista *primer) {
 	return re;
 }
 
-int getExtremeb(llista *primer){
+long long int getExtremeb(llista *primer){
 	llista *n = primer;
-	int max = -1;
+	long long int max = -1;
 	while(n){
 		if( n->b > max )
 			max = n->b;
@@ -73,7 +73,7 @@ int getExtremeb(llista *primer){
 
 llista *getlastnode(llista *primer){
 	llista *n, *m;
-	int max; 
+	long long int max; 
 	
 	n = primer;
 	m = n;
@@ -117,7 +117,7 @@ bool appendNode(llista **primer, llista *n) {
 	last->next = nn;	
 	return true;	
 }
-bool appendSubNode(llista **primer, llista *n, int lenght_) {
+bool appendSubNode(llista **primer, llista *n, long long int lenght_) {
 	llista *last;
 	
 	if(!n)
@@ -149,12 +149,12 @@ bool appendSubNode(llista **primer, llista *n, int lenght_) {
 /*
  * Retorna el último lugar entero de bytes donde se pueden escribir más datos .
  */
-int getPointEnd(llista *primer) {
+long long int getPointEnd(llista *primer) {
 	llista *n = primer;
 	if(!n)
 		return 0;
-	int max = n->p;
-	int interval = n->b - n->a;
+	long long int max = n->p;
+	long long int interval = n->b - n->a;
 	while(n) {
 		if(n->p > max) {
 			max = n->p;
@@ -170,7 +170,7 @@ int getPointEnd(llista *primer) {
  * getRangeWork retorna el valor hit, y la lista de bloques a trabajar.
  * 
  */
-llista *getRangeWork(llista **primer, int ra, int rb, bool *hit) {
+llista *getRangeWork(llista **primer, long long int ra, long long int rb, bool *hit) {
 	ordenar(primer);
 	
 	llista *pr = NULL;
@@ -178,7 +178,7 @@ llista *getRangeWork(llista **primer, int ra, int rb, bool *hit) {
 	
 	llista *n = *primer;
 	*hit = 1;
-	int tope = -1;
+	long long int tope = -1;
 	while(n) {
 		if( ra < n->a )
 		{
@@ -350,8 +350,8 @@ void ordenar(llista **primer){
 	llista *es;
 	llista *pas = *primer;
 	llista *ini = *primer;
-	llista *prev;
-	llista *prevtmp;
+	llista *prev = NULL;
+	llista *prevtmp = NULL;
 	llista *previni = NULL;
 	int min;
 	while(ini)
@@ -489,12 +489,28 @@ void stringexplodetrim(string str, string separator, vector<string>* results) {
     }
 }
 
+void splitstring(string str, string separator, vector<string>* results) {
+    size_t found;
+    found = str.find(separator);
+    while (found != string::npos) {
+        if (found > 0) {
+            results->push_back(str.substr(0, found));
+        }
+        str = str.substr(found + separator.size());
+        found = str.find(separator);
+    }
+    if (str.length() > 0) {
+        results->push_back(str);
+    }
+}
+
 string getdomain(string url) {
     if (regex_match("^74\\.125\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?$)", url) != "") return "youtube.com";
     if (regex_match("^(205\\.196\\.|199\\.91\\.)[0-9]{2,3}\\.[0-9]{1,3}", url) != "") return "mediafire.com";
     if (regex_match("^(\\.|[a-z]|[0-9]|-)+(\\/\\w+)?(\\/speedtest)+\\/(random[0-9]+x[0-9]+\\.jpg|latency\\.txt)", url) != "") return "speedtest.net";
     if (regex_match("^[0-9]{2,3}\\.[0-9]{2,3}\\.[0-9]{2,3}\\.[0-9]{1,3}\\/youku\\/", url) != "") return "youku.com";
     if (regex_match("198\\.38\\.(9[6-9]|1[0-2][0-9])\\.[0-9]{1,3}\\/range\\/", url) != "") return "netflix.com";
+    if (regex_match("108\\.175\\.(3[2-9]|4[0-9])\\.[0-9]{1,3}\\/range\\/", url) != "") return "netflix.com";
 
 	
     vector<string> resultado;

@@ -8,12 +8,13 @@ using namespace std;
 // use this line to compile
 // g++ -I. -fPIC -shared -g -o plugin.so plugin.cpp
 
-void get_videoid(string url, string &file, bool *exist_range, int *a, int *b) {
+void get_videoid(string url, string &file, bool *exist_range, long long int *a, long long int *b) {
 	vector<string> resultado,valor;
 	
 	string sclen, itag, mime;
 	bool exist_cm2, range, watchID;
-	int size, clen;
+	int size;
+	long long int clen;
 	
 	watchID = false;
 
@@ -52,15 +53,15 @@ void get_videoid(string url, string &file, bool *exist_range, int *a, int *b) {
 					file = "";
 					return;
 				}
-				*a = atoi(interval.at(0).c_str()) - 0;
-				*b = atoi(interval.at(1).c_str()) - 0;
+				*a = atoll(interval.at(0).c_str()) - 0;
+				*b = atoll(interval.at(1).c_str()) - 0;
 				*exist_range = true;
 			}
 			else if( valor.at(0) == "cm2" && valor.at(1) == "0" ) {
 				exist_cm2 = true;
 			}
 			else if ( valor.at(0) == "clen" ) {
-				clen = atoi(valor.at(1).c_str());
+				clen = atoll(valor.at(1).c_str());
 				sclen = "-" + valor.at(1);
 			}
 			else if ( valor.at(0) == "watchid" ) {
