@@ -154,6 +154,7 @@ List of Plugins
 
 
 	Youtube (https not supported),
+	Netflix (Video and Images),
 	DoubleClick (Block of ADS),
 	Googlevideo,
 	Dailymotion,
@@ -185,8 +186,10 @@ List of Plugins
 	Avast,
 	Avgate,
 	Eset,
-	Mcafee;
-	
+	Mcafee,
+	Avira,
+	Bitdefender;
+
 	Windowsupdate,
 	Adobe;
 	
@@ -196,7 +199,7 @@ List of Plugins
 	Redtube,
 	YouPorn,
 	Tube8;
-	
+
 	Juegosdiarios,
 	Juegosjuegos;
 
