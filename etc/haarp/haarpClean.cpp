@@ -63,7 +63,7 @@ int main(int carg, char **varg) {
         vector<string> list_dir;
 	bool limit_surpassed=false;
 	double expected_deletion=0;
-	double disk_occupied_space;
+	//double disk_occupied_space;
 	double disk_space;
 	double use_percent;
 
@@ -84,7 +84,7 @@ int main(int carg, char **varg) {
 	stringexplode(cachedir,"|",&list_dir);
         for(int i=0;i < (int)list_dir.size();i++) {
 
-		disk_occupied_space=disk_occupation(list_dir.at(i));
+		//disk_occupied_space=disk_occupation(list_dir.at(i));
 		disk_space=disk_size(list_dir.at(i));
 		use_percent=disk_use(list_dir.at(i));
 		printf("Disk size : %.2lf MB, %.2lf GB\n",disk_space/(1048576),disk_space/(1073741824));

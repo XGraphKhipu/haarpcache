@@ -106,7 +106,7 @@
 	</style>
 	</head>
 	<body>
-	<div align="center"><font color="#0C70EE"><strong>Report System Haarp Cache 1.2:</strong><br />
+	<div align="center"><font color="#0C70EE"><strong>Report System Haarp Cache 1.2.1:</strong><br />
 	</font><br />
 	<strong>DATA GENERATION: <?= date(DATE_RFC822) ?>
 	<br>
@@ -120,22 +120,22 @@
 	   <td><strong>Economic</strong></td>
 	   <td><strong>Hits</strong></td>
 	   <td><strong>Efficiency %</strong></td></tr>
-	<?
+	<?php
 	global $db;
-    $query = "select domain,COUNT(*) as files,sum(filesize) as size,sum(filesize*requested) as eco, sum(requested) as hits from haarp where deleted=0 and static=0 group by domain UNION select 'static' as domain,COUNT(*) as files,sum(size) as size,sum(size*requested) as eco, sum(requested) as hits from haarp where deleted=0 and static=1";
-    foreach ($db->query($query) as $valor) {
+    $query = "select domain,COUNT(*) as files,sum(filesize) as size,sum(bytes_requested) as eco, sum(bytes_requested/filesize) as hits from haarp where deleted=0 and static=0 group by domain UNION select 'static' as domain,COUNT(*) as files,sum(size) as size,sum(bytes_requested) as eco, sum(bytes_requested/filesize) as hits from haarp where deleted=0 and static=1";
+    foreach($db->query($query) as $valor) {
         $percent=round(($valor['eco']/$valor['size'])*100,2)
 ?>
 		<tr>
 		  <td height="18"><font color="#20A253">
 		    <?= $valor['domain'] ?>
 		  </font></td>
-		<td height="18"><font color="#20A253"><?=  $valor['files'] ?></font></td>
+		<td height="18"><font color="#20A253"><?=  number_format($valor['files'],0,"","'") ?></font></td>
 		<td height="18"><font color="#20A253"><?= sizeFormat($valor['size']) ?></font></td>
 		<td height="18"><font color="#20A253"><?= sizeFormat($valor['eco']) ?></font></td>
-		<td height="18"><font color="#20A253"><?= $valor['hits'] ?></font></td>
+		<td height="18"><font color="#20A253"><?= number_format($valor['hits'] , 1, ".","'")?></font></td>
 		<td height="18"><font color="#20A253"><?= $percent ?> %</td></tr>
-		<?
+		<?php
 		$totaleconomy += $valor['eco'];
 		$totalhits += $valor['hits'];
 		$totalcount += $valor['files'];
@@ -143,10 +143,10 @@
 	}
 ?> 
   <tr><td height="22"><b><font color="#0C70EE">Total</font></b></td>
-	<td height="22"><b><font color="#0C70EE"><?= $totalcount ?></font></b></td>
+	<td height="22"><b><font color="#0C70EE"><?= number_format($totalcount,0,"","'") ?></font></b></td>
 	<td height="22"><b><font color="#0C70EE"><?= sizeFormat($totalsize) ?></font></b></td>
 	<td height="22"><b><font color="#0C70EE"><?= sizeFormat($totaleconomy) ?></font></b></td>
-	<td height="22"><b><font color="#0C70EE"><?= $totalhits ?></font></b></td>
+	<td height="22"><b><font color="#0C70EE"><?= number_format($totalhits,1,".","'") ?></font></b></td>
 	<td height="22"><b><font color="#0C70EE"><?= round(($totaleconomy/$totalsize)*100,3) ?> %</font></b></td></tr>
  </table><br>
  <table border="1" align="center"><tr><td align="left"<pre>

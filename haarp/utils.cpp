@@ -350,8 +350,8 @@ void ordenar(llista **primer){
 	llista *es;
 	llista *pas = *primer;
 	llista *ini = *primer;
-	llista *prev;
-	llista *prevtmp;
+	llista *prev = NULL;
+	llista *prevtmp = NULL;
 	llista *previni = NULL;
 	int min;
 	while(ini)
