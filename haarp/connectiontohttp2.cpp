@@ -99,7 +99,7 @@ void ConnectionToHTTP2::Cache2( long long int cl ) {
 		if( hit ) {
 			msghit = "HIT";
 			//~ if(!exists_transaction_editing_file) liberate_edition();
-			domaindb.set("UPDATE haarp SET requested=requested+1, last_request=now() WHERE file='" + domaindb.sqlconv(r.file) + "' and domain='" + r.domain + "';");
+			domaindb.set("UPDATE haarp SET last_request=now() WHERE file='" + domaindb.sqlconv(r.file) + "' and domain='" + r.domain + "';");
 		}
 	}
 }
@@ -143,11 +143,20 @@ void ConnectionToHTTP2::Update(){
 			stmp1<<np;
 			if (LL > 1) LogFile::AccessMessage("Update data base with ranges=%s, partition=%s, domain=%s and file=%s\n", rang_.c_str(), part_.c_str(),r.domain.c_str(), r.file.c_str());
 			if(domaindb.set("UPDATE haarp set modified=now(), rg='" + rang_ + "', pos='" + part_ + "', filesize='" + stmp0.str() + "', np=np+" + stmp1.str() + " WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") < 0)
-				if (LL > 1) LogFile::ErrorMessage("Error updating data base, %s \n",domaindb.getError().c_str());
+				if (LL > 1) LogFile::ErrorMessage("Error updating data base: '%s' \n",domaindb.getError().c_str());
 			hasupdate = true;
 			if(!exists_transaction_editing_file) liberate_edition();
 		}
 		acumulate = 0;
+	} else if ( hit ) {
+		if(!hasupdate && filesended) {
+			stringstream bsended;
+			bsended<<filesended;
+			if (LL > 2) LogFile::ErrorMessage("[DEBUG-Update] Update the database with new bytes_requested: file=%s[%lli] - HIT\n", r.file.c_str(), filesended);
+			if(domaindb.set("UPDATE haarp set modified=now(), bytes_requested=bytes_requested+" + bsended.str() + " WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") < 0)
+				if (LL > 1) LogFile::ErrorMessage("Error updating byte_requeste on the database: '%s'\n",domaindb.getError().c_str());
+			hasupdate = true;
+		}
 	}
 	if ( r.match )
 		if(!exists_transaction_editing_file) liberate_edition();
@@ -485,7 +494,7 @@ void ConnectionToHTTP2::Cache() {
 				if( hit ) {
 					msghit = "HIT";
 					//~ if(!exists_transaction_editing_file) liberate_edition();
-					domaindb.set("UPDATE haarp SET requested=requested+1, last_request=now() WHERE file='" + domaindb.sqlconv(r.file) + "' and domain='" + r.domain + "';");
+					domaindb.set("UPDATE haarp SET last_request=now() WHERE file='" + domaindb.sqlconv(r.file) + "' and domain='" + r.domain + "';");
 					if (LL > 0) LogFile::AccessMessage("HIT: Domain: %s File: %s\n", r.domain.c_str(), r.file.c_str());
 					if (LL > 2) LogFile::ErrorMessage("HIT: Domain: %s File: %s\n", r.domain.c_str(), r.file.c_str());
 				}
@@ -514,7 +523,7 @@ void ConnectionToHTTP2::Cache() {
 						if (!file_exists(completepath + "/" + subdir + "/")) {
 							mkdir_p(completepath + "/" + subdir + "/");
 						}
-						domaindb.set("INSERT INTO haarp (domain, file, size, modified, downloaded, requested, last_request, static) VALUES ('" + r.domain + "', '" + domaindb.sqlconv(subdir + "/" + r.file) + "', 0, '1980-01-01 00:00:00',now(),0,now(),1);");
+						domaindb.set("INSERT INTO haarp (domain, file, size, modified, downloaded, bytes_requested, last_request, static) VALUES ('" + r.domain + "', '" + domaindb.sqlconv(subdir + "/" + r.file) + "', 0, '1980-01-01 00:00:00',now(),0,now(),1);");
 						if (LL > 0) LogFile::AccessMessage("MISS: Domain: %s File: %s\n", r.domain.c_str(), r.file.c_str());
 					} else {
 						LogFile::ErrorMessage("Cache limit (%.0lf/%d) %s%s\n", disk_use(completepath), cache_limit, cachedir.c_str(), r.domain.c_str());
@@ -531,7 +540,7 @@ void ConnectionToHTTP2::Cache() {
 
 					if (domaindb.get_num_rows() == 0) // se nao existir o registro do arquivo do db
 					{
-						domaindb.set("INSERT INTO haarp (domain, file, size, modified, downloaded, requested, last_request,static) VALUES ('" + r.domain + "', '" + domaindb.sqlconv(subdir + "/" + r.file) + "', 0, '1980-01-01 00:00:00',now(),0,now(),1);");
+						domaindb.set("INSERT INTO haarp (domain, file, size, modified, downloaded, bytes_requested, last_request,static) VALUES ('" + r.domain + "', '" + domaindb.sqlconv(subdir + "/" + r.file) + "', 0, '1980-01-01 00:00:00',now(),0,now(),1);");
 						if (LL > 0) LogFile::AccessMessage("MISS DB: Domain: %s File: %s\n", r.domain.c_str(), r.file.c_str());
 					} else if (
 							((now() - file_getmodif(completefilepath)) < 10)
@@ -548,7 +557,7 @@ void ConnectionToHTTP2::Cache() {
 						if (expiration <= Params::GetConfigInt(getFileExtension(getFileName(request)) + "_EXP")) {
 							hit = true;
 							downloading = false;
-							domaindb.set("UPDATE haarp SET requested=requested+1, last_request=now() WHERE file='" + domaindb.sqlconv(subdir + "/" + r.file) + "' and domain='" + r.domain + "';");
+							domaindb.set("UPDATE haarp SET last_request=now() WHERE file='" + domaindb.sqlconv(subdir + "/" + r.file) + "' and domain='" + r.domain + "';");
 							if (LL > 0) LogFile::AccessMessage("HIT!: Domain: %s File: %s\n", r.domain.c_str(), r.file.c_str());
 							msghit = "HIT";
 						} else {
@@ -918,18 +927,17 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 			}
     }
 
-    
-    if (hit || miss2hit) {
-        BodyLength = 0;
-        int tbuffer = MAXRECV;
-        char memblock[MAXRECV];
-        memset(memblock, '\0', sizeof (memblock));
-        bodyT = "";
-        while (BodyLength == 0) {
-            if (!cachefile.is_open()) {
+	if (hit || miss2hit) {
+		BodyLength = 0;
+		int tbuffer = MAXRECV;
+		char memblock[MAXRECV];
+		memset(memblock, '\0', sizeof (memblock));
+		bodyT = "";
+		while (BodyLength == 0) {
+			if (!cachefile.is_open()) {
 				bwrite = 0;
-                cachefile.open(string(completefilepath).c_str(), ios::in | ios::binary);
-                /**/
+                		cachefile.open(string(completefilepath).c_str(), ios::in | ios::binary);
+                		/**/
 				brange = lrangeswork;
 				acumulate = 0;
 				if( brange->p < 0 )
@@ -941,8 +949,8 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 				cachefile.seekg(brange->p, ios::beg);
 				limit = brange->b - brange->a + 1;
 				/**/
-                timeout = timerecord = time(NULL);
-            }
+ 	               		timeout = timerecord = time(NULL);
+        		}
 			if(acumulate + tbuffer > limit) // acumulate es siempre menor que limit!
 				tbuffer = limit - acumulate;
 			

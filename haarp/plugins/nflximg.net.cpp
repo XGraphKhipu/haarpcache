@@ -25,10 +25,12 @@ extern "C" resposta hgetmatch2(const string url) {
 	r.range_min = 0;
 	r.range_max = 0;
 	
-	r.file = get_filename(url);
-	r.match = true;
-	r.domain = "nflximg";
-	
+	if(url.find("?") == string::npos) {
+		r.file = get_filename(url);
+		r.match = true;
+		r.domain = "nflximg";
+	} else 
+		r.match = false;
 	return r;
 }
 
