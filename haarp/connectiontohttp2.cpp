@@ -206,11 +206,12 @@ int ConnectionToHTTP2::lockFile(int singleDomain) {
 			domaindb.set("ROLLBACK;");
 			return -1;
 		}
+		if(LL > 2) LogFile::ErrorMessage("[DEBUG-lockfile] mysql query: '%s'!!\n", query_mysql.c_str());
 	}
 	if ( !domaindb.get_num_rows() ) {
 		if (LL > 2) LogFile::ErrorMessage("[DEBUG] File %s [%lli-%lli] NOT EXISTS ON DB =========================.===========\n", r.file.c_str(), range_min, range_max);
 		if ( singleDomain == 0 )
-			if ( domaindb.set("INSERT INTO haarp (domain, file, size, modified, downloaded, requested, last_request, file_used) VALUES ('" + r.domain + "', '" + domaindb.sqlconv(r.file) + "', 0, now(),now(),0,now(), 1);") != 0) {
+			if ( domaindb.set("INSERT INTO haarp (domain, file, size, modified, downloaded, bytes_requested, last_request, file_used) VALUES ('" + r.domain + "', '" + domaindb.sqlconv(r.file) + "', 0, now(),now(),0,now(), 1);") != 0) {
 				domaindb.set("ROLLBACK;");
 				LogFile::ErrorMessage("[DEBUG] File %s [%lli-%lli] Error on INSERT! (NOT EXISTS FILE ON DB) ========.=======\n", r.file.c_str(), range_min, range_max);
 				return -1;
@@ -848,10 +849,6 @@ int64_t ConnectionToHTTP2::GetContentLength() {
 				if (LL > 0) LogFile::AccessMessage("MAXMIN CANCEL: Domain: %s File: %s Size: "LLD"\n", r.domain.c_str(), r.file.c_str(), filesizeneto);
 			}
 		}
-		//~ else {
-			//~ if ( r.domain.find("NetflixID") != string::npos || r.domain.find("NetflixjsID") != string::npos )
-				//~ ContentLengthReference += 3000;
-		//~ }
 		tmp = ContentLengthReference;
     }
 	return tmp;
@@ -1035,7 +1032,7 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 			
 			strobject  = "function fd(a,b,c,d){var f=";
 			//string strreplace = "function fd(a,b,c,d){console.log(b);if(b.search(\"?o=\")>=0){b+='&watchid=" + r.file + "';} var";
-			strreplace = "function fd(a,b,c,d){var urlcache=document.location.href;if(/^http.{3,4}www.netflix.com\\/watch\\/[0-9]+(\\?.*|$)/.test(urlcache) && /\\?o=/.test(b)){var watchid=(urlcache.split('?'))[0].split('watch/')[1];b+='&watchid='+watchid;}var f=";
+			strreplace = "function fd(a,b,c,d){var urlcache=document.location.href;if(/^http.{3,4}www.netflix.com\\/watch\\/[0-9]+(\\?.*|$)/.test(urlcache) && /\\?o=/.test(b)){var watchid=(urlcache.split('?'))[0].split('watch/')[1];b+='&watchid='+watchid;} if(/^http.{3,4}www.netflix.com\\/WiPlayer\\?.*movieid=[0-9]+/.test(urlcache) && /\\?o=/.test(b) && !/episodeId=/.test(urlcache)){var watchid=urlcache.split('movieid=')[1].split('&')[0];b+='&watchid='+watchid;} var f=";
 			n = SearchReplace(bodyTTemp , strobject, strreplace);
 			BodyLength += n*(strreplace.size() - strobject.size());
 
@@ -1054,9 +1051,6 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 				if (LL > 2) LogFile::ErrorMessage("[DEBUG] No entro!: diff : "LLD"\n", diffLength);
 			}
 		} else if(r.domain == "netflix" && !r.match) {
-			if(LL > 2) LogFile::ErrorMessage("[DEBUG-readpart] On NETFLIX!! - file '%s'[%i](haveupdatedb: '%i', range_min: '%i') -- bodyT: [%i/%i]!\n", r.file.c_str(), BodyLength, haveUpdateDB, range_min, bodyT.size(),BodyLength);
-			//~ if(bodyT.size()>2)
-				//~ if(LL > 2) LogFile::ErrorMessage("[DEBUG-readpart] bodyT[0]:'%i', bodyT[1]:'%i'\n", bodyT[0], bodyT[1]);
 			acumulateBodyLength += BodyLength;
 			readFileHeader += bodyT;
 			if( readFileHeader.size() >= LENGTHHEADERFILE && !haveUpdateDB && !range_min ) {
@@ -1075,7 +1069,7 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 					if(LL > 1) LogFile::ErrorMessage("[DEBUG-readpart] Problem with the file '%s', error whit transaction on mysql:'%s'!\n", r.file.c_str(), domaindb.getError().c_str());
 					return BodyLength;
 				}
-				string peti = "SELECT * FROM haarp WHERE file like concat('" + domaindb.sqlconv(lname.at(0)) + "',"DELIM",md5('" + domaindb.getRealEscapeString(partVideo) + "'),'"DELIM"%') and domain='" + r.domain + "' FOR UPDATE;";
+				string peti = "SELECT * FROM haarp WHERE file like concat('" + domaindb.sqlconv(lname.at(0)) + "','"DELIM"',md5('" + domaindb.getRealEscapeString(partVideo) + "'),'"DELIM"%') and domain='" + r.domain + "' FOR UPDATE;";
 				if ( domaindb.get(peti) != 0 ) {
 					if(LL > 2) LogFile::ErrorMessage("[DEBUG-readpart] Error mysql '%s', query: '%s'!\n",domaindb.getError().c_str(), peti.c_str());
 					domaindb.set("ROLLBACK;");
@@ -1085,7 +1079,7 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 				if ( !domaindb.get_num_rows() ) {
 					if (LL > 2) LogFile::ErrorMessage("[DEBUG-readpart] File %s [%lli-%lli] NOT EXISTS ON DB =========================.===========\n", r.file.c_str(), range_min, range_max);
 					
-					string queryStr = "INSERT INTO haarp (domain, file, size, modified, downloaded, requested, last_request, file_used) VALUES ('" + r.domain + "', concat('" + domaindb.sqlconv(lname.at(0)) + "','"DELIM"',md5('" + domaindb.getRealEscapeString(partVideo) + "'),'"DELIM"','" + domaindb.sqlconv(lname.at(1)) + "'), 0, now(),now(),0,now(), 0);";
+					string queryStr = "INSERT INTO haarp (domain, file, size, modified, downloaded, bytes_requested, last_request, file_used) VALUES ('" + r.domain + "', concat('" + domaindb.sqlconv(lname.at(0)) + "','"DELIM"',md5('" + domaindb.getRealEscapeString(partVideo) + "'),'"DELIM"','" + domaindb.sqlconv(lname.at(1)) + "'), 0, now(),now(),0,now(), 0);";
 					
 					if ( domaindb.set(queryStr) != 0 ) {
 						domaindb.set("ROLLBACK;");
