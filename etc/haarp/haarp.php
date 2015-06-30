@@ -149,8 +149,8 @@
 	<td height="22"><b><font color="#0C70EE"><?= number_format($totalhits,1,".","'") ?></font></b></td>
 	<td height="22"><b><font color="#0C70EE"><?= round(($totaleconomy/$totalsize)*100,3) ?> %</font></b></td></tr>
  </table><br>
- <table border="1" align="center"><tr><td align="left"<pre>
- <?php system("free -om"); ?>
+ <table border="1" align="center"><tr><td align="left"><pre>
+ <?php system("free -hm | grep -v \"buffers\/cache\""); ?>
  </pre></td></tr></table><br>
  <table border="1" align="center"><tr><td align="left"><pre>
  <?php system("uptime"); ?></td>
