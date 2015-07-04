@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <string>
 #include <vector>
+#include <list>
+#include <iostream>
 
 using namespace std;
 
@@ -15,6 +17,7 @@ struct resposta {
 	string file;
 	int range_min;
 	int range_max;
+	bool exist_range;	
 };
 
 class intervalPositionByteDisk {
@@ -28,12 +31,12 @@ typedef list<intervalPositionByteDisk>  lintervalPositionByteDisk;
 long int getFileSize(lintervalPositionByteDisk listIntervalPositionByteDisk);
 bool is_all_hit(lintervalPositionByteDisk listIntervalPositionByteDisk, lintervalPositionByteDisk::iterator it);
 int getExtremeb(lintervalPositionByteDisk listIntervalPositionByteDisk);
-intervalPositionByteDisk getlastnode(lintervalPositionByteDisk listIntervalPositionByteDisk);
+lintervalPositionByteDisk::iterator getlastnode(lintervalPositionByteDisk listIntervalPositionByteDisk);
 int generateList(string ranges, string parts, lintervalPositionByteDisk &listIntervalPositionByteDisk);
 int getPointEnd(lintervalPositionByteDisk listIntervalPositionByteDisk);
 lintervalPositionByteDisk getRangeWork(lintervalPositionByteDisk listIntervalPositionByteDisk,int ra, int rb, bool *hit);
-bool appendNode(lintervalPositionByteDisk listIntervalPositionByteDisk, lintervalPositionByteDisk &n);
-bool appendSubNode(lintervalPositionByteDisk listIntervalPositionByteDisk, lintervalPositionByteDisk &n, int lenght_);
+bool appendNode(lintervalPositionByteDisk &, intervalPositionByteDisk n);
+bool appendSubNode(lintervalPositionByteDisk &listIntervalPositionByteDisk, intervalPositionByteDisk n, int lenght_);
 void ordenar(lintervalPositionByteDisk listIntervalPositionByteDisk);
 bool compareIntervals(intervalPositionByteDisk &a, intervalPositionByteDisk &b);
 void list2string(lintervalPositionByteDisk listIntervalPositionByteDisk,string &s1, string &s2);

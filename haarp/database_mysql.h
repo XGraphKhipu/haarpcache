@@ -20,6 +20,7 @@ class Database {
         int set (string sql);
         int get (string sql); // get para fazer a cosulta
         int get_num_rows();
+        long long int get_affect_rows();
         string get (string field,int line); // get pra pegar a consulta
         void clear ();
         string getError();

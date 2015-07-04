@@ -306,6 +306,27 @@ bool HTTPHandler::SendHeader( string header, bool ConnectionClose )
     return true;
 }
 
+//Send Header -debugger
+bool HTTPHandler::SendHeader( string header, bool ConnectionClose, int *status )
+{
+    if ( ProxyConnection ) header += "Proxy-";
+
+    if ( ConnectionClose )
+    {
+        header += "Connection: close\r\n\r\n";
+    }
+    else
+    {
+        header += "Connection: keep-alive\r\n\r\n";
+    }
+	*status = -100;
+    if ( SocketHandler::Send( header, status ) == false )
+    {
+        return false;
+    }
+
+    return true;
+}
 
 
 //Constructor

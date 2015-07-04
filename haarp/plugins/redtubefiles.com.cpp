@@ -13,12 +13,6 @@ string get_filename(string url, int *ra, int *rb) {
 		stringexplode(url, "/", &resultado);
 		url = resultado.at(resultado.size() - 1);
 		resultado.clear();
-		if ( (tmp = regex_match("[\\?&]ec_seek=[0-9]+", url)) != "" )
-		{
-			tmp.erase(0,9);
-			*ra = atoi(tmp.c_str());
-			*rb = -1;
-		}
 		stringexplode(url, "?", &resultado);
 		return resultado.at(0);
 	} else {
@@ -35,7 +29,11 @@ extern "C" resposta hgetmatch2(const string url) {
     resposta r;	
 	r.range_min = 0;
 	r.range_max = 0;
-	
+	if( ( (url.find("start=") != string::npos) && (regex_match("(\\?|&)start=0(&|$)", url) == "") ) \
+		|| ( url.find("ec_seek") != string::npos && regex_match("(\\?|&)ec_seek=0(&|$)", url) == "" ) ) {
+		r.match = false;
+		return r;
+	}
 	r.file = get_filename(url, &r.range_min, &r.range_max);
 	if (!r.file.empty()) {
 		r.match = true;

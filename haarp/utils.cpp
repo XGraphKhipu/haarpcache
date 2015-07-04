@@ -79,7 +79,7 @@ lintervalPositionByteDisk::iterator getlastnode(lintervalPositionByteDisk listIn
 	while( ++iteratorListOfRanges != listIntervalPositionByteDisk.end() ) {
 		if(iteratorListOfRanges->position >  max_position)
 		{
-			max_position = iteratorListOfRanges->p;
+			max_position = iteratorListOfRanges->position;
 			iteratorLastRangeBytes = iteratorListOfRanges;
 		}
 	}
@@ -93,8 +93,8 @@ bool appendNode(lintervalPositionByteDisk &listIntervalPositionByteDisk, interva
 		return true;
 	}
 	lintervalPositionByteDisk::iterator iteratorLastInterval = getlastnode(listIntervalPositionByteDisk);
-	if( iteratorLastRangeBytes->b + 1 == newInterval.a ){
-		iteratorLastRangeBytes->b = newInterval.b;
+	if( iteratorLastInterval->b + 1 == newInterval.a ){
+		iteratorLastInterval->b = newInterval.b;
 		return true;
 	}
 	listIntervalPositionByteDisk.insert(++iteratorLastInterval, newInterval);
@@ -110,11 +110,11 @@ bool appendSubNode(lintervalPositionByteDisk &listIntervalPositionByteDisk, inte
 		return true;
 	}
 	lintervalPositionByteDisk::iterator iteratorLastInterval = getlastnode(listIntervalPositionByteDisk);
-	if( iteratorLastRangeBytes->b + 1 == newInterval.a ){
-		iteratorLastRangeBytes->b = lenght_ + newInterval.a - 1;
+	if( iteratorLastInterval->b + 1 == newInterval.a ){
+		iteratorLastInterval->b = lenght_ + newInterval.a - 1;
 		return true;
 	}
-	newInterval.b = length_ + newInterval.a - 1;
+	newInterval.b = lenght_ + newInterval.a - 1;
 	listIntervalPositionByteDisk.insert(++iteratorLastInterval, newInterval);
 	return true;
 }
@@ -181,9 +181,9 @@ lintervalPositionByteDisk getRangeWork(lintervalPositionByteDisk listIntervalPos
 		if ( interval_b < itIntervalPos->a )
 		{
 			intervalPositionByteDisk nn;
-			nn->a = tope;
-			nn->b = interval_b;
-			nn->position = -1;
+			nn.a = tope;
+			nn.b = interval_b;
+			nn.position = -1;
 			pr.push_back(nn);
 			*hit = 0;
 			tope = interval_b + 1;
@@ -192,9 +192,9 @@ lintervalPositionByteDisk getRangeWork(lintervalPositionByteDisk listIntervalPos
 		else {
 			if ( tope < itIntervalPos->a ) {
 				intervalPositionByteDisk nn;
-				nn->a = tope;
-				nn->b = itIntervalPos->a - 1;
-				nn->position = -1;
+				nn.a = tope;
+				nn.b = itIntervalPos->a - 1;
+				nn.position = -1;
 				pr.push_back(nn);
 				tope = itIntervalPos->a;
 				*hit = 0;
@@ -205,9 +205,10 @@ lintervalPositionByteDisk getRangeWork(lintervalPositionByteDisk listIntervalPos
 			if( interval_b >= itIntervalPos->a && interval_b <= itIntervalPos->b)
 			{
 				intervalPositionByteDisk nn;
-				nn->a = tope;
-				nn->b = interval_b;
-				nn->position = itIntervalPos->position;
+				nn.a = tope;
+				nn.b = interval_b;
+				nn.position = itIntervalPos->position;
+				pr.push_back(nn);
 				tope = itIntervalPos->b + 1;
 				break;
 			}
@@ -222,9 +223,9 @@ lintervalPositionByteDisk getRangeWork(lintervalPositionByteDisk listIntervalPos
 	{
 		pr.clear();
 		intervalPositionByteDisk nn;
-		nn->a = interval_a;
-		nn->b = interval_b;
-		nn->position = -1;
+		nn.a = interval_a;
+		nn.b = interval_b;
+		nn.position = -1;
 		*hit = 0;
 		pr.push_back(nn);
 		return pr;
@@ -232,9 +233,9 @@ lintervalPositionByteDisk getRangeWork(lintervalPositionByteDisk listIntervalPos
 	if( interval_b > tope )
 	{
 		intervalPositionByteDisk nn;
-		nn->a = tope;
-		nn->b = interval_b;
-		nn->position = -1;
+		nn.a = tope;
+		nn.b = interval_b;
+		nn.position = -1;
 		*hit = 0;
 		pr.push_back(nn);
 	}
@@ -391,7 +392,7 @@ string getdomain(string url) {
         stringexplode(url, ".", &resultado);
         if (resultado.size() > 1) {
             if ((resultado.at(resultado.size() - 2)).size() <= 3 &&
-                    (resultado.at(resultado.size() - 1)).size() <= 3) {
+                    (resultado.at(resultado.size() - 1)).size() <= 3 && resultado.at(resultado.size() - 2) != "avg" ) {
                 return resultado.at(resultado.size() - 3) + "." + resultado.at(resultado.size() - 2) + "." + resultado.at(resultado.size() - 1);
             } else {
                 return resultado.at(resultado.size() - 2) + "." + resultado.at(resultado.size() - 1);

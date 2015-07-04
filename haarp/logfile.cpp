@@ -104,9 +104,13 @@ void LogFile::ErrorMessage( const char *formatT , ... )
             time_t now = time(NULL);
             struct tm TmDate = *localtime(&now);
             strftime(tmpdate, 50, TIMEFORMAT, &TmDate);
-
+			//~ 
+			std::ostringstream sin;
+            sin <<"("<<getpid()<<") ";
+            //~ 
             strncpy(strt, tmpdate, sizeof(tmpdate));
-            strncat(strt, str, LOGSTRINGLENGTH - sizeof(tmpdate) - 2);
+            strcat(strt, sin.str().c_str());
+            strncat(strt, str, LOGSTRINGLENGTH - sizeof(tmpdate) - 2 - sizeof(sin.str().c_str()));
 
             write(Error_fd, strt, strlen(strt));
         }

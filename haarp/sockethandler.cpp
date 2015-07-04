@@ -284,7 +284,7 @@ bool SocketHandler::Send( string &sock_outT )
 		while ((buffer_count = ::send(sock_fd, sock_outT.substr(total_sent).c_str(), len - total_sent, 0)) < 0)
         {
             if (errno == EINTR) continue;
-			num_false = 3;
+			num_false = errno + 10;
             return false;
         }
         if (buffer_count == 0)
@@ -299,7 +299,50 @@ bool SocketHandler::Send( string &sock_outT )
         
     return true;
 }
+//Send String - debugger
+bool SocketHandler::Send( string &sock_outT, int *status )
+{
+    int total_sent = 0;
+    int len = sock_outT.size();
+    int ret, buffer_count;
 
+    do
+    {
+        Timeout.tv_sec = SENDTIMEOUT;
+        Timeout.tv_usec = 0;
+        FD_ZERO(&checkfd);
+        if (sock_fd < 0) {
+			*status = 1;
+			return false;
+		}
+		FD_SET(sock_fd,&checkfd);
+
+        ret = select_eintr(sock_fd + 1, NULL, &checkfd, NULL, &Timeout);
+
+        if (ret <= 0)
+        {
+			*status = 2;
+            return false;
+        }
+
+		while ((buffer_count = ::send(sock_fd, sock_outT.substr(total_sent).c_str(), len - total_sent, 0)) < 0)
+        {
+            if (errno == EINTR) continue;
+			*status = errno + 10;
+            return false;
+        }
+        if (buffer_count == 0)
+        {
+			*status = 4;
+            return false;
+        }
+
+        total_sent += buffer_count;
+    }
+    while (total_sent < len);
+        
+    return true;
+}
 //Receive String - Maximal MAXRECV
 //sock_del = false : Do not delete Data from Socket
 ssize_t SocketHandler::Recv( string &sock_inT, bool sock_delT, int timeout )

@@ -1,7 +1,6 @@
 CXX = @CXX@
 
-OBJECTS = tube8.com.so \
-	grandchase.com.br.so \
+OBJECTS = grandchase.com.br.so \
 	eset.com.so \
         vimeo.com.so \
 	kaspersky.com.so \
@@ -9,9 +8,13 @@ OBJECTS = tube8.com.so \
 	globo.com.so \
 	vsh.r7.com.so \
 	4shared.com.so \
+	issuu.com.so \
+	dailymotion.com.so \
 	pop6.com.so \
-	pornotube.com.so \
+	porntube.com.so \
+	rncdn3.com.so \
 	avg.com.so \
+	blogspot.com.so \
 	symantecliveupdate.com.so \
 	video.msn.com.so \
 	mediafire.com.so \
@@ -54,7 +57,7 @@ plugins: $(OBJECTS)
 %.so: %.cpp 
 	$(CXX) -I. -fPIC -shared -O2 -o $@ $<
 	
-cteste: teste.c
+cteste: teste.c ../utils.cpp ../utils.h
 	$(CXX) -I. -ldl -rdynamic -O2 -o teste $<
 
 copiar:	

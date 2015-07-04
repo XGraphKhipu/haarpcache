@@ -466,6 +466,7 @@ int ProxyHandler::CommunicationHTTP()
             BrowserDropped = true;
             /*Change log*/
             if (LL>0) if (alivecount==1) LogFile::ErrorMessage("(%s) - Could not send body to browser\n", ToBrowser.GetIP().c_str());
+            LogFile::ErrorMessage("(%s) - Could not send body to browser\n", ToBrowser.GetIP().c_str());
             return -10;
         }
         //File completely received?
@@ -557,6 +558,7 @@ int ProxyHandler::CommunicationSSL()
             {
                 BrowserDropped = true;
                 if (LL>0) LogFile::ErrorMessage("(%s) Could not send header to browser\n", ToBrowser.GetIP().c_str());
+                LogFile::ErrorMessage("(%s) Could not send header to browser\n", ToBrowser.GetIP().c_str());
                 return -10;
             }
 
@@ -599,6 +601,7 @@ int ProxyHandler::CommunicationSSL()
                 {
                     BrowserDropped = true;
                     if (LL>0) if (alivecount==1) LogFile::ErrorMessage("(%s) Could not send body to browser\n", ToBrowser.GetIP().c_str());
+                    LogFile::ErrorMessage("(%s) Could not send header to browser\n", ToBrowser.GetIP().c_str());
                     return -10;
                 }
 
@@ -834,7 +837,8 @@ bool ProxyHandler::ProxyMessage( int CommunicationAnswerT, string Answer )
 
         //End header
         errorheader += "\r\nContent-Type: text/html\r\nProxy-Connection: close\r\nConnection: close\r\n\r\n";
-
+		
+	if(LL > 2) LogFile::ErrorMessage(errorheader.c_str());
         if ( ToBrowser.Send( errorheader ) == false )
         {
             return false;
