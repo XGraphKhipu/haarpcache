@@ -22,11 +22,12 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
     public:
 		lintervalPositionByteDisk lranges, lrangeswork;
 		lintervalPositionByteDisk::iterator brange;
-		int range_min, range_max;//ADD
-		int acumulate;
-		int bwrite;
-		int limit;
+		long long int range_min, range_max;//ADD
+		long long int acumulate;
+		long long int bwrite;
+		long long int limit;
 		int np;
+		int fileHeaderLengthUnread; 
 		int count_wait;
 		bool ext_webm; 
 		bool hasupdate;
@@ -35,14 +36,18 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
 		//~ bool knowhitmiss;
 		bool bchrome;
 		bool miss2hit;
+		bool haveUpdateDB;
 		bool exists_transaction_editing_file; //This process blocked the edition the of file?
+		int64_t contentLengthServer;
+		int64_t acumulateBodyLength;
 		
 		void UpdateFileSizeinPartial( string header );
 		void getLimitBytes(string &header);
-		int getOnlyContentLength( string header );
-		void Cache2( int cl );
+		long long int getOnlyContentLength( string header );
+		void Cache2( long long int cl );
 		
-        string domain,request,msghit;
+        string request, domain,msghit;
+        string readFileHeader;
 		int port;
 		string origin_header;
         resposta r;
@@ -66,12 +71,11 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
         
         void Update();
         void SubUpdate();
-        short BusyFile();
-        bool lock_row_exclusive();
-        bool lock_row_exclusive_strict();
         bool liberate_edition();
-        int FileInEdition();
+        int lockFile(int singleDomain);
         void Close();
+        void print_list_lranges(lintervalPositionByteDisk lRangesPositionDisk, string prefix);
+        void print_range(intervalPositionByteDisk range, string prefix);
 };
 
 #endif

@@ -7,6 +7,6 @@ Makefile
 haarp/Makefile
 haarp/plugins/Makefile
 *.log
-default.h
+haarp/default.h
 config.status
 config.log

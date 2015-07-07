@@ -1,3 +1,11 @@
+/* 
+ * (c) Copyright 2009 Joaquim Pedro França Simão (osmano807) <osmano807@gmail.com>. 
+ * Some Rights Reserved. 
+ *
+ * @autor Joaquim Pedro França Simão (osmano807) <osmano807@gmail.com> 
+ * @autor Manolo Canales (keikurono01) <kei.haarpcache@gmail.com> 
+ */
+
 #include <iostream>
 #include <cstring>
 #include <vector>

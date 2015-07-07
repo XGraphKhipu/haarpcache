@@ -9,35 +9,39 @@
 #include <list>
 #include <iostream>
 
+//~ typedef long long int LLI;
+
 using namespace std;
+
+#define DELIM "_-DELHAARP-_"
 
 struct resposta {
 	bool match;
 	string domain;
 	string file;
-	int range_min;
-	int range_max;
+	long long int range_min;
+	long long int range_max;
 	bool exist_range;	
 };
 
 class intervalPositionByteDisk {
 	public:
-		int a;
-		int b;
-		int position;
+		long long int a;
+		long long int b;
+		long long int position;
 };	
 typedef list<intervalPositionByteDisk>  lintervalPositionByteDisk;
 
-long int getFileSize(lintervalPositionByteDisk listIntervalPositionByteDisk);
-bool is_all_hit(lintervalPositionByteDisk listIntervalPositionByteDisk, lintervalPositionByteDisk::iterator it);
-int getExtremeb(lintervalPositionByteDisk listIntervalPositionByteDisk);
-lintervalPositionByteDisk::iterator getlastnode(lintervalPositionByteDisk listIntervalPositionByteDisk);
+long long int getFileSize(lintervalPositionByteDisk listIntervalPositionByteDisk);
+bool is_all_hit(lintervalPositionByteDisk &listIntervalPositionByteDisk, lintervalPositionByteDisk::iterator it);
+long long int getExtremeb(lintervalPositionByteDisk listIntervalPositionByteDisk);
+lintervalPositionByteDisk::iterator getlastnode(lintervalPositionByteDisk &listIntervalPositionByteDisk);
 int generateList(string ranges, string parts, lintervalPositionByteDisk &listIntervalPositionByteDisk);
-int getPointEnd(lintervalPositionByteDisk listIntervalPositionByteDisk);
-lintervalPositionByteDisk getRangeWork(lintervalPositionByteDisk listIntervalPositionByteDisk,int ra, int rb, bool *hit);
-bool appendNode(lintervalPositionByteDisk &, intervalPositionByteDisk n);
-bool appendSubNode(lintervalPositionByteDisk &listIntervalPositionByteDisk, intervalPositionByteDisk n, int lenght_);
-void ordenar(lintervalPositionByteDisk listIntervalPositionByteDisk);
+long long int getPointEnd(lintervalPositionByteDisk listIntervalPositionByteDisk);
+lintervalPositionByteDisk getRangeWork(lintervalPositionByteDisk &listIntervalPositionByteDisk, long long int interval_a, long long int interval_b, bool *hit);
+bool appendNode(lintervalPositionByteDisk &listIntervalPositionByteDisk, intervalPositionByteDisk newInterval);
+bool appendSubNode(lintervalPositionByteDisk &listIntervalPositionByteDisk, intervalPositionByteDisk n, long long int lenght_);
+//~ void ordenar(lintervalPositionByteDisk listIntervalPositionByteDisk);
 bool compareIntervals(intervalPositionByteDisk &a, intervalPositionByteDisk &b);
 void list2string(lintervalPositionByteDisk listIntervalPositionByteDisk,string &s1, string &s2);
 
@@ -49,12 +53,13 @@ static const std::string base64_chars =
              "012!34jklmA*BCDEVWXYZ56/";
 
 string UpperCase( string CaseString );
-void SearchReplace( string &source, string search, string replace );
+int SearchReplace( string &source, string search, string replace );
 int select_eintr( int fds, fd_set *readfds, fd_set *writefds, fd_set *errorfds, struct timeval *timeout );
 bool MatchSubstr(string &hay, const char* needle, int startpos);
 bool MatchBegin(string &hay, const char *needle, int needlelength);
 void stringexplode(string str, string separator, vector<string>* results);
 void stringexplodetrim(string str, string separator, vector<string>* results);
+void splitstring(string str, string separator, vector<string>* results);
 string getdomain(string url);
 bool file_exists(string strFilename);
 int64_t file_size( string szFileName );
@@ -62,6 +67,7 @@ void mkdir_p(const string &pathname);
 string getfilepath(string path);
 string getfilename(string path);
 string regex_match(string er, string line);
+string regex_match_nocase(string er, string line);
 string itoa(int val);
 double now();
 long file_getmodif( string szFileName );
@@ -77,5 +83,5 @@ std::string XOR(string value,string key);
 const string getFileExtension(string file);
 const string getFileName(string file);
 const string sqlconv(string sql);
-
+void longSeekpFile(fstream &f, long long int pos);
 #endif

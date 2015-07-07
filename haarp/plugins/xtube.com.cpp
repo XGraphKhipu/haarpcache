@@ -15,7 +15,7 @@
 // g++ -I. -fPIC -shared -g -o xtube.com.so xtube.com.cpp
 //~ http.*\.(publicvideo|publicphoto)\.xtube\.com\/(videowall\/)?videos?\/.*(\.flv\?.*|\_Thumb\.flv$)
 //~ 
-string get_filename(string url, int *ra, int *rb) {
+string get_filename(string url, long long int *ra, long long int *rb) {
 	vector<string> resultado;
 	stringexplode(url,"/",&resultado);
 	url = resultado.at(resultado.size() - 1);
@@ -28,7 +28,7 @@ string get_filename(string url, int *ra, int *rb) {
 		string tmp;
 		if( (tmp = regex_match("[\\?&]fs=[0-9]+",resultado.at(1))) != "" ) {
 			tmp.erase(0,4);
-			*ra = atoi(tmp.c_str());
+			*ra = atoll(tmp.c_str());
 			*rb = -1;
 		}
 		return resultado.at(0);

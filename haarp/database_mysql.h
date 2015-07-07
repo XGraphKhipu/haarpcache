@@ -17,6 +17,7 @@ class Database {
     public:
         bool connected;
         int open(string host,string username,string password,string database);
+        long int getID();
         int set (string sql);
         int get (string sql); // get para fazer a cosulta
         int get_num_rows();
@@ -26,6 +27,7 @@ class Database {
         string getError();
         void close ();
         const string sqlconv(string sql);
+        string getRealEscapeString(string sourcestr);
         Database();
         ~Database();
 };

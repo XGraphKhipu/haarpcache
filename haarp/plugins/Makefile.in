@@ -4,7 +4,12 @@ OBJECTS = grandchase.com.br.so \
 	eset.com.so \
         vimeo.com.so \
 	kaspersky.com.so \
+	netflix.com.so \
 	xvideos.com.so \
+	bitdefender.net.so \
+	bitdefender.com.so \
+	avira-update.com.so \
+	nflximg.net.so \
 	globo.com.so \
 	vsh.r7.com.so \
 	4shared.com.so \
@@ -47,14 +52,64 @@ OBJECTS = grandchase.com.br.so \
 	cloudfront.net.so \
 	5min.com.so \
 	wrzuta.pl.so \
-	youku.com.so 
+	youku.com.so \
+	akamaihd.net.so \
+	amazonaws.com.so \
+	appspot.com.so \
+	bomusica.biz.so \
+	bomusica.info.so \
+	bomusicas.com.so \
+	bullafina.biz.so \
+	bullafina.me.so \
+	cloudfront.net.so \
+	coqui.net.so \
+	cutmu.net.so \
+	disneylatino.com.so \
+	domusica.me.so \
+	domusicas.com.so \
+	dungeonbusters.com.so \
+	friv.com.so \
+	geewa.net.so \
+	goobeo.com.so \
+	gooveo.biz.so \
+	gooveo.info.so \
+	gooveo.me.so \
+	hulkshare.com.so \
+	imageshack.us.so \
+	kixeye.com.so \
+	llnwd.net.so \
+	maguinamotors.com.so \
+	manabar.ca.so \
+	miniclip.com.so \
+	mlstatic.com.so \
+	modovideo.com.so \
+	molenillo.com.so \
+	mp3-buscador.com.so \
+	musicaveo.biz.so \
+	musicaveo.info.so \
+	netpocket.org.so \
+	ning.com.so \
+	nofeehost.com.so \
+	nordeus.com.so \
+	popcap.com.so \
+	serviporno.com.so \
+	socialpointgames.com.so \
+	sonicomusica.com.so \
+	telaxo.com.so \
+	tetrisfb.com.so \
+	turner.com.so \
+	vevos.biz.so \
+	viddler.com.so \
+	vostucdn.com.so \
+	wooga.com.so \
+	zgncdn.com.so 
 		
 
 all: plugins cteste copiar
 
 plugins: $(OBJECTS)
 
-%.so: %.cpp 
+%.so: %.cpp  ../utils.cpp ../utils.h
 	$(CXX) -I. -fPIC -shared -O2 -o $@ $<
 	
 cteste: teste.c ../utils.cpp ../utils.h
@@ -74,6 +129,8 @@ copiar:
 	cp orkut.com.so orkut.com.br.so
 	cp speedtest.net.so testdevelocidad.es.so
 	cp vimeo.com.so vimeocdn.com.so
+	cp nflximg.net.so nflximg.com.so
 
 clean:
 	rm -f *.so
+

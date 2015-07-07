@@ -1,10 +1,23 @@
-/var/log/haarp/*.log {
-  daily
-  compress
-  rotate 5
-  missingok
-  notifempty
-  postrotate
-  /etc/init.d/haarp restart > /dev/null
-  endscript
+/var/log/haarp/access.log {
+    missingok
+    notifempty
+    daily
+    size 30M
+    rotate 5
+    compress
+}
+/var/log/haarp/error.log {
+    missingok
+    notifempty
+    daily
+    size 30M
+    rotate 5
+    compress
+    postrotate
+     /etc/init.d/haarp restart > /dev/null 2>/dev/null || true
+     /usr/sbin/squid  -k reconfigure > /dev/null 2>/dev/null || true
+     /usr/bin/squid   -k reconfigure > /dev/null 2>/dev/null || true
+     /usr/sbin/squid3 -k reconfigure > /dev/null 2>/dev/null || true
+     /usr/bin/squid3  -k reconfigure > /dev/null 2>/dev/null || true
+    endscript
 }

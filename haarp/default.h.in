@@ -1,7 +1,7 @@
 #ifndef DEFAULT_H
 #define DEFAULT_H
 
-#define VERSION "1.2.1"
+#define VERSION "1.4.0"
 
 //##############################################################
 //Parameters in Configurationfile
@@ -48,6 +48,9 @@
 
 //Maximum length of http headers
 #define MAXHTTPHEADERLENGTH 65536
+
+//Bytes of the file for have the md5 function
+#define LENGTHHEADERFILE 1024
 
 // DONT TOUCH - run configure
 #undef CONFIGFILE

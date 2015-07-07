@@ -7,7 +7,7 @@ using namespace std;
 
 // use this line to compile
 // g++ -I. -fPIC -shared -g -o justin.tv.so justin.tv.cpp
-void get_videoid(string url, string &file, int *a, int *b){
+void get_videoid(string url, string &file, long long int *a, long long int *b){
 	vector<string> resultado, url2;
 	SearchReplace(url,"?","&");
 	string lastpart = "";

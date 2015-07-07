@@ -15,6 +15,7 @@
 #include <regex.h>
 #include <sys/stat.h>
 #include <sys/file.h>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <math.h>
@@ -41,7 +42,7 @@ bool remove_param(string &curl, string param) {
 	return true;
 }
 
-bool is_all_hit(lintervalPositionByteDisk listIntervalPositionByteDisk, lintervalPositionByteDisk::iterator it) {
+bool is_all_hit(lintervalPositionByteDisk &listIntervalPositionByteDisk, lintervalPositionByteDisk::iterator it) {
 	while(it != listIntervalPositionByteDisk.end()) {
 		if(it->position < 0)
 			return false;
@@ -49,18 +50,19 @@ bool is_all_hit(lintervalPositionByteDisk listIntervalPositionByteDisk, linterva
 	}
 	return true;
 }
-long int getFileSize(lintervalPositionByteDisk listIntervalPositionByteDisk) {
+
+long long int getFileSize(lintervalPositionByteDisk listIntervalPositionByteDisk) {
 	lintervalPositionByteDisk::iterator it = listIntervalPositionByteDisk.begin();
-	long int re = 0;
+	long long int re = 0;
 	while(it != listIntervalPositionByteDisk.end()) {
-		re = it->b - it->a + 1;
+		re += it->b - it->a + 1;
 		++it;
 	}
 	return re;
 }
 
-int getExtremeb(lintervalPositionByteDisk listIntervalPositionByteDisk) {
-	int max = -1;
+long long int getExtremeb(lintervalPositionByteDisk listIntervalPositionByteDisk) {
+	long long int max = -1;
 	lintervalPositionByteDisk::iterator it = listIntervalPositionByteDisk.begin();
 	while(it != listIntervalPositionByteDisk.end()) {
 		if( it->b > max )
@@ -70,24 +72,27 @@ int getExtremeb(lintervalPositionByteDisk listIntervalPositionByteDisk) {
 	return max;
 }
 
-lintervalPositionByteDisk::iterator getlastnode(lintervalPositionByteDisk listIntervalPositionByteDisk) {
-	lintervalPositionByteDisk::iterator iteratorListOfRanges, iteratorLastRangeBytes;
-	iteratorListOfRanges = listIntervalPositionByteDisk.begin();
+lintervalPositionByteDisk::iterator getlastnode(lintervalPositionByteDisk &lIntervPositionByteDisk) {
+	lintervalPositionByteDisk::iterator itListOfRanges, itLastRangeBytes;	
+	itListOfRanges = lIntervPositionByteDisk.begin();
 	
-	int max_position = iteratorListOfRanges->position;
-	iteratorLastRangeBytes = iteratorListOfRanges;
-	while( ++iteratorListOfRanges != listIntervalPositionByteDisk.end() ) {
-		if(iteratorListOfRanges->position >  max_position)
+	long long int max_position = itListOfRanges->position;
+	itLastRangeBytes = itListOfRanges;	
+	
+	while( itListOfRanges != lIntervPositionByteDisk.end() ) {
+		if(itListOfRanges->position >  max_position)
 		{
-			max_position = iteratorListOfRanges->position;
-			iteratorLastRangeBytes = iteratorListOfRanges;
+			max_position = itListOfRanges->position;
+			itLastRangeBytes = itListOfRanges;
 		}
+		++itListOfRanges;
 	}
-	return iteratorLastRangeBytes;
+	return itLastRangeBytes;
 }
-bool appendNode(lintervalPositionByteDisk &listIntervalPositionByteDisk, intervalPositionByteDisk newInterval) {	
-	if (newInterval.position < 0)
-		return false;
+
+bool appendNode(lintervalPositionByteDisk &listIntervalPositionByteDisk, intervalPositionByteDisk newInterval) {
+	//~ if (newInterval.position < 0)
+		//~ return false;
 	if (listIntervalPositionByteDisk.empty()) {
 		listIntervalPositionByteDisk.push_front(newInterval);
 		return true;
@@ -97,128 +102,137 @@ bool appendNode(lintervalPositionByteDisk &listIntervalPositionByteDisk, interva
 		iteratorLastInterval->b = newInterval.b;
 		return true;
 	}
-	listIntervalPositionByteDisk.insert(++iteratorLastInterval, newInterval);
+	++iteratorLastInterval;
+	listIntervalPositionByteDisk.insert(iteratorLastInterval, newInterval);
 	return true;	
 }
 
-bool appendSubNode(lintervalPositionByteDisk &listIntervalPositionByteDisk, intervalPositionByteDisk newInterval, int lenght_) {
+bool appendSubNode(lintervalPositionByteDisk &listIntervalPositionByteDisk, intervalPositionByteDisk newInterval, long long int lenght_) {
 	
-	if (newInterval.position < 0)
-		return false;
-	if (listIntervalPositionByteDisk.empty()) {
+	//~ if (newInterval.position < 0)
+		//~ return false;
+	if ( listIntervalPositionByteDisk.empty() ) {
+		newInterval.b = lenght_ + newInterval.a - 1;
 		listIntervalPositionByteDisk.push_front(newInterval);
 		return true;
 	}
 	lintervalPositionByteDisk::iterator iteratorLastInterval = getlastnode(listIntervalPositionByteDisk);
-	if( iteratorLastInterval->b + 1 == newInterval.a ){
+	if ( iteratorLastInterval->b + 1 == newInterval.a ) {
 		iteratorLastInterval->b = lenght_ + newInterval.a - 1;
 		return true;
 	}
 	newInterval.b = lenght_ + newInterval.a - 1;
-	listIntervalPositionByteDisk.insert(++iteratorLastInterval, newInterval);
+	++iteratorLastInterval;
+	listIntervalPositionByteDisk.insert(iteratorLastInterval, newInterval);
 	return true;
 }
+
 /*
  * Retorna el último lugar entero de bytes donde se pueden escribir más datos .
  */
-int getPointEnd(lintervalPositionByteDisk listIntervalPositionByteDisk) {
-	if(listIntervalPositionByteDisk.empty())
+long long int getPointEnd(lintervalPositionByteDisk listIntervalPositionByteDisk) {
+	if ( listIntervalPositionByteDisk.empty() )
 		return 0;
 	lintervalPositionByteDisk::iterator iteratorLastInterval = getlastnode(listIntervalPositionByteDisk);
 	return iteratorLastInterval->position + iteratorLastInterval->b - iteratorLastInterval->a + 1;
 }
+
 bool compareIntervals(intervalPositionByteDisk &i1, intervalPositionByteDisk &i2) {
 	return i1.a < i2.a;
 }
+
 /*
  * Consigue una lista de nodos del tipo llista.
  * Esta contiene el orden de los nodos a trabajar (cada nodo es un bloque de datos de un archivo).
  * getRangeWork retorna el valor hit y la lista de bloques a trabajar.
  * 
  */
-lintervalPositionByteDisk getRangeWork(lintervalPositionByteDisk listIntervalPositionByteDisk, int interval_a, int interval_b, bool *hit) {
-	listIntervalPositionByteDisk.sort(compareIntervals);
-	lintervalPositionByteDisk::iterator itIntervalPos = listIntervalPositionByteDisk.begin(); 	
+lintervalPositionByteDisk getRangeWork(lintervalPositionByteDisk &listIntervalPositionByteDisk, long long int interval_a, long long int interval_b, bool *hit) {
 	
 	lintervalPositionByteDisk pr;
 	*hit = 1;
-	int tope = -1;
-	while ( itIntervalPos != listIntervalPositionByteDisk.end() ) {
-		if ( interval_a < itIntervalPos->a )
-		{
-			tope = interval_a;
-			break;
-		}
-		else
-		{
-			if ( interval_a >= itIntervalPos->a && interval_a <= itIntervalPos->b )
+	long long int tope = -1;
+	
+	if ( !listIntervalPositionByteDisk.empty() ) {
+		
+		listIntervalPositionByteDisk.sort(compareIntervals);
+		lintervalPositionByteDisk::iterator itIntervalPos = listIntervalPositionByteDisk.begin(); 
+		
+		while ( itIntervalPos != listIntervalPositionByteDisk.end() ) {
+			if ( interval_a < itIntervalPos->a )
 			{
-				if( interval_b <= itIntervalPos->b )
-				{
-					pr.clear();
-					intervalPositionByteDisk nn;
-					nn.a = interval_a;
-					nn.b = interval_b;
-					nn.position = itIntervalPos->position + interval_a - itIntervalPos->a;
-					pr.push_front(nn);
-					*hit = 1;
-					return pr;
-				}
-				intervalPositionByteDisk nn;
-				nn.a = interval_a;
-				nn.b = itIntervalPos->b;
-				nn.position = itIntervalPos->position + interval_a - itIntervalPos->a;
-				pr.push_front(nn);
-				tope = itIntervalPos->b + 1;
-				++itIntervalPos;
+				tope = interval_a;
 				break;
 			}
-		}
-		++itIntervalPos;
-	}
-	while( tope >= 0 && itIntervalPos !=  listIntervalPositionByteDisk.end() )
-	{
-		if ( interval_b < itIntervalPos->a )
-		{
-			intervalPositionByteDisk nn;
-			nn.a = tope;
-			nn.b = interval_b;
-			nn.position = -1;
-			pr.push_back(nn);
-			*hit = 0;
-			tope = interval_b + 1;
-			break;
-		}
-		else {
-			if ( tope < itIntervalPos->a ) {
-				intervalPositionByteDisk nn;
-				nn.a = tope;
-				nn.b = itIntervalPos->a - 1;
-				nn.position = -1;
-				pr.push_back(nn);
-				tope = itIntervalPos->a;
-				*hit = 0;
+			else
+			{
+				if ( interval_a >= itIntervalPos->a && interval_a <= itIntervalPos->b )
+				{
+					if( interval_b <= itIntervalPos->b )
+					{
+						pr.clear();
+						intervalPositionByteDisk nn;
+						nn.a = interval_a;
+						nn.b = interval_b;
+						nn.position = itIntervalPos->position + interval_a - itIntervalPos->a;
+						pr.push_front(nn);
+						*hit = 1;
+						return pr;
+					}
+					intervalPositionByteDisk nn;
+					nn.a = interval_a;
+					nn.b = itIntervalPos->b;
+					nn.position = itIntervalPos->position + interval_a - itIntervalPos->a;
+					pr.push_front(nn);
+					tope = itIntervalPos->b + 1;
+					++itIntervalPos;
+					break;
+				}
 			}
-			else {
-				//waning
-			}
-			if( interval_b >= itIntervalPos->a && interval_b <= itIntervalPos->b)
+			++itIntervalPos;
+		}
+		while( tope >= 0 && itIntervalPos !=  listIntervalPositionByteDisk.end() ) {
+			if ( interval_b < itIntervalPos->a )
 			{
 				intervalPositionByteDisk nn;
 				nn.a = tope;
 				nn.b = interval_b;
-				nn.position = itIntervalPos->position;
+				nn.position = -1;
 				pr.push_back(nn);
-				tope = itIntervalPos->b + 1;
+				*hit = 0;
+				tope = interval_b + 1;
 				break;
 			}
-			else
-				pr.push_back(*itIntervalPos);
+			else {
+				if ( tope < itIntervalPos->a ) {
+					intervalPositionByteDisk nn;
+					nn.a = tope;
+					nn.b = itIntervalPos->a - 1;
+					nn.position = -1;
+					pr.push_back(nn);
+					tope = itIntervalPos->a;
+					*hit = 0;
+				}
+				else {
+					//warning
+				}
+				if( interval_b >= itIntervalPos->a && interval_b <= itIntervalPos->b)
+				{
+					intervalPositionByteDisk nn;
+					nn.a = tope;
+					nn.b = interval_b;
+					nn.position = itIntervalPos->position;
+					pr.push_back(nn);
+					tope = itIntervalPos->b + 1;
+					break;
+				}
+				else
+					pr.push_back(*itIntervalPos);
+			}
+			tope = itIntervalPos->b + 1;
+			++itIntervalPos;
 		}
-		tope = itIntervalPos->b + 1;
-		++itIntervalPos;
 	}
-
 	if(tope == -1)
 	{
 		pr.clear();
@@ -252,20 +266,20 @@ int generateList(string ranges, string parts, lintervalPositionByteDisk &listInt
 	listIntervalPositionByteDisk.clear();
 	vector<string> resul,rang,part;
 	stringexplode(ranges,",",&resul);
-	stringexplode(parts,",",&part);
-	if( part.size() != resul.size() )
+	stringexplode(parts, ",",&part);
+	if ( part.size() != resul.size() )
 		return 0;
-	for( int i=0; i < (int)resul.size(); i++ )
+	for ( int i=0; i < (int)resul.size(); i++ )
 	{
 		intervalPositionByteDisk n;
 		stringexplode(resul.at(i),"-",&rang);
-		if(rang.size() < 2)
+		if (rang.size() < 2)
 			return 0;
-		n.a = atoi(rang.at(0).c_str());
-		n.b = atoi(rang.at(1).c_str());
-		if(n.a > n.b)
+		n.a = atoll(rang.at(0).c_str());
+		n.b = atoll(rang.at(1).c_str());
+		if (n.a > n.b)
 			return 0;
-		n.position = atoi(part.at(i).c_str());
+		n.position = atoll(part.at(i).c_str());
 		listIntervalPositionByteDisk.push_front(n);
 		rang.clear();
 	}
@@ -296,13 +310,16 @@ string UpperCase(string CaseString) {
     return CaseString;
 }
 
-void SearchReplace(string &source, string search, string replace) {
+int SearchReplace(string &source, string search, string replace) {
+	int numberReplace = 0;
     string::size_type position = source.find(search);
 
     while (position != string::npos) {
         source.replace(position, search.size(), replace);
         position = source.find(search);
+        numberReplace++;
     }
+    return numberReplace;
 }
 
 int select_eintr(int fds, fd_set *readfds, fd_set *writefds, fd_set *errorfds, struct timeval *timeout) {
@@ -373,13 +390,28 @@ void stringexplodetrim(string str, string separator, vector<string>* results) {
     }
 }
 
+void splitstring(string str, string separator, vector<string>* results) {
+    size_t found;
+    found = str.find(separator);
+    while (found != string::npos) {
+        if (found > 0) {
+            results->push_back(str.substr(0, found));
+        }
+        str = str.substr(found + separator.size());
+        found = str.find(separator);
+    }
+    if (str.length() > 0) {
+        results->push_back(str);
+    }
+}
+
 string getdomain(string url) {
     if (regex_match("^74\\.125\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?$)", url) != "") return "youtube.com";
     if (regex_match("^(205\\.196\\.|199\\.91\\.)[0-9]{2,3}\\.[0-9]{1,3}", url) != "") return "mediafire.com";
-	//if (regex_match("^speedtest[0-9]*(\\.|[a-z]|[0-9])+", url) != "") return "speedtest.net";
     if (regex_match("^(\\.|[a-z]|[0-9]|-)+(\\/\\w+)?(\\/speedtest)+\\/(random[0-9]+x[0-9]+\\.jpg|latency\\.txt)", url) != "") return "speedtest.net";
     if (regex_match("^[0-9]{2,3}\\.[0-9]{2,3}\\.[0-9]{2,3}\\.[0-9]{1,3}\\/youku\\/", url) != "") return "youku.com";
-    
+    if (regex_match("198\\.38\\.(9[6-9]|1[0-2][0-9])\\.[0-9]{1,3}\\/range\\/", url) != "") return "netflix.com";
+    if (regex_match("108\\.175\\.(3[2-9]|4[0-9])\\.[0-9]{1,3}\\/range\\/", url) != "") return "netflix.com";
 
 	
     vector<string> resultado;
@@ -458,6 +490,22 @@ string regex_match(string er, string line) {
     regmatch_t match;
     regex_t reg;
     if ((regcomp(&reg, er.c_str(), REG_EXTENDED | REG_NEWLINE)) == 0) {
+        error = regexec(&reg, line.c_str(), 1, &match, 0);
+        if (error == 0) {
+            //cout << "Tamanho: " << line.size() << " Inicio: " << match.rm_so << " Fim: " << match.rm_eo << endl;
+            return line.substr(match.rm_so, match.rm_eo - match.rm_so);
+        } else {
+            return "";
+        }
+    } else {
+        return "";
+    }
+}
+string regex_match_nocase(string er, string line) {
+    int error;
+    regmatch_t match;
+    regex_t reg;
+    if ((regcomp(&reg, er.c_str(), REG_EXTENDED | REG_NEWLINE | REG_ICASE)) == 0) {
         error = regexec(&reg, line.c_str(), 1, &match, 0);
         if (error == 0) {
             //cout << "Tamanho: " << line.size() << " Inicio: " << match.rm_so << " Fim: " << match.rm_eo << endl;
@@ -665,3 +713,30 @@ const string getFileName(string file) {
 	} else
 		return file;
 }
+
+void longSeekpFile(fstream &f, long long int pos) {
+	int lint = 2000000000;
+	long long int _div =  pos/lint;
+	if (_div) {
+		f.seekg(lint, ios::beg);
+		--_div;
+		pos -= lint;
+		for(int i = 0; i < _div; i++) {
+			f.seekg(lint, ios::cur);
+			pos -= lint;
+		}
+		f.seekg(pos, ios::cur);
+	} else {
+		f.seekg(pos, ios::beg);
+	}
+}
+
+
+
+
+
+
+
+
+
+

@@ -8,22 +8,21 @@ using namespace std;
 // use this line to compile
 // g++ -I. -fPIC -shared -g -o plugin.so plugin.cpp
 
-void get_videoid(string url, string &file, bool *exist_range, int *a, int *b) {
+void get_videoid(string url, string &file, bool *exist_range, long long int *a, long long int *b) {
 	vector<string> resultado,valor;
 	
 	string sclen, itag, mime;
 	bool exist_cm2, range, watchID;
-	int size, clen;
+	int size;
+	long long int clen;
 	
-	clen = 0;
 	watchID = false;
 
 	sclen = file = itag = mime = "";
 
 	*exist_range = exist_cm2 = range = false;
 	
-	SearchReplace(url,"?","&");
-	stringexplode(url, "/", &resultado);
+	stringexplode(url, "?", &resultado);
 	size = resultado.size();
 	if ( size > 1 ) {
 	    url = resultado.at(size - 1);
@@ -54,15 +53,15 @@ void get_videoid(string url, string &file, bool *exist_range, int *a, int *b) {
 					file = "";
 					return;
 				}
-				*a = atoi(interval.at(0).c_str()) - 0;
-				*b = atoi(interval.at(1).c_str()) - 0;
+				*a = atoll(interval.at(0).c_str()) - 0;
+				*b = atoll(interval.at(1).c_str()) - 0;
 				*exist_range = true;
 			}
 			else if( valor.at(0) == "cm2" && valor.at(1) == "0" ) {
 				exist_cm2 = true;
 			}
 			else if ( valor.at(0) == "clen" ) {
-				clen = atoi(valor.at(1).c_str());
+				clen = atoll(valor.at(1).c_str());
 				sclen = "-" + valor.at(1);
 			}
 			else if ( valor.at(0) == "watchid" ) {
@@ -123,7 +122,6 @@ extern "C" resposta hgetmatch2(string url) {
     resposta r;
 	r.range_min = 0;
 	r.range_max = 0;
-
 	r.exist_range = false;
 	
 	if ( regex_match("[\\?&]begin=[0-9]*[1-9]+[0-9]*", url) == "" && regex_match("[\\?&]cms_redirect=yes(&.*)?$", url) == "" && regex_match("[\\?&]redirect_counter=1(&.*)?$", url) == "" &&  url.find("&ir=1") == string::npos && url.find("&rr=12") == string::npos && url.find("videoplayback") != string::npos ) {

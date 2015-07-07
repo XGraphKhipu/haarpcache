@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS `haarp` (
   `size` int(10) unsigned NOT NULL default '0',
   `modified` datetime NOT NULL,
   `downloaded` datetime NOT NULL,
-  `requested` int(10) unsigned NOT NULL default '0',
+  `bytes_requested` bigint unsigned NOT NULL default 0,
   `last_request` datetime NOT NULL,
   `rg` varchar(5000) NOT NULL DEFAULT '',
   `pos` varchar(2500) NOT NULL DEFAULT '',

@@ -11,7 +11,7 @@
 #include <vector>
 #include "../utils.cpp"
 
-string get_filename(string url, int *ra, int *rb) {
+string get_filename(string url, long long int *ra, long long int *rb) {
 	vector<string> purl;
 	stringexplode(url, ".", &purl);
 	return purl.at(purl.size() - 2) + "." + purl.at(purl.size() - 1);
