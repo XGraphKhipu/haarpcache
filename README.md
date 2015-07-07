@@ -192,7 +192,7 @@ List of Plugins
 	Nofeehost,
 	Sonicomusica,
 	Turner,
-	Vevos,
+	Vevos;
 	
 	4shared,
 	Mediafire,
@@ -207,7 +207,6 @@ List of Plugins
 	Mercadolibre,
 	Submanga,
 	Ytimg;
-	
 	
 	Avast,
 	Avgate,
@@ -258,6 +257,16 @@ Configure your file /etc/haarp/haarp.lst to disable or enable the plugins.
 	
 Changelog
 ---------
+
+__Version 1.4__
+
+2015/07/07
+
+* Adding 50 new plugins.
+* Improved support for DASH technology.
+* Update the file of configuration for logrotate.
+* Fix problem: 'segfault at 6 ip 00007f850c2cef36 sp 00007fff19f22d00 error 4 in libmysqlclient.so.18.1.0'.
+* Fix problem: 'Error in /usr/local/sbin/haarp: free(): invalid pointer: 0x00007fb5e166d618'.
 
 __Version 1.3__
 
