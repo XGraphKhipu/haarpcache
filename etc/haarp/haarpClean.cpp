@@ -131,7 +131,7 @@ int main(int carg, char **varg) {
 	        strftime(fecha_request,sizeof(fecha_request),"%Y-%m-%d %T", timeptr);
 		nloop=0;
 		cout<<"Selecting files last accesed before "<<fecha_request<<", requested less than "<<requested<<" times"<<endl;
-		sprintf(query, "select domain,file,last_request,filesize,requested from haarp where deleted=0 and requested <= %i and last_request <= '%s' order by last_request,requested limit %i", requested, fecha_request, NUM_FILES);
+		sprintf(query, "select domain,file,last_request,filesize,bytes_requested from haarp where deleted=0 and bytes_requested <= (%i)*filesize and last_request <= '%s' order by last_request,bytes_requested limit %i", requested, fecha_request, NUM_FILES);
 		if(mysql_query(connect, query)) {
                         cout<<"MYSQL Error: Query: '"<<query<<"'; "<<mysql_error(connect)<<endl;
                         break;
@@ -167,7 +167,7 @@ int main(int carg, char **varg) {
 			}
 			sprintf(query,"rm -f %s",file);
 			deleted +=atof(r[3]);
-			if (nloop >=NUM_FILES) printf("Entry %i (loop %i), %.2lfMB (of %.2lfGB total), Last requested : %s [Hits: %s], Path: %s\n", num_entries, nloop, atof(r[3])/1048576, deleted/1073741824,r[2], r[4], file);
+			if (nloop >=NUM_FILES) printf("Entry %i (loop %i), %.2lfMB (of %.2lfGB total), Last requested : %s [Hits: %.1f], Path: %s\n", num_entries, nloop, atof(r[3])/1048576, deleted/1073741824,r[2], atof(r[4])/atof(r[3]), file);
 			system(query);
 			num_entries++;
 		} // ((r = mysql_fetch_row(res)) != NULL && disk_use(list_dir.at(directorio)) >= atoi(cachelimit.c_str()))
