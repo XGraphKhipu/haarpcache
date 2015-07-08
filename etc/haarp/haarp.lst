@@ -32,7 +32,7 @@ http.*(\.windowsupdate\.com|(update|download|dlservice|windowsupdate)\.microsoft
 ^http.{1,15}\.thumbnails.{0,5}\.porntube\.com\/([0-9]\/){9}[0-9]*x[0-9]*\/[0-9]+(\.jpeg|\.jpg)$
 http.*\.terra\.com.*\.flv
 http.*\.viddler\.com.*\.flv
-http.*(videos|porn|img).*\.xvideos\.com\/videos\/(thumbs\/)?.*(\.jpg|\.flv\?.*|\.mp4\?.*)$
+http.*(content|videos|porn|img).*\.xvideos\.com\/videos\/(thumbs\/)?.*(\.jpg|\.flv\?.*|\.mp4\?.*)$
 http.{1,4}media\w*\.justin.tv\/archives\/(\w|\/|-)*\.flv(\?.*|$)
 http.{1,4}\w*juegos\w*\.juegosdiarios\.com\/(\w|\/|-)*\.swf$
 http.{1,4}\w*\.juegosjuegos\.com\/games(\w|\/|-)*\.swf$

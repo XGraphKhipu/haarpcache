@@ -215,8 +215,7 @@ int ConnectionToHTTP2::lockFile(int singleDomain) {
 			return -1;
 		}
 	} else {
-		string query_mysql = "SELECT * FROM haarp WHERE file like '" + domaindb.sqlconv(lname.at(0)) + DELIM "%"
-		DELIM + domaindb.sqlconv(lname.at(1)) + "' and domain='" + r.domain + "' FOR UPDATE;";
+		string query_mysql = "SELECT * FROM haarp WHERE file like '" + domaindb.sqlconv(lname.at(0)) + DELIM"%"DELIM + domaindb.sqlconv(lname.at(1)) + "' and domain='" + r.domain + "' FOR UPDATE;";
 		if (domaindb.get(query_mysql) != 0) {
 			if (LL > 2) LogFile::ErrorMessage("[DEBUG] Error, mysql query: '%s'!!\n", query_mysql.c_str());
 			domaindb.set("ROLLBACK;");
@@ -1080,11 +1079,10 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 					if (LL > 1) LogFile::ErrorMessage("[DEBUG-readpart] Problem with the file '%s', error whit transaction on mysql:'%s'!\n", r.file.c_str(), domaindb.getError().c_str());
 					return BodyLength;
 				}
-				string peti = "SELECT * FROM haarp WHERE file like concat('" + domaindb.sqlconv(lname.at(0)) + "','"
-				DELIM "',md5('" + domaindb.getRealEscapeString(partVideo) + "'),'"
-				DELIM "%') and domain='" + r.domain + "' FOR UPDATE;";
+				string peti = "SELECT * FROM haarp WHERE file like concat('" + domaindb.sqlconv(lname.at(0)) + "','"DELIM"',md5('" + domaindb.getRealEscapeString(partVideo) + "'),'"DELIM"%') and domain='" + r.domain + "' FOR UPDATE;";
 				if (domaindb.get(peti) != 0) {
 					if (LL > 2) LogFile::ErrorMessage("[DEBUG-readpart] Error mysql '%s', query: '%s'!\n", domaindb.getError().c_str(), peti.c_str());
+					if (LL > 0) LogFile::ErrorMessage("Error mysql: '%s'\n", domaindb.getError().c_str());
 					domaindb.set("ROLLBACK;");
 					return BodyLength;
 				}
@@ -1092,21 +1090,16 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 				if (!domaindb.get_num_rows()) {
 					if (LL > 2) LogFile::ErrorMessage("[DEBUG-readpart] File %s [%lli-%lli] NOT EXISTS ON DB =========================.===========\n", r.file.c_str(), range_min, range_max);
 
-					string queryStr = "INSERT INTO haarp (domain, file, size, modified, downloaded, bytes_requested, last_request, file_used) VALUES ('" + r.domain + "', concat('" + domaindb.sqlconv(lname.at(0)) + "','"
-					DELIM "',md5('" + domaindb.getRealEscapeString(partVideo) + "'),'"
-					DELIM "','" + domaindb.sqlconv(lname.at(1)) + "'), 0, now(),now(),0,now(), 0);";
+					string queryStr = "INSERT INTO haarp (domain, file, size, modified, downloaded, bytes_requested, last_request, file_used) VALUES ('" + r.domain + "', concat('" + domaindb.sqlconv(lname.at(0)) + "','"DELIM"',md5('" + domaindb.getRealEscapeString(partVideo) + "'),'"DELIM"','" + domaindb.sqlconv(lname.at(1)) + "'), 0, now(),now(),0,now(), 0);";
 
 					if (domaindb.set(queryStr) != 0) {
 						domaindb.set("ROLLBACK;");
-						LogFile::ErrorMessage("[DEBUG-readpart] File %s [%lli-%lli] Error on INSERT! (NOT EXISTS FILE ON DB): '%s'\n", r.file.c_str(), range_min, range_max, queryStr.c_str());
+						if (LL > 0) LogFile::ErrorMessage("[DEBUG-readpart] File %s [%lli-%lli] Error on INSERT! (NOT EXISTS FILE ON DB): '%s'\n", r.file.c_str(), range_min, range_max, queryStr.c_str());
+						if (LL > 0) LogFile::ErrorMessage("Error mysql: '%s'\n", domaindb.getError().c_str());
 						return BodyLength;
 					}
 				} else {
-					if (domaindb.set("UPDATE haarp set file=concat('" + domaindb.sqlconv(lname.at(0)) + "','"
-							DELIM "',md5('" + domaindb.getRealEscapeString(partVideo) + "'),'"
-							DELIM "','" + domaindb.sqlconv(lname.at(1)) + "'), modified=now(), file_used=0 WHERE domain='" + r.domain + "' and file like concat('" + domaindb.sqlconv(lname.at(0)) + "','"
-							DELIM "',md5('" + domaindb.getRealEscapeString(partVideo) + "'),'"
-							DELIM "%');") != 0) {
+					if (domaindb.set("UPDATE haarp set file=concat('" + domaindb.sqlconv(lname.at(0)) + "','"DELIM"',md5('" + domaindb.getRealEscapeString(partVideo) + "'),'"DELIM"','" + domaindb.sqlconv(lname.at(1)) + "'), modified=now(), file_used=0 WHERE domain='" + r.domain + "' and file like concat('" + domaindb.sqlconv(lname.at(0)) + "','"DELIM"',md5('" + domaindb.getRealEscapeString(partVideo) + "'),'"DELIM"%');") != 0) {
 						if (LL > 2) LogFile::ErrorMessage("[DEBUG-readpart] File %s [%lli-%lli] ERROR MYSQL: '%s'!.\n", r.file.c_str(), range_min, range_max, domaindb.getError().c_str());
 						domaindb.set("ROLLBACK;");
 						return BodyLength;
