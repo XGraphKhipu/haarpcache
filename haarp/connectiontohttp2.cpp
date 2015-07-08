@@ -228,7 +228,7 @@ int ConnectionToHTTP2::lockFile(int singleDomain) {
 		if (singleDomain == 0)
 			if (domaindb.set("INSERT INTO haarp (domain, file, size, modified, downloaded, bytes_requested, last_request, file_used) VALUES ('" + r.domain + "', '" + domaindb.sqlconv(r.file) + "', 0, now(),now(),0,now(), 1);") != 0) {
 				domaindb.set("ROLLBACK;");
-				LogFile::ErrorMessage("[DEBUG] File %s [%lli-%lli] Error on INSERT! (NOT EXISTS FILE ON DB) ========.=======\n", r.file.c_str(), range_min, range_max);
+				if (LL > 0) LogFile::ErrorMessage("[DEBUG] File %s [%lli-%lli] Error on INSERT! (NOT EXISTS FILE ON DB) ========.=======\n", r.file.c_str(), range_min, range_max);
 				return -1;
 			}
 		domaindb.set("COMMIT;");
@@ -370,7 +370,7 @@ void ConnectionToHTTP2::Cache() {
 			lfile = lockFile(0);
 
 		if (lfile <= 0) {
-			if (lfile == -1) LogFile::ErrorMessage("Error mysql: '%s'\n", domaindb.getError().c_str());
+			if (lfile == -1) if (LL > 0) LogFile::ErrorMessage("Error mysql: '%s'\n", domaindb.getError().c_str());
 			exists_transaction_editing_file = true;
 			r.match = hit = false;
 			return;
