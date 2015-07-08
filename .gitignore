@@ -3,6 +3,8 @@
 teste
 haarp/haarp
 etc/haarp/haarpclean
+etc/haarp/haarpclean2
+etc/haarp/haarp.conf
 Makefile
 haarp/Makefile
 haarp/plugins/Makefile

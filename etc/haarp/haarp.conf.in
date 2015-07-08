@@ -3,7 +3,7 @@
 CACHEDIR /haarp/
 PLUGINSDIR /etc/haarp/plugins/
 # En porcentage (%)
-CACHE_LIMIT 98
+CACHE_LIMIT 95
 
 #Zero Penalty Hit para haarp
 # defecto:
