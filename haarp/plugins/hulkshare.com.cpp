@@ -27,8 +27,10 @@ string get_filename(string url) {
 		}
 }
 
-extern "C" resposta getmatch(const string url) {
+extern "C" resposta hgetmatch2(const string url) {
     resposta r;
+	 r.range_min = r.range_max = 0;
+
 
 	if ( (url.find(".hulkshare.com/") != string::npos) and ( (url.find(".mp3") != string::npos) ) 
 	) {

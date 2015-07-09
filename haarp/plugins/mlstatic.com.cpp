@@ -22,8 +22,10 @@ string get_filename(string url) {
                 return resultado.at(resultado.size()-1);           
 }
  
-extern "C" resposta getmatch(const string url) {
-    resposta r;   
+extern "C" resposta hgetmatch2(const string url) {
+    resposta r;
+	 r.range_min = r.range_max = 0;
+   
  
 if ( (url.find(".mlstatic.com") != string::npos) and ((url.find(".jpg") != string::npos) or (url.find(".png") != string::npos))
    ) {
