@@ -100,6 +100,8 @@ Installing
 		# Disable alternate protocols
 		reply_header_access Alternate-Protocol deny all
 		
+* All iptables rules should be placed in a *.sh file to be executed whenever the computer is started.
+
 * Finally:
  	
 		/etc/init.d/haarp restart
