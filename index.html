@@ -146,7 +146,6 @@ iptables -I INPUT 1 -i &lt;eth_wan_2&gt; -m tcp -p tcp --dport 8080 -m state --s
 <p>Avoid the <code>QUIC</code> protocol connections on <code>www.youtube.com</code></p>
 
 <pre><code>iptables -A FORWARD -i &lt;eth_lan&gt; -p udp -m udp --dport 80 -j REJECT --reject-with icmp-port-unreachable
-iptables -A FORWARD -i &lt;eth_lan&gt; -p udp -m udp --dport 443 -j REJECT --reject-with icmp-port-unreachable
 </code></pre>
 
 <p>add the following line in <code>squid.conf</code>:</p>
@@ -155,6 +154,7 @@ iptables -A FORWARD -i &lt;eth_lan&gt; -p udp -m udp --dport 443 -j REJECT --rej
 reply_header_access Alternate-Protocol deny all
 </code></pre>
 </li>
+<li><p>All iptables rules should be placed in a *.sh file to be executed whenever the computer is started.</p></li>
 <li>
 <p>Finally:</p>
 
