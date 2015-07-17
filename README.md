@@ -93,13 +93,14 @@ Installing
 * Avoid the `QUIC` protocol connections on `www.youtube.com`
 
 		iptables -A FORWARD -i <eth_lan> -p udp -m udp --dport 80 -j REJECT --reject-with icmp-port-unreachable
-		iptables -A FORWARD -i <eth_lan> -p udp -m udp --dport 443 -j REJECT --reject-with icmp-port-unreachable
 		
 	add the following line in `squid.conf`:
 	
 		# Disable alternate protocols
 		reply_header_access Alternate-Protocol deny all
 		
+* All iptables rules should be placed in a *.sh file to be executed whenever the computer is started.
+
 * Finally:
  	
 		/etc/init.d/haarp restart
