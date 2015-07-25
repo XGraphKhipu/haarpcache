@@ -13,7 +13,7 @@
 // use this line to compile
 // g++ -I. -fPIC -shared -g -o telaxo.com.so telaxo.com.cpp
 // regex
-// http.*\.telaxo\.com.*(\.jpg|\.png|\.gif|\.swf|\.js|\.mp3)
+// http.*\.telaxo\.com.*(\.jpg|\.png|\.gif|\.swf|\.mp3)
 
 string get_filename(string url) {
                 vector<string> resultado;

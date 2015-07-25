@@ -83,12 +83,12 @@ http.{1,7}(\.|[a-z]|[0-9]|-)+(\/\w+)?(\/speedtest)+\/(random[0-9]+x[0-9]+\.jpg|l
 ^http.{3,35}\.nofeehost\.com.*\.mp3
 ^http.{3,35}\.nordeus\.com.*(\.swf|\.mp3|\.png|\.jpg)
 ^http.{3,35}\.netpocket\.org.*(\.jpg|\.png|\.swf|\.mp3)
-^http.{3,35}\.popcap\.com.*(\.jpg|\.png|\.gif|\.swf\.js|\.mp3)
+^http.{3,35}\.popcap\.com.*(\.jpg|\.png|\.gif|\.swf|\.mp3)
 ^http.{3,35}\.dungeonbusters\.com.*(\.jpg|\.png|\.swf|\.mp3)
 ^http.{3,35}\.imageshack\.us.*(\.jpg|\.png)
 ^http.{3,35}imageshack\.us.*(\.jpg|\.png)
-^http.{3,35}\.mlstatic\.com.*(\.jpg|\.png)
-^http.{3,35}\.amazonaws\.com.*(\.jpg|\.png|\.gif|\.swf|\.js|\.mp3)
+^http.{3,35}\.mlstatic\.com.*(\.jpg|\.png)$
+^http.{3,35}\.amazonaws\.com.*(\.jpg|\.png|\.gif|\.swf|\.mp3)$
 ^http.{3,35}\.maguinamotors\.com.*\.mp3
 ^http.{3,35}\.miniclip\.com.*(\.jpg|\.png|\.swf|\.mp3)
 ^http.{3,35}gooveo\.biz.*(\.swf|\.mp3)
@@ -112,4 +112,4 @@ http.{1,7}(\.|[a-z]|[0-9]|-)+(\/\w+)?(\/speedtest)+\/(random[0-9]+x[0-9]+\.jpg|l
 ^http.{3,35}\.kixeye\.com.*(\.swf|\.mp3|\.png|\.jpg)
 ^http.{3,35}\.modovideo\.com.*(\.flv|\.mp4)
 ^http.{3,35}cutmu\.net.*(\.swf|\.mp3)
-^http.{3,35}\.telaxo\.com.*(\.jpg|\.png|\.gif|\.swf|\.js|\.mp3)
+^http.{3,35}\.telaxo\.com.*(\.jpg|\.png|\.gif|\.swf|\.mp3)
