@@ -266,6 +266,18 @@ Configure your file /etc/haarp/haarp.lst to disable or enable the plugins.
 	
 ## Changelog
 
+__Version 1.4.1__
+
+2015/07/31
+
+* Update the plugins for edgecastcdn, socialpointgames and akamaihd.
+* Update plugin of Youtube: not cached of videos on live.
+* Using the parameter ‘clen’ of the url from youtube as file size.
+* Update the HaarpClean program.
+* Fixed the problem of bad replacement string in the SQL requests.
+* Update the file of configuration for logrotate.
+* Fix problem: ‘general protection ip:7f39b6cdd44e sp:7ffc278771f0 error:0 in libmysqlclient.so.18.0.0‘.
+
 __Version 1.4__
 
 2015/07/07
