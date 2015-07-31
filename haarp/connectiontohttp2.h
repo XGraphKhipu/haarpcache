@@ -40,6 +40,8 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
 		bool exists_transaction_editing_file; //This process blocked the edition the of file?
 		int64_t contentLengthServer;
 		int64_t acumulateBodyLength;
+		lusercache lusers_db;
+		string ip_browser;
 		
 		void UpdateFileSizeinPartial( string header );
 		void getLimitBytes(string &header);
@@ -51,7 +53,7 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
 		int port;
 		string origin_header;
         resposta r;
-        int64_t size_orig_file,filedownloaded,filesended,expiration,filesizeneto;
+        int64_t size_orig_file,filedownloaded,filesended,expiration,filesizeneto,oldfilesended;
         bool hit,downloading,rewrited,resuming,general,etag;        
         void Cache();
         bool SetDomainAndPort( string domainT, int portT, string requestT="" );
@@ -69,11 +71,15 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
         bool CheckForData( int timeout );
         ssize_t ReadBodyPart( string &bodyT, bool Chunked );
         
+        void initializeVariables();
+        void saveClientIP(string ip);
+			
         void Update();
-        void SubUpdate();
+        void SubUpdate(int64_t partialBytesSended);
         bool liberate_edition();
         int lockFile(int singleDomain);
         void Close();
+        
         void print_list_lranges(lintervalPositionByteDisk lRangesPositionDisk, string prefix);
         void print_range(intervalPositionByteDisk range, string prefix);
 };

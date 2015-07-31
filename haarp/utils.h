@@ -14,6 +14,7 @@
 using namespace std;
 
 #define DELIM "_-DELHAARP-_"
+#define LIMIT_USER_CACHE_DB 10
 
 struct resposta {
 	bool match;
@@ -21,7 +22,17 @@ struct resposta {
 	string file;
 	long long int range_min;
 	long long int range_max;
+	long long int total_file_size;
 	bool exist_range;	
+};
+
+class usercache {
+	public:
+		string ip;
+		time_t date_downloaded;
+		time_t date_modified;
+		long long int bytes_acumulate;
+		long long int bytes_requested;
 };
 
 class intervalPositionByteDisk {
@@ -30,8 +41,14 @@ class intervalPositionByteDisk {
 		long long int b;
 		long long int position;
 };	
+
+typedef list<usercache> lusercache;
 typedef list<intervalPositionByteDisk>  lintervalPositionByteDisk;
 
+void addUserCache(lusercache &luc, string ip, time_t date_modified, long long int bytes, bool hit);
+bool str2lusercache(string str, lusercache &lre);
+string lusercache2str(lusercache luc);
+bool compareUserCache(usercache &l1, usercache &l2);
 long long int getFileSize(lintervalPositionByteDisk listIntervalPositionByteDisk);
 bool is_all_hit(lintervalPositionByteDisk &listIntervalPositionByteDisk, lintervalPositionByteDisk::iterator it);
 long long int getExtremeb(lintervalPositionByteDisk listIntervalPositionByteDisk);
@@ -69,6 +86,8 @@ string getfilename(string path);
 string regex_match(string er, string line);
 string regex_match_nocase(string er, string line);
 string itoa(int val);
+string llitoa(long long int val);
+string lldtoa(long long int val);
 double now();
 long file_getmodif( string szFileName );
 int file_setmodif( string szFileName,long fdate =0); 

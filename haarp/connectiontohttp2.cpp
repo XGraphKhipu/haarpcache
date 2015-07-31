@@ -31,6 +31,13 @@ void ConnectionToHTTP2::print_range(intervalPositionByteDisk range, string prefi
 	LogFile::ErrorMessage("[DEBUG print_list_ranges %s] pos: %lli<%lli,%lli>\n", prefix.c_str(), range.position, range.a, range.b);
 }	
 
+void ConnectionToHTTP2::initializeVariables() {
+	lusers_db.clear();
+	oldfilesended = filesizeneto = size_orig_file = filedownloaded = filesended = expiration = 0;
+}
+void ConnectionToHTTP2::saveClientIP(string ip) {
+	ip_browser = ip;
+}
 void ConnectionToHTTP2::getLimitBytes(string &header) {
 	if (LL > 0) LogFile::ErrorMessage("******************** NEW CONNECTION ********************\n");
 	range_min = 0;
@@ -92,9 +99,9 @@ void ConnectionToHTTP2::Cache2(long long int cl) {
 	if (!size_orig_file && range_max <= 0) {
 		size_orig_file = cl + range_min;
 		if (general)
-			domaindb.set("UPDATE haarp SET size=" + itoa(size_orig_file) + " WHERE file='" + domaindb.sqlconv(subdir + "/" + r.file) + "' and domain='" + r.domain + "';");
+			domaindb.set("UPDATE haarp SET size=" + lldtoa(size_orig_file) + " WHERE file='" + domaindb.sqlconv(subdir + "/" + r.file) + "' and domain='" + r.domain + "';");
 		else
-			domaindb.set("UPDATE haarp SET size=" + itoa(size_orig_file) + " WHERE file='" + domaindb.sqlconv(r.file) + "' and domain='" + r.domain + "';");
+			domaindb.set("UPDATE haarp SET size=" + lldtoa(size_orig_file) + " WHERE file='" + domaindb.sqlconv(r.file) + "' and domain='" + r.domain + "';");
 	}
 	if (range_max <= 0) {
 		range_max = cl + range_min - 1;
@@ -133,7 +140,7 @@ void ConnectionToHTTP2::UpdateFileSizeinPartial(string header) {
 			if (value.size() <= 1)
 				continue;
 			size_orig_file = atol(value.at(1).c_str());
-			domaindb.set("UPDATE haarp SET size=" + itoa(size_orig_file) + " WHERE file='" + domaindb.sqlconv(r.file) + "' and domain='" + r.domain + "';");
+			domaindb.set("UPDATE haarp SET size=" + lldtoa(size_orig_file) + " WHERE file='" + domaindb.sqlconv(r.file) + "' and domain='" + r.domain + "';");
 			return;
 		}
 	}
@@ -157,8 +164,11 @@ void ConnectionToHTTP2::Update() {
 			stringstream stmp0, stmp1;
 			stmp0 << f_n;
 			stmp1 << np;
+			addUserCache(lusers_db, ip_browser, time(NULL), (long long int)(filesended-oldfilesended), 0);
+			string strUserDB = 	lusercache2str(lusers_db);
+			if (LL > 2) LogFile::ErrorMessage("[DEBUG-Update] list of users to DB (MISS): '%s'", strUserDB.c_str());
 			if (LL > 1) LogFile::AccessMessage("Update data base with ranges=%s, partition=%s, domain=%s and file=%s\n", rang_.c_str(), part_.c_str(), r.domain.c_str(), r.file.c_str());
-			if (domaindb.set("UPDATE haarp set modified=now(), rg='" + rang_ + "', pos='" + part_ + "', filesize='" + stmp0.str() + "', np=np+" + stmp1.str() + " WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") < 0)
+			if (domaindb.set("UPDATE haarp set modified=now(), rg='" + rang_ + "', pos='" + part_ + "', filesize='" + stmp0.str() + "', np=np+" + stmp1.str() + ", users='" + strUserDB + "' WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") < 0)
 				if (LL > 1) LogFile::ErrorMessage("Error updating data base: '%s' \n", domaindb.getError().c_str());
 			hasupdate = true;
 			if (!exists_transaction_editing_file) liberate_edition();
@@ -168,8 +178,14 @@ void ConnectionToHTTP2::Update() {
 		if (!hasupdate && filesended) {
 			stringstream bsended;
 			bsended << filesended;
+			
+			addUserCache(lusers_db, ip_browser, time(NULL), (long long int)filesended, 1);
+			string strUserDB = 	lusercache2str(lusers_db);
+			
+			if (LL > 2) LogFile::ErrorMessage("[DEBUG-Update] list of users to DB (HIT): '%s'", strUserDB.c_str());
 			if (LL > 2) LogFile::ErrorMessage("[DEBUG-Update] Update the database with new bytes_requested: file=%s[%lli] - HIT\n", r.file.c_str(), filesended);
-			if (domaindb.set("UPDATE haarp set modified=now(), bytes_requested=bytes_requested+" + bsended.str() + " WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") < 0)
+			
+			if (domaindb.set("UPDATE haarp SET modified=now(), bytes_requested=bytes_requested+" + bsended.str() + ", users='" + strUserDB + "' WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") < 0)
 				if (LL > 1) LogFile::ErrorMessage("Error updating byte_requeste on the database: '%s'\n", domaindb.getError().c_str());
 			hasupdate = true;
 		}
@@ -180,15 +196,18 @@ void ConnectionToHTTP2::Update() {
 	lranges.clear();
 	lrangeswork.clear();
 }
-void ConnectionToHTTP2::SubUpdate() {
+void ConnectionToHTTP2::SubUpdate(int64_t partialBytesSended) {
 	string rang_, part_;
 	list2string(lranges, rang_, part_);
 	long long int f_n = getFileSize(lranges);
 	stringstream stmp0, stmp1;
 	stmp0 << f_n;
 	stmp1 << np;
-	if (LL > 1) LogFile::AccessMessage("Saving part in the database with: ranges='%s', partition='%s', domain='%s' and file=%s\n", rang_.c_str(), part_.c_str(), r.domain.c_str(), r.file.c_str());
-	if (domaindb.set("UPDATE haarp set modified=now(), rg='" + rang_ + "', pos='" + part_ + "', filesize='" + stmp0.str() + "', np=np+" + stmp1.str() + " WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") < 0)
+	addUserCache(lusers_db, ip_browser, time(NULL), (long long int)partialBytesSended, 0);
+	string strUserDB = 	lusercache2str(lusers_db);
+	if (LL > 2) LogFile::ErrorMessage("[DEBUG-Update] list of users to DB (MISS): '%s'", strUserDB.c_str());
+	if (LL > 1) LogFile::AccessMessage("Saving part in the database with: ranges='%s', partition='%s', domain='%s' and file='%s'\n", rang_.c_str(), part_.c_str(), r.domain.c_str(), r.file.c_str());
+	if (domaindb.set("UPDATE haarp SET modified=now(), rg='" + rang_ + "', pos='" + part_ + "', filesize='" + stmp0.str() + "', np=np+" + stmp1.str() + ", users='" + strUserDB + "' WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") < 0)
 		if (LL > 1) LogFile::ErrorMessage("Error, in sub-updating the data base: '%s' \n", domaindb.getError().c_str());
 }
 
@@ -225,12 +244,14 @@ int ConnectionToHTTP2::lockFile(int singleDomain) {
 	}
 	if (!domaindb.get_num_rows()) {
 		if (LL > 2) LogFile::ErrorMessage("[DEBUG] File %s [%lli-%lli] NOT EXISTS ON DB =========================.===========\n", r.file.c_str(), range_min, range_max);
-		if (singleDomain == 0)
-			if (domaindb.set("INSERT INTO haarp (domain, file, size, modified, downloaded, bytes_requested, last_request, file_used) VALUES ('" + r.domain + "', '" + domaindb.sqlconv(r.file) + "', 0, now(),now(),0,now(), 1);") != 0) {
+		if (singleDomain == 0) {
+			addUserCache(lusers_db, ip_browser, time(NULL), 0, 0);
+			if (domaindb.set("INSERT INTO haarp (domain, file, size, modified, downloaded, bytes_requested, last_request, file_used, users) VALUES ('" + r.domain + "', '" + domaindb.sqlconv(r.file) + "', 0, now(),now(),0,now(), 1,'" + lusercache2str(lusers_db) + "');") != 0) {
 				domaindb.set("ROLLBACK;");
 				if (LL > 0) LogFile::ErrorMessage("[DEBUG] File %s [%lli-%lli] Error on INSERT! (NOT EXISTS FILE ON DB) ========.=======\n", r.file.c_str(), range_min, range_max);
 				return -1;
 			}
+		}
 		domaindb.set("COMMIT;");
 		return 1;
 	} else {
@@ -305,14 +326,14 @@ void ConnectionToHTTP2::Cache() {
 	hit = downloading = r.match = rewrited = resuming = passouheader = general = etag = closed = false;
 	limit = 0;
 	np = 0;
+	
 	lrangeswork.clear();
 	lranges.clear();
-
+	
 	fileHeaderLengthUnread = LENGTHHEADERFILE;
 	contentLengthServer = 0;
 	acumulateBodyLength = 0;
 	readFileHeader = "";
-	filesizeneto = size_orig_file = filedownloaded = filesended = expiration = 0;
 
 	srand(time(0));
 
@@ -342,7 +363,7 @@ void ConnectionToHTTP2::Cache() {
 			} else { //is partial and range_max != 0.
 				if (r.domain == "youtube") {
 					if (!r.exist_range) {
-						r.file = "206-" + r.file;
+						if ( r.file != "" ) r.file = "206-" + r.file;
 						int postmp;
 						if ((postmp = (int)(r.file).rfind(".flv")) != (int) string::npos) {
 							(r.file).replace(postmp, 4, ".webm");
@@ -350,10 +371,15 @@ void ConnectionToHTTP2::Cache() {
 					} else {
 						r.match = false;
 					}
-				} else
-					r.file = "206-" + r.file;
+				} else {
+					if ( r.file != "" )
+						r.file = "206-" + r.file;
+				}
 
 			}
+			if (r.domain != "youtube") 
+				r.total_file_size = 0;
+
 			if (LL > 1) LogFile::AccessMessage("Ranges received: range_min=%lli, range_max=%lli\n", range_min, range_max);
 			if (LL > 0) LogFile::AccessMessage("Resposta Match %d Domain %s File %s\n", r.match, r.domain.c_str(), r.file.c_str());
 			if (LL > 2) LogFile::ErrorMessage("[DEBUG_Cache] Ranges received: range_min=%lli, range_max=%lli\n", range_min, range_max);
@@ -440,7 +466,7 @@ void ConnectionToHTTP2::Cache() {
 				if (LL>2) print_list_lranges(lrangeswork, "Cache()-lrangeswork");
 			}
 			if (disco_con_espacio) {
-				if (domaindb.set("UPDATE haarp SET modified=now(), last_request=now(), rg='', pos='', np=0, deleted=0, static=0 WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") != 0) {
+				if (domaindb.set("UPDATE haarp SET modified=now(), last_request=now(), rg='', pos='', np=0, deleted=0, static=0, size=" + llitoa(r.total_file_size) + " WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") != 0) {
 					LogFile::ErrorMessage("Error, it can not update the record of mysql: '%s'\n", domaindb.getError().c_str());
 					r.match = hit = false;
 					return;
@@ -459,7 +485,7 @@ void ConnectionToHTTP2::Cache() {
 
 			if (LL > 1) LogFile::AccessMessage("The file is ON disk!\n");
 
-			if (domaindb.get("SELECT size, rg, pos FROM haarp WHERE file='" + domaindb.sqlconv(r.file) + "' and domain='" + r.domain + "';") != 0) {
+			if (domaindb.get("SELECT size, rg, pos, users FROM haarp WHERE file='" + domaindb.sqlconv(r.file) + "' and domain='" + r.domain + "';") != 0) {
 				LogFile::ErrorMessage("Error select mysql: %s\n", domaindb.getError().c_str());
 				r.match = hit = false;
 				/* Free use of file from mysql */
@@ -474,7 +500,18 @@ void ConnectionToHTTP2::Cache() {
 			} else { // Existe el archivo en disco y en la base de datos, miss o hit?.
 				/* 'size' es el tamaño del archivo, si estubiera entero (como en el mismo servidor de video)*/
 				size_orig_file = atol(domaindb.get("size", 1).c_str());
-
+				
+				string str_users_db = domaindb.get("users", 1);
+				
+				if ( !str2lusercache(str_users_db, lusers_db) ) 
+					if (LL > 0) LogFile::ErrorMessage("Warning: incorrect format of users in db ('%s')\n", str_users_db.c_str());
+				
+				
+				if(!size_orig_file && r.total_file_size) {
+					if (domaindb.set("UPDATE haarp SET size=" + llitoa(r.total_file_size) + " WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") != 0) 
+						LogFile::ErrorMessage("Error, it can not update the size of file in mysql: '%s'\n", domaindb.getError().c_str());
+					size_orig_file = r.total_file_size;
+				}
 				string ranges = domaindb.get("rg", 1);
 				string position = domaindb.get("pos", 1);
 				if (LL > 0) LogFile::AccessMessage("In DB: ranges ('%s') and position ('%s')\n", ranges.c_str(), position.c_str());
@@ -580,7 +617,7 @@ void ConnectionToHTTP2::Cache() {
 							msghit = "HIT";
 						} else {
 							if (LL > 0) LogFile::AccessMessage("EXPIRED: Domain: %s File: %s\n", r.domain.c_str(), r.file.c_str());
-							domaindb.set("UPDATE haarp SET downloaded=NOW() WHERE file='" + domaindb.sqlconv(subdir + "/" + r.file) + "' and domain='" + r.domain + "';");
+							domaindb.set("UPDATE haarp SET downloaded=now() WHERE file='" + domaindb.sqlconv(subdir + "/" + r.file) + "' and domain='" + r.domain + "';");
 						}
 					} else if (size_orig_file > 0) { // o arquivo foi baixado parcialmente
 						if (disk_use(completepath) <= cache_limit) {
@@ -1089,8 +1126,8 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 				if (LL > 2) LogFile::ErrorMessage("[DEBUG-readpart] mysql query: '%s'!\n", peti.c_str());
 				if (!domaindb.get_num_rows()) {
 					if (LL > 2) LogFile::ErrorMessage("[DEBUG-readpart] File %s [%lli-%lli] NOT EXISTS ON DB =========================.===========\n", r.file.c_str(), range_min, range_max);
-
-					string queryStr = "INSERT INTO haarp (domain, file, size, modified, downloaded, bytes_requested, last_request, file_used) VALUES ('" + r.domain + "', concat('" + domaindb.sqlconv(lname.at(0)) + "','"DELIM"',md5('" + domaindb.getRealEscapeString(partVideo) + "'),'"DELIM"','" + domaindb.sqlconv(lname.at(1)) + "'), 0, now(),now(),0,now(), 0);";
+					addUserCache(lusers_db, ip_browser, time(NULL), 0, 0);
+					string queryStr = "INSERT INTO haarp (domain, file, size, modified, downloaded, bytes_requested, last_request, file_used, users) VALUES ('" + r.domain + "', concat('" + domaindb.sqlconv(lname.at(0)) + "','"DELIM"',md5('" + domaindb.getRealEscapeString(partVideo) + "'),'"DELIM"','" + domaindb.sqlconv(lname.at(1)) + "'), 0, now(),now(),0,now(), 0, '" + lusercache2str(lusers_db) + "');";
 
 					if (domaindb.set(queryStr) != 0) {
 						domaindb.set("ROLLBACK;");
@@ -1233,7 +1270,9 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 						brange->position += acumulate;
 						limit -= acumulate;
 						acumulate = 0;
-						SubUpdate();
+						
+						SubUpdate(filesended - oldfilesended);
+						oldfilesended = filesended;
 					}
 				}
 				BodyLength = BodyLengthTmp;

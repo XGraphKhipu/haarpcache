@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS `haarp` (
   `np` int(11) DEFAULT '0',
   `deleted` tinyint(1) NOT NULL default '0',
   `static` tinyint(1) NOT NULL default '0',
+  `users` varchar(1000) NOT NULL default '',  
   `file_used` tinyint(1) NOT NULL default '0',
     PRIMARY KEY  (`id`),
     UNIQUE KEY `file_domain` (`file`,`domain`)

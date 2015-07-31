@@ -56,6 +56,7 @@ int main(int argc, char *argv[])  {
     cout << "File: " << r.file << endl;
     cout << "range_min: " << r.range_min << endl;
     cout << "range_max: " << r.range_max << endl;
+    cout << "total_file_size: " << r.total_file_size << endl;
 //    cout << "nada " << nada << endl;
     // close the library
     cout << "Closing library...\n";

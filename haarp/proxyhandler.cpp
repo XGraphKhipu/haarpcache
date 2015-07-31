@@ -191,6 +191,9 @@ int ProxyHandler::CommunicationHTTP()
 {
     string HeaderToServer = ToBrowser.PrepareHeaderForServer(UseParentProxy );
     
+    ToServer.initializeVariables();
+    ToServer.saveClientIP(ToBrowser.GetIP());
+    
     ToServer.getLimitBytes(HeaderToServer);
     
     int64_t ContentLengthReference = ToBrowser.GetContentLength();

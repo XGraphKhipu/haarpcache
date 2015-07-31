@@ -1,7 +1,6 @@
 #include "utils.h"
 #include "params.h"
 
-
 #include <ctype.h>
 #include <signal.h>
 #include <errno.h>
@@ -26,6 +25,85 @@
 #include <fstab.h>
 #include <cstdio>
 
+void addUserCache(lusercache &luc, string ip, time_t date_modified, long long int bytes, bool hit) {
+	lusercache::iterator itluc = luc.begin();
+	while(itluc != luc.end()) {
+		if ( itluc->ip == ip ) {
+			itluc->date_modified = date_modified;
+			if(hit)
+				itluc->bytes_requested += bytes;
+			else
+				itluc->bytes_acumulate += bytes;
+			return;
+		}
+		itluc++;
+	}
+	usercache uc;
+	uc.ip = ip;
+	uc.date_downloaded = date_modified;
+	uc.date_modified   = date_modified;
+	uc.bytes_requested = 0;
+	uc.bytes_acumulate = 0;
+	if(hit)
+		uc.bytes_requested = bytes;
+	else
+		uc.bytes_acumulate = bytes;
+	luc.push_back(uc);
+}
+
+bool str2lusercache(string str, lusercache &lre) {
+	vector<string> lusers;
+	vector<string> lparams;
+	
+	usercache n;
+	lre.clear();
+	
+	stringexplode(str, ";", &lusers);
+	int usize = lusers.size();
+	
+	for (int i=0; i < usize; i++ ) {
+		stringexplode(lusers.at(i), ",", &lparams);
+		if ( lparams.size() != 5 )
+			return false;
+			
+		n.ip = lparams.at(0);
+		sscanf(lparams.at(1).c_str(), "%li",  &n.date_downloaded);
+		sscanf(lparams.at(2).c_str(), "%li",  &n.date_modified);
+		sscanf(lparams.at(3).c_str(), "%lli", &n.bytes_acumulate);
+		sscanf(lparams.at(4).c_str(), "%lli", &n.bytes_requested);
+		
+		lre.push_back(n);
+		lparams.clear();
+	}
+	return true;
+}
+
+string lusercache2str(lusercache luc) {
+	char user[100];
+	
+	luc.sort(compareUserCache);
+	int lsize = luc.size();
+	string re = "";
+	
+	if ( lsize > LIMIT_USER_CACHE_DB )
+		lsize = LIMIT_USER_CACHE_DB;
+	
+	lusercache::iterator itluc = luc.begin();
+	
+	while ( itluc != luc.end() ) {
+		sprintf(user, "%s,%li,%li,%lli,%lli", itluc->ip.c_str(), itluc->date_downloaded, itluc->date_modified, itluc->bytes_acumulate, itluc->bytes_requested);
+		if ( itluc != luc.begin() )
+			re += ";" + string(user);
+		else
+			re = user;
+		itluc++;
+	}
+	return re;
+}
+
+bool compareUserCache(usercache &l1, usercache &l2) {
+	return l1.date_modified > l2.date_modified;
+}
 
 bool remove_param(string &curl, string param) {
 	int pos, next;
@@ -524,6 +602,20 @@ string regex_match_nocase(string er, string line) {
 string itoa(int val) {
     char res[1024];
     sprintf(res, "%d", val);
+    string str = string(res);
+    return str;
+}
+
+string llitoa(long long int val) {
+    char res[1024];
+    sprintf(res, "%lli", val);
+    string str = string(res);
+    return str;
+}
+
+string lldtoa(long long int val) {
+    char res[1024];
+    sprintf(res, "%lld", val);
     string str = string(res);
     return str;
 }

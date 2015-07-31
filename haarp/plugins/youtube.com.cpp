@@ -7,14 +7,14 @@ using namespace std;
 
 // use this line to compile
 // g++ -I. -fPIC -shared -g -o plugin.so plugin.cpp
+typedef long long int lli;
 
-void get_videoid(string url, string &file, bool *exist_range, long long int *a, long long int *b) {
+void get_videoid(string url, string &file, bool *exist_range, lli *a, lli *b, lli *clen) {
 	vector<string> resultado,valor;
 	
 	string sclen, itag, mime;
 	bool exist_cm2, range, watchID;
 	int size;
-	long long int clen;
 	
 	watchID = false;
 
@@ -61,7 +61,7 @@ void get_videoid(string url, string &file, bool *exist_range, long long int *a, 
 				exist_cm2 = true;
 			}
 			else if ( valor.at(0) == "clen" ) {
-				clen = atoll(valor.at(1).c_str());
+				*clen = atoll(valor.at(1).c_str());
 				sclen = "-" + valor.at(1);
 			}
 			else if ( valor.at(0) == "watchid" ) {
@@ -82,7 +82,7 @@ void get_videoid(string url, string &file, bool *exist_range, long long int *a, 
 	}
 	if( !file.empty() )
 		file = file + itag + mime;
-	if(clen && clen >= *a && clen <= *b) {
+	if(*clen && *clen >= *a && *clen <= *b) {
 		file = "";
 		return;
 	}
@@ -123,9 +123,10 @@ extern "C" resposta hgetmatch2(string url) {
 	r.range_min = 0;
 	r.range_max = 0;
 	r.exist_range = false;
-	
+	r.total_file_size = 0;
+
 	if ( regex_match("[\\?&]begin=[0-9]*[1-9]+[0-9]*", url) == "" && regex_match("[\\?&]cms_redirect=yes(&.*)?$", url) == "" && regex_match("[\\?&]redirect_counter=1(&.*)?$", url) == "" &&  url.find("&ir=1") == string::npos && url.find("&rr=12") == string::npos && url.find("videoplayback") != string::npos && url.find("source=yt_live") == string::npos ) {
-		get_videoid(url, r.file, &r.exist_range, &r.range_min, &r.range_max);
+		get_videoid(url, r.file, &r.exist_range, &r.range_min, &r.range_max, &r.total_file_size);
 		if ( !r.file.empty() ) {
 			r.match = true;
 			r.domain = "youtube";
