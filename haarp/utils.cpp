@@ -528,6 +528,20 @@ string itoa(int val) {
     return str;
 }
 
+string llitoa(long long int val) {
+    char res[1024];
+    sprintf(res, "%lli", val);
+    string str = string(res);
+    return str;
+}
+
+string lldtoa(long long int val) {
+    char res[1024];
+    sprintf(res, "%lld", val);
+    string str = string(res);
+    return str;
+}
+
 double now() {
     struct timeval tv;
     gettimeofday(&tv, 0);

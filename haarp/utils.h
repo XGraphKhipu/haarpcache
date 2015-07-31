@@ -21,6 +21,7 @@ struct resposta {
 	string file;
 	long long int range_min;
 	long long int range_max;
+	long long int total_file_size;
 	bool exist_range;	
 };
 
@@ -69,6 +70,8 @@ string getfilename(string path);
 string regex_match(string er, string line);
 string regex_match_nocase(string er, string line);
 string itoa(int val);
+string llitoa(long long int val);
+string lldtoa(long long int val);
 double now();
 long file_getmodif( string szFileName );
 int file_setmodif( string szFileName,long fdate =0); 
