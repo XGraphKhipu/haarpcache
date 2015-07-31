@@ -17,6 +17,10 @@ int Database::open(string host,string username,string password,string database) 
     } else return -1;
 }
 
+bool Database::isconnect() {
+	return connected;
+}
+
 long int Database::getID() {
 	return mysql_thread_id(&conn);
 }

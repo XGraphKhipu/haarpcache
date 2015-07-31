@@ -168,8 +168,8 @@ void ConnectionToHTTP2::Update() {
 			string strUserDB = 	lusercache2str(lusers_db);
 			if (LL > 2) LogFile::ErrorMessage("[DEBUG-Update] list of users to DB (MISS): '%s'", strUserDB.c_str());
 			if (LL > 1) LogFile::AccessMessage("Update data base with ranges=%s, partition=%s, domain=%s and file=%s\n", rang_.c_str(), part_.c_str(), r.domain.c_str(), r.file.c_str());
-			if (domaindb.set("UPDATE haarp set modified=now(), rg='" + rang_ + "', pos='" + part_ + "', filesize='" + stmp0.str() + "', np=np+" + stmp1.str() + ", users='" + strUserDB + "' WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") < 0)
-				if (LL > 1) LogFile::ErrorMessage("Error updating data base: '%s' \n", domaindb.getError().c_str());
+			if (domaindb.isconnect() && (domaindb.set("UPDATE haarp set modified=now(), rg='" + rang_ + "', pos='" + part_ + "', filesize='" + stmp0.str() + "', np=np+" + stmp1.str() + ", users='" + strUserDB + "' WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") < 0))
+				if (LL > 1) LogFile::ErrorMessage("Error updating the database or is not connected\n");
 			hasupdate = true;
 			if (!exists_transaction_editing_file) liberate_edition();
 		}
@@ -184,9 +184,9 @@ void ConnectionToHTTP2::Update() {
 			
 			if (LL > 2) LogFile::ErrorMessage("[DEBUG-Update] list of users to DB (HIT): '%s'", strUserDB.c_str());
 			if (LL > 2) LogFile::ErrorMessage("[DEBUG-Update] Update the database with new bytes_requested: file=%s[%lli] - HIT\n", r.file.c_str(), filesended);
-			
-			if (domaindb.set("UPDATE haarp SET modified=now(), bytes_requested=bytes_requested+" + bsended.str() + ", users='" + strUserDB + "' WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") < 0)
-				if (LL > 1) LogFile::ErrorMessage("Error updating byte_requeste on the database: '%s'\n", domaindb.getError().c_str());
+
+			if (domaindb.isconnect() && (domaindb.set("UPDATE haarp SET modified=now(), bytes_requested=bytes_requested+" + bsended.str() + ", users='" + strUserDB + "' WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") < 0))
+				if (LL > 1) LogFile::ErrorMessage("Error updating the database or is not connected\n");
 			hasupdate = true;
 		}
 	}

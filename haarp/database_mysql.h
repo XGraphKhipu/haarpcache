@@ -28,6 +28,7 @@ class Database {
         void close ();
         const string sqlconv(string sql);
         string getRealEscapeString(string sourcestr);
+	bool isconnect();
         Database();
         ~Database();
 };
