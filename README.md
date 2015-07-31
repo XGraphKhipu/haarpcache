@@ -267,6 +267,7 @@ Configure your file /etc/haarp/haarp.lst to disable or enable the plugins.
 ## Changelog
 
 __Version 1.4.1__
+_Thanks to Hernan Dario Nacimiento._
 
 2015/07/31
 
