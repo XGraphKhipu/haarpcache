@@ -33,7 +33,7 @@ extern "C" resposta hgetmatch2(const string url) {
 				r.domain = "edgecastcdn";
 			} else if (r.file.find(".jpg") != string::npos) {
 				r.match = true;
-				r.domain = "edgecastcdn/thumbs";
+				r.domain = "edgecastcdn_thumbs";
 			}
 		} else {
 			r.match = false;

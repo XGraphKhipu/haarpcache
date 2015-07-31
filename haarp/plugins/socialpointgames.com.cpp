@@ -3,6 +3,7 @@
  * Some Rights Reserved.
  *
  * @autor Erick Colindres <firecoldangelus@gmail.com>
+ * @autor Manolo Canales  <kei.haarpcache@gmail.com>
  */
 
 #include <iostream>
@@ -37,15 +38,15 @@ extern "C" resposta hgetmatch2(const string url) {
 
     if ( (url.find("/dragoncity/") != string::npos) 
        ) {
-    dominiotxt="socialpg/dragoncity";
+    dominiotxt="socialpg_dragoncity";
     }
     if ( (url.find("/socialwars/") != string::npos) 
        ) {
-    dominiotxt="socialpg/socialwars";
+    dominiotxt="socialpg_socialwars";
     }
     if ( (url.find("/socialempires/") != string::npos) 
        ) {
-    dominiotxt="socialpg/socialempires";
+    dominiotxt="socialpg_socialempires";
     }
     if ( (url.find(".socialpointgames.com/") != string::npos) and 
    ((url.find(".jpg")!= string::npos) or
