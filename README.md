@@ -1,12 +1,23 @@
-Introduction
-------------
+# HaarpCache
+
+## Maintainer
+- [Kei Kurono] (https://perufw.wordpress.com) <<kei.haarpcache@gmail.com>>
+
+## Table of contents
+- [Introduction](#introduction)
+- [Installing](#installing)
+- [Reinstall or Update](#reinstall-or-update)
+- [Monitoring Logs](#monitoring-logs)
+- [List of Plugins](#list-of-plugins)
+- [Changelog](#changelog)
+
+## Introduction
 
 Proxy HaarpCache is a fork of ThunderCache.
 
 HaarpCache is a robust static and dynamic cache that provides support to the DASH technology.
 
-Installing
---------
+## Installing
 
 	su
 	apt-get update 
@@ -122,8 +133,7 @@ Installing
 		tc filter add dev $IF_LAN protocol ip parent 1:0 handle 666 fw classid 1:66
 		
 
-Reinstall or Update
----------------------
+## Reinstall or Update
 
 For a common update:
 	
@@ -138,8 +148,7 @@ For a common update:
 		/etc/init.d/haarp restart
 		squid -k reconfigure
 	
-Monitoring Logs
--------------------
+## Monitoring Logs
 
 Depending on the location of the logs defined in the file `/etc/haarp/haarp.conf`:
 
@@ -148,8 +157,7 @@ Depending on the location of the logs defined in the file `/etc/haarp/haarp.conf
 
 Level information in the logs: change the `LOGLEVEL` on `/etc/haarp/haarp.conf`.
 
-List of Plugins
---------------
+## List of Plugins
 
 * Currently Haarp supports:
 
@@ -256,8 +264,7 @@ List of Plugins
 Configure your file /etc/haarp/haarp.lst to disable or enable the plugins.	
 
 	
-Changelog
----------
+## Changelog
 
 __Version 1.4__
 
