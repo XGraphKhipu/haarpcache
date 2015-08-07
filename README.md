@@ -79,7 +79,7 @@ HaarpCache is a robust static and dynamic cache that provides support to the DAS
 
 * On crontab add the line:
 	
-		50 12     * * *   root    /etc/init.d/haarpclean
+		0 */1     * * *   root    /etc/init.d/haarpclean
 
 * View reports of your cache system:
 
