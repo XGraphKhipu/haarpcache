@@ -135,7 +135,7 @@ request_header_replace User-Agent Mozilla/5.0 (compatible; Googlebot/2.1; +http:
 <li>
 <p>On crontab add the line:</p>
 
-<pre><code>50 12     * * *   root    /etc/init.d/haarpclean
+<pre><code>0 */1     * * *   root    /etc/init.d/haarpclean
 </code></pre>
 </li>
 <li>
@@ -169,6 +169,7 @@ iptables -I INPUT 1 -i &lt;eth_wan_2&gt; -m tcp -p tcp --dport 8080 -m state --s
 <p>Avoid the <code>QUIC</code> protocol connections on <code>www.youtube.com</code></p>
 
 <pre><code>iptables -A FORWARD -i &lt;eth_lan&gt; -p udp -m udp --dport 80 -j REJECT --reject-with icmp-port-unreachable
+iptables -A FORWARD -i &lt;eth_lan&gt; -p udp -m udp --dport 443 -j REJECT --reject-with icmp-port-unreachable
 </code></pre>
 
 <p>add the following line in <code>squid.conf</code>:</p>
@@ -344,7 +345,8 @@ Manabar;</p>
 <h2>
 <a id="changelog" class="anchor" href="#changelog" aria-hidden="true"><span class="octicon octicon-link"></span></a>Changelog</h2>
 
-<p><strong>Version 1.4.1</strong></p>
+<p><strong>Version 1.4.1</strong>
+<em>Thanks to Hernan Dario Nacimiento.</em></p>
 
 <p>2015/07/31</p>
 
@@ -437,7 +439,7 @@ you can use PayPal to donate to the HaarpCache project:</h6>
 <p></p>
       </section>
       <footer>
-        <p><small>Visit my blog <a href="https://perufw.wordpress.com/">PeruFW</a></small></p>
+        <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
       </footer>
     </div>
     <!--[if !IE]><script>fixScale(document);</script><![endif]-->
