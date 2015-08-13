@@ -3,6 +3,7 @@
  * Some Rights Reserved.
  *
  * @autor Erick Colindres <firecoldangelus@gmail.com>
+ * @autor Manolo Canales  <kei.haarpcache@gmail.com>
  */
 
 #include <iostream>
@@ -41,7 +42,7 @@ extern "C" resposta hgetmatch2(const string url) {
     }
     if ( (url.find("/socialwars/") != string::npos) 
        ) {
-    dominiotxt="socialpg/socialwars";
+    dominiotxt="socialpg_socialwars";
     }
     if ( (url.find("/socialempires/") != string::npos) 
        ) {

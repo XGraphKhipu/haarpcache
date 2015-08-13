@@ -1,33 +1,48 @@
 /*
- * (c) Copyright 2013 Manolo Canales <kei.haarpcache@gmail.com>
+ * (c) Copyright 2013 Erick Colindres <firecoldangelus@gmail.com>
  * Some Rights Reserved.
  *
- * @autor Manolo Canales <kei.haarpcache@gmail.com>
+ * @autor Erick Colindres <firecoldangelus@gmail.com>
  */
- 
- 
+
 #include <iostream>
 #include <cstring>
 #include <vector>
 #include "../utils.cpp"
 
-string get_filename(string url, long long int *ra, long long int *rb) {
-	vector<string> purl;
-	stringexplode(url, ".", &purl);
-	return purl.at(purl.size() - 2) + "." + purl.at(purl.size() - 1);
+// use this line to compile
+// g++ -I. -fPIC -shared -g -o cloudfront.net.so cloudfront.net.cpp
+// regex
+// http.*\.cloudfront\.net.*(\.jpg|\.png|\.gif|\.swf|\.mp3)
+
+string get_filename(string url) {
+      vector<string> resultado;
+      if (url.find("?") != string::npos) {
+         stringexplode(url, "?", &resultado);
+         stringexplode(resultado.at(resultado.size()-2), "/", &resultado);
+         return resultado.at(resultado.size()-1);           
+      } else {
+         stringexplode(url, "/", &resultado);
+         return resultado.at(resultado.size()-1);
+      }
 }
 
 extern "C" resposta hgetmatch2(const string url) {
-    resposta r;	
-	r.range_min = 0;
-	r.range_max = 0;
-	if ( url.find("?") == string::npos ) {
-		r.file = get_filename(url, &r.range_min, &r.range_max);
-		r.match = true;
-		r.domain = "cloudfront";
-	} else 
-		r.match = false;
-	
-	return r;
-}
+    resposta r;   
+	r.range_min = r.range_max = 0;
 
+if ( (url.find(".cloudfront.net") != string::npos) and (url.find(".jpg") != string::npos) or (url.find(".png") != string::npos) or (url.find(".swf") != string::npos) or (url.find(".mp3") != string::npos)
+	) {
+
+       r.file = get_filename(url);
+      if (!r.file.empty()) {
+         r.match = true;
+         r.domain = "GAMESF_cloudfront";
+      } else {
+         r.match = false;
+      }
+   } else {
+      r.match = false;
+   }
+   return r;
+}

@@ -23,7 +23,7 @@ http.*(\.avg\.com|\.grisoft\.com|\.grisoft\.cz).*(\.bin|\.exe)
 http.*(\.avgate\.com|\.avgate\.net|\.freeav\.net|\.freeav\.com).*(\.gz)
 http.*\.bitgravity\.com.*(\.flv\.mp4)
 http.*\.etrustdownloads\.ca\.com.*(\.tar|\.zip|\.exe|\.pkg)
-http.*(flashvideo|voddownload)\.globo\.com.*(\.mp4|\.flv)(\?|\&|\w|\.|=)*$
+http.*(flashvideo|voddownload)\w*\.globo\.com.*(\.mp4|\.flv)(\?|\&|\w|\.|=|\-)*$
 http.{1,4}vsh\.r7\.com\/.*(\.mp4)$
 74\.125\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)
 http.*\.metacafe\.com.*\.flv

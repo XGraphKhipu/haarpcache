@@ -1,12 +1,23 @@
-Introduction
-------------
+# HaarpCache
+
+## Maintainer
+- [Kei Kurono] (https://perufw.wordpress.com) <<kei.haarpcache@gmail.com>>
+
+## Table of contents
+- [Introduction](#introduction)
+- [Installing](#installing)
+- [Reinstall or Update](#reinstall-or-update)
+- [Monitoring Logs](#monitoring-logs)
+- [List of Plugins](#list-of-plugins)
+- [Changelog](#changelog)
+
+## Introduction
 
 Proxy HaarpCache is a fork of ThunderCache.
 
 HaarpCache is a robust static and dynamic cache that provides support to the DASH technology.
 
-Installing
---------
+## Installing
 
 	su
 	apt-get update 
@@ -68,7 +79,7 @@ Installing
 
 * On crontab add the line:
 	
-		50 12     * * *   root    /etc/init.d/haarpclean
+		0 */1     * * *   root    /etc/init.d/haarpclean
 
 * View reports of your cache system:
 
@@ -122,8 +133,7 @@ Installing
 		tc filter add dev $IF_LAN protocol ip parent 1:0 handle 666 fw classid 1:66
 		
 
-Reinstall or Update
----------------------
+## Reinstall or Update
 
 For a common update:
 	
@@ -138,8 +148,7 @@ For a common update:
 		/etc/init.d/haarp restart
 		squid -k reconfigure
 	
-Monitoring Logs
--------------------
+## Monitoring Logs
 
 Depending on the location of the logs defined in the file `/etc/haarp/haarp.conf`:
 
@@ -148,8 +157,7 @@ Depending on the location of the logs defined in the file `/etc/haarp/haarp.conf
 
 Level information in the logs: change the `LOGLEVEL` on `/etc/haarp/haarp.conf`.
 
-List of Plugins
---------------
+## List of Plugins
 
 * Currently Haarp supports:
 
@@ -256,8 +264,20 @@ List of Plugins
 Configure your file /etc/haarp/haarp.lst to disable or enable the plugins.	
 
 	
-Changelog
----------
+## Changelog
+
+__Version 1.4.1__
+_Thanks to Hernan Dario Nacimiento._
+
+2015/07/31
+
+* Update the plugins for edgecastcdn, socialpointgames and akamaihd.
+* Update plugin of Youtube: not cached of videos on live.
+* Using the parameter ‘clen’ of the url from youtube as file size.
+* Update the HaarpClean program.
+* Fixed the problem of bad replacement string in the SQL requests.
+* Update the file of configuration for logrotate.
+* Fix problem: ‘general protection ip:7f39b6cdd44e sp:7ffc278771f0 error:0 in libmysqlclient.so.18.0.0‘.
 
 __Version 1.4__
 

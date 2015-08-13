@@ -3,6 +3,7 @@
  * Some Rights Reserved.
  *
  * @autor Erick Colindres <firecoldangelus@gmail.com>
+ * @autor Manolo Canales <kei.haarpcache@gmail.com>
  */
 
 #include <iostream>
@@ -45,7 +46,7 @@ extern "C" resposta hgetmatch2(const string url) {
     }
    if ( (url.find("dchoc1")!= string::npos) 
         ) {
-    dominiotxt="GF_akamaihd/galaxy";
+    dominiotxt="GF_akamaihd_galaxy";
     }
     if ( (url.find("/cooking/") != string::npos)
        ) {
