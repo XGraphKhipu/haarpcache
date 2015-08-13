@@ -278,6 +278,7 @@ int ConnectionToHTTP2::lockFile(int singleDomain) {
 			domaindb.set("COMMIT;");
 			return 1;
 		}
+		//if (LL > 2) LogFile::ErrorMessage("[DEBUG - lockfile()] difftime: '%s', toint: '%i'\n", difftime.c_str(), atoi(difftime.c_str()));
 		if (difftime != "") {
 			if (atoi(difftime.c_str())) { // After of 30 seconds without modifications, is secure that the file not is working as cache.
 				if (LL > 1) LogFile::ErrorMessage("Info: file '%s' with persistent changes\n", r.file.c_str());
