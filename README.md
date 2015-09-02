@@ -259,7 +259,7 @@ Level information in the logs: change the `LOGLEVEL` on `/etc/haarp/haarp.conf`.
 	Maguinamotors,
 	Manabar;
 	
-	SpeedTest;
+	SpeedTest (some servers);
 	
 
 Configure your file /etc/haarp/haarp.lst to disable or enable the plugins.	
