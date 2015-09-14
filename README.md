@@ -274,7 +274,8 @@ __Version 1.5__
 
 * Storing the address IP of the user who uses the cache.
 * Adding user history for each file in cache.
-* Update the regexp for some plugins in haarp.lst
+* Update the regexp for some plugins in haarp.lst.
+* By default, the 75% of the hard disk is used.
 
 __Version 1.4.1__
 _Thanks to Hernan Dario Nacimiento._
