@@ -217,6 +217,7 @@ tc filter add dev $IF_LAN protocol ip parent 1:0 handle 666 fw classid 1:66
     ./configure
     make
     make install
+    mysql -u root -p &lt; haarp.sql
     cp -b etc/haarp/haarp.lst /etc/haarp/haarp.lst
     /etc/init.d/haarp restart
     squid -k reconfigure
@@ -336,7 +337,7 @@ Llnwd,
 Maguinamotors,
 Manabar;</p>
 
-<p>SpeedTest;</p>
+<p>SpeedTest (some servers);</p>
 </li>
 </ul>
 
@@ -344,6 +345,17 @@ Manabar;</p>
 
 <h2>
 <a id="changelog" class="anchor" href="#changelog" aria-hidden="true"><span class="octicon octicon-link"></span></a>Changelog</h2>
+
+<p><strong>Version 1.5</strong></p>
+
+<p>2015/09/14</p>
+
+<ul>
+<li>Storing the address IP of the user who uses the cache.</li>
+<li>Adding user history for each file in cache.</li>
+<li>Update the regexp for some plugins in haarp.lst.</li>
+<li>By default, the 75% of the hard disk is used.</li>
+</ul>
 
 <p><strong>Version 1.4.1</strong>
 <em>Thanks to Hernan Dario Nacimiento.</em></p>
@@ -439,7 +451,7 @@ you can use PayPal to donate to the HaarpCache project:</h6>
 <p></p>
       </section>
       <footer>
-        <p><small>Visit my blog <a href="https://perufw.wordpress.com/">PeruFW</a></small></p>
+        <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
       </footer>
     </div>
     <!--[if !IE]><script>fixScale(document);</script><![endif]-->
