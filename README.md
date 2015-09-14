@@ -104,6 +104,7 @@ HaarpCache is a robust static and dynamic cache that provides support to the DAS
 * Avoid the `QUIC` protocol connections on `www.youtube.com`
 
 		iptables -A FORWARD -i <eth_lan> -p udp -m udp --dport 80 -j REJECT --reject-with icmp-port-unreachable
+		iptables -A FORWARD -i <eth_lan> -p udp -m udp --dport 443 -j REJECT --reject-with icmp-port-unreachable
 		
 	add the following line in `squid.conf`:
 	
@@ -258,7 +259,7 @@ Level information in the logs: change the `LOGLEVEL` on `/etc/haarp/haarp.conf`.
 	Maguinamotors,
 	Manabar;
 	
-	SpeedTest;
+	SpeedTest (some servers);
 	
 
 Configure your file /etc/haarp/haarp.lst to disable or enable the plugins.	
