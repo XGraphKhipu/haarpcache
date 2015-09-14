@@ -29,6 +29,12 @@ BEGIN
 IF NOT EXISTS (SELECT * from information_schema.COLUMNS where TABLE_SCHEMA = 'haarp' AND TABLE_NAME = 'haarp' AND COLUMN_NAME = 'file_used') THEN
 	ALTER TABLE haarp ADD COLUMN file_used tinyint(1) NOT NULL DEFAULT '0';
 end if;
+IF NOT EXISTS (SELECT * from information_schema.COLUMNS where TABLE_SCHEMA = 'haarp' AND TABLE_NAME = 'haarp' AND COLUMN_NAME = 'users') THEN
+        ALTER TABLE haarp ADD COLUMN users varchar(1000) NOT NULL DEFAULT '';
+end if;
+IF NOT EXISTS (SELECT * from information_schema.COLUMNS where TABLE_SCHEMA = 'haarp' AND TABLE_NAME = 'haarp' AND COLUMN_NAME = 'bytes_requested') THEN
+        ALTER TABLE haarp CHANGE requested bytes_requested bigint unsigned NOT NULL DEFAULT 0;
+end if;
 END
 $$
 delimiter ;
