@@ -145,6 +145,7 @@ For a common update:
 		./configure
 		make
 		make install
+		mysql -u root -p < haarp.sql
 		cp -b etc/haarp/haarp.lst /etc/haarp/haarp.lst
 		/etc/init.d/haarp restart
 		squid -k reconfigure
@@ -266,6 +267,14 @@ Configure your file /etc/haarp/haarp.lst to disable or enable the plugins.
 
 	
 ## Changelog
+
+__Version 1.5__
+
+2015/09/14
+
+* Storing the address "IP" of the user who uses the cache.
+* Adding user history for each file in cache.
+* Update the regexp for some plugins in haarp.lst
 
 __Version 1.4.1__
 _Thanks to Hernan Dario Nacimiento._
