@@ -272,7 +272,7 @@ __Version 1.5__
 
 2015/09/14
 
-* Storing the address "IP" of the user who uses the cache.
+* Storing the address IP of the user who uses the cache.
 * Adding user history for each file in cache.
 * Update the regexp for some plugins in haarp.lst
 
