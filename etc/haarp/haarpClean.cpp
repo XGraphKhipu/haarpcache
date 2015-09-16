@@ -193,7 +193,7 @@ void mysql_delete_files(MYSQL * conn, struct tm * date_mx, int hit, int flag) {
 	}
 }
 //~ Return 1 continue with the elimination.
-//~ Return 0 end the elimination.
+//~ Return 0 end of the elimination.
 int delete_by_block(MYSQL *connect, int fase, int hit, double *mb, int flag) {
 	struct tm * date_new_max = getNewDateMax(fase, hit);
 	MYSQL_RES *res;
@@ -235,7 +235,7 @@ int delete_by_block(MYSQL *connect, int fase, int hit, double *mb, int flag) {
 				}
 			}
 			if ( !file_exis )
-				p("The file: '"+ string(r[0]) + "' not EXIST in the disks!");
+				p("[WARNING] The file: '"+ string(r[0]) + "' not EXIST in the disks!");
 			if ( time(NULL) >= m_tNextMysqlPingTime ) {
 				mysql_ping(connect);
 				m_tNextMysqlPingTime = time(NULL) + MYSQL_PING_TIME;
@@ -301,6 +301,23 @@ struct tm * getDateMax(MYSQL * connect) {
 	mysql_free_result(res);
 	return ttmp;	
 }
+void deleteEmptyRecords(MYSQL *connect) {
+	if(mysql_query(connect, "SELECT count(*) FROM haarp WHERE rg='' and filesize=0 and date(modified) < date(now() - interval 1 day)")) {
+		cout<<"MYSQL Error, "<<mysql_error(connect)<<endl;
+		exit(1);
+	}
+	MYSQL_ROW r = mysql_fetch_row(mysql_store_result(connect));
+	
+	if(r == NULL || !strcmp(r[0], "0"))
+		return;
+	
+	cout<<"Deleting "<<r[0]<<" empty record(s) in the database ...\n";
+	if(mysql_query(connect, "DELETE FROM haarp WHERE rg='' and filesize=0 and date(modified) < date(now() - interval 1 day)")) {
+		cout<<"MYSQL Error, "<<mysql_error(connect)<<endl;
+		exit(1);
+	}
+}
+
 void phelp(int flag) {
 	if(flag)
 		puts(" haarpClean 1.1 by Manolo Canales (keikurono01) <kei.haarpcache@gmail.com>");
@@ -488,6 +505,7 @@ int main(int carg, char **varg) {
 		}
 		if ( !limit_surpassed ) {	
 			cout<<endl<<"Ocupation of cache directories within configuration limits; exiting..."<<endl;
+			deleteEmptyRecords(connect);
 			return 1;
 		}
 	} else 
