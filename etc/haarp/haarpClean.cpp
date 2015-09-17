@@ -166,7 +166,7 @@ MYSQL_RES * mysql_select_files(MYSQL* conn, struct tm *date_mx, int hit, int fla
 		exit(1);
 	}
 	//p(q);
-	p("Select files from the DB ...");
+	//p("Select files from the DB ...");
 	return mysql_store_result(conn);
 }
 
