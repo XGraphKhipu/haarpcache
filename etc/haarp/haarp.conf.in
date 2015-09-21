@@ -14,7 +14,7 @@ CACHE_LIMIT 75
 #
 # Configuración del MySQL
 MYSQL_HOST localhost
-MYSQL_USER root
+MYSQL_USER haarp
 MYSQL_PASS haarpcache
 MYSQL_DB haarp
 

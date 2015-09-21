@@ -21,7 +21,7 @@
 	error_reporting(0);
 	$cache_dir = "/haarp";
 
-	if (!( $db = new PDO('mysql:host=localhost;dbname=haarp', 'root','haarpcache') ) ) {
+	if (!( $db = new PDO('mysql:host=localhost;dbname=haarp', 'haarp','haarpcache') ) ) {
 		die("I can not connect to database");
 	}
 	
