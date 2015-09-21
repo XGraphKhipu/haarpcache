@@ -66,19 +66,19 @@ NOR='\e[0m';
 interIP=($(getInterfacesIP))
 #~ 
 name=""
-len=${#interIP[@]};
-if [[ $len -eq 0 ]]; then
+lenInter=${#interIP[@]};
+if [[ $lenInter -eq 0 ]]; then
 	echo -e "${RED}Interfaces no encontrados!, configure sus interfaces!.${NOR}";
 	exit
 fi
 index=0;
-if [ $[len%2] -eq 1 ]; then
-	len=$[len-1];
+if [ $[lenInter%2] -eq 1 ]; then
+	lenInter=$[lenInter-1];
 fi
 while [[ $name != "yes" ]]; do
-	echo -n -e "${RED}Su red LAN esta en ${interIP[$[index]]} (${interIP[$[index+1]]})${NOR} (yes/no)?: ";
+	echo -n -e "${RED}Su red LAN se encuentra en ${interIP[$[index]]} -${interIP[$[index+1]]}-${NOR} (yes/no)?: ";
 	read name;
-	index=$[$[index+2]%len];
+	index=$[$[index+2]%lenInter];
 done
 sleep 0.5
 #~ 
@@ -111,9 +111,15 @@ echo "#===========================================================#
 #===========================================================#
 http_port 3128 intercept
 visible_hostname haarp.cache
+
 dns_nameservers 8.8.8.8 8.8.4.4
 dns_retransmit_interval 5 seconds
 dns_timeout 2 minutes
+
+acl manager proto cache_object
+acl localhost src 127.0.0.1/32 ::1
+acl to_localhost dst 127.0.0.0/8 0.0.0.0/32 ::1
+
 acl localnet src $NETMASK_LAN/$CIDR_LAN # Your LAN
 acl localnet src fc00::/7       # RFC 4193 local private network range
 acl localnet src fe80::/10      # RFC 4291 link-local (directly plugged) machines
@@ -135,7 +141,7 @@ http_access deny !Safe_ports
 http_access deny CONNECT !SSL_ports
 
 http_access allow manager localhost
-http_access deny manager all
+http_access deny manager 
 http_access allow localhost
 http_access allow localnet
 #################################
@@ -146,8 +152,6 @@ acl Winphone browser -i regexp (Windows.*Phone|Trident|IEMobile)
 acl Android browser -i regexp Android
 request_header_access User-Agent deny google !iphone !BB !Winphone !Android
 request_header_replace User-Agent Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)
-#--- for QUIC connections ---
-reply_header_access Alternate-Protocol deny all
 #################################
 quick_abort_min 0 KB
 quick_abort_max 0 KB
@@ -168,8 +172,9 @@ make
 make install
 echo -e "${RED}Ingrese la contraseña root de Mysql${NOR}"
 mysql -u root -p < haarp2.sql
+mkdir /var/www/html/ 2>/dev/null
 yes | cp -u etc/haarp/haarp.php /var/www/  2>/dev/null
-yes | cp -u etc/haarp/haarp.php /var/www/html 2>/dev/null
+yes | cp -u etc/haarp/haarp.php /var/www/html/ 2>/dev/null
 cd /etc/init.d
 update-rc.d haarp defaults 98
 echo "#------------- HaarpCache ------------------------
@@ -183,14 +188,6 @@ cache_peer_access 127.0.0.1 deny all" >> /etc/squid3/squid.conf
 echo "# HaarpClean: 
 0 */1     * * *   root    /etc/init.d/haarpclean" >> /etc/crontab
 clear
-# block Quic protocol
-iptables -A FORWARD -i $ETHLAN -p udp -m udp --dport 80  -j REJECT --reject-with icmp-port-unreachable
-iptables -A FORWARD -i $ETHLAN -p udp -m udp --dport 443 -j REJECT --reject-with icmp-port-unreachable
-#
-mv /etc/rc.local "/etc/rc.local.backup_$(date +%Y%m%d)"
-echo "#!/bin/sh -e
-iptables -A FORWARD -i $ETHLAN -p udp -m udp --dport 80  -j REJECT --reject-with icmp-port-unreachable
-iptables -A FORWARD -i $ETHLAN -p udp -m udp --dport 44s3 -j REJECT --reject-with icmp-port-unreachable" > /etc/rc.local
 # restart servers
 /etc/init.d/haarp restart
 /etc/init.d/apache2 restart
@@ -214,7 +211,6 @@ echo "options {
 
 # Install Haarp-Viewer v1.x
 apt-get install unzip
-mkdir /var/www/html/ 2>/dev/null
 cd /var/www/html/
 wget http://extjs.cachefly.net/ext-3.4.0.zip 
 unzip  ext-3.4.0.zip
@@ -243,22 +239,38 @@ rm -f /usr/lib/cgi-bin/report.cgi /usr/lib/cgi-bin/haarp.cgi 2>/dev/null
 rm -f /var/www/cgi-bin/report.cgi /var/www/cgi-bin/haarp.cgi 2>/dev/null
 cp src/*.cgi /usr/lib/cgi-bin/ 2>/dev/null
 cp src/*.cgi /var/www/cgi-bin/ 2>/dev/null
-cp hc.html /var/www/html/
-cp hc.html /var/www/ 
-cp -r images /var/www/html/
-cp -r images /var/www/
+yes | cp hc.html /var/www/html/ 2>/dev/null
+yes | cp hc.html /var/www/  2>/dev/null
+yes | cp -r images /var/www/html/ 2>/dev/null
+yes | cp -r images /var/www/ 2>/dev/null
 touch /var/log/haarp/webaccess.log
 chown www-data:www-data /var/log/haarp/webaccess.log
 echo "ACCESSWEBLOG /var/log/haarp/webaccess.log" >> /etc/haarp/haarp.conf
 
 a2enmod cgi 2>/dev/null
 service apache2 restart 2>/dev/null
-# ----------- iptables for redirect to Squid -----------------
-redirect="iptables -A PREROUTING -t nat -i $ETHLAN -p tcp -m tcp --dport 80  -j REDIRECT --to-ports 3128"
-echo $redirect >> /etc/rc.local
-echo "exit 0" >> /etc/rc.local
-$redirect
+# -------- Conf Firewall -------
+mv /etc/rc.local "/etc/rc.local.backup_$(date +%Y%m%d)"
+chmod +x /etc/rc.local
+echo "#!/bin/bash
+echo 1 > /proc/sys/net/ipv4/ip_forward
+iptables -A FORWARD -i $ETHLAN -p udp -m udp --dport 80  -j REJECT --reject-with icmp-port-unreachable
+iptables -A FORWARD -i $ETHLAN -p udp -m udp --dport 443 -j REJECT --reject-with icmp-port-unreachable
+iptables -A PREROUTING -t nat -i $ETHLAN -p tcp -m tcp --dport 80  -j REDIRECT --to-ports 3128" > /etc/rc.local
 
+echo 1 > /proc/sys/net/ipv4/ip_forward
+iptables -A FORWARD -i $ETHLAN -p udp -m udp --dport 80  -j REJECT --reject-with icmp-port-unreachable
+iptables -A FORWARD -i $ETHLAN -p udp -m udp --dport 443 -j REJECT --reject-with icmp-port-unreachable
+iptables -A PREROUTING -t nat -i $ETHLAN -p tcp -m tcp --dport 80  -j REDIRECT --to-ports 3128
+# Masquerade of others interfaces - WAN?.
+inter=0;
+while [ $index < $lenInter -a  "${interIP[$index]}" != "$ETHLAN" ]; do
+	echo "iptables -A POSTROUTING -t nat -o ${interIP[$index]} -j MASQUERADE" >> /etc/rc.local
+	iptables -A POSTROUTING -t nat -o ${interIP[$index]} -j MASQUERADE
+	let index+=2
+done
+echo "exit 0" >> /etc/rc.local
+#~ 
 echo -e "        /*       _\|/_
                  (o o)
          +----oOO-{_}-OOo------------------------------------------------------------+
