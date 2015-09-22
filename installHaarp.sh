@@ -250,7 +250,8 @@ yes | cp -r images /var/www/html/ 2>/dev/null
 yes | cp -r images /var/www/ 2>/dev/null
 touch /var/log/haarp/webaccess.log
 chown www-data:www-data /var/log/haarp/webaccess.log
-echo "ACCESSWEBLOG /var/log/haarp/webaccess.log" >> /etc/haarp/haarp.conf
+echo "ACCESSWEBLOG /var/log/haarp/webaccess.log
+FORWARDED_IP true" >> /etc/haarp/haarp.conf
 
 a2enmod cgi 2>/dev/null
 service apache2 restart 2>/dev/null
@@ -259,7 +260,7 @@ mv /etc/rc.local "/etc/rc.local.backup_$(date +%Y%m%d)"
 touch /etc/rc.local
 chmod +x /etc/rc.local
 echo "#!/bin/bash
-echo 1 > /proc/sys/net/ipv4/ip_forward
+o 1 > /proc/sys/net/ipv4/ip_forward
 iptables -A FORWARD -i $ETHLAN -p udp -m udp --dport 80  -j REJECT --reject-with icmp-port-unreachable
 iptables -A FORWARD -i $ETHLAN -p udp -m udp --dport 443 -j REJECT --reject-with icmp-port-unreachable
 iptables -A PREROUTING -t nat -i $ETHLAN -p tcp -m tcp --dport 80  -j REDIRECT --to-ports 3128" > /etc/rc.local
@@ -272,8 +273,11 @@ iptables -A PREROUTING -t nat -i $ETHLAN -p tcp -m tcp --dport 80  -j REDIRECT -
 inter=0;
 while [[ $index < $lenInter ]]; do
 	if [ "${interIP[$index]}" != "$ETHLAN" ]; then
-		echo "iptables -A POSTROUTING -t nat -o ${interIP[$index]} -j MASQUERADE" >> /etc/rc.local
-		iptables -A POSTROUTING -t nat -o ${interIP[$index]} -j MASQUERADE
+		ethWan=${interIP[$index]};
+		echo "iptables -A POSTROUTING -t nat -o $ethWan -j MASQUERADE
+iptables -A INPUT -i $ethWan -p tcp -m tcp --dport 8080 -m state --state NEW -j DROP" >> /etc/rc.local
+		iptables -A POSTROUTING -t nat -o $ethWan -j MASQUERADE
+		iptables -A INPUT -i $ethWan -p tcp -m tcp --dport 8080 -m state --state NEW -j DROP
 	fi 
 	let index+=2;
 done
