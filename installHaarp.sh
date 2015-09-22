@@ -253,10 +253,10 @@ touch /var/log/haarp/webaccess.log
 chown www-data:www-data /var/log/haarp/webaccess.log
 echo "ACCESSWEBLOG /var/log/haarp/webaccess.log
 FORWARDED_IP true" >> /etc/haarp/haarp.conf
-# --- Apache to port 85 ---
-sed -i 's/Listen.*[0-9]*/Listen 85/g' /etc/apache2/ports.conf
-sed -i 's/NameVirtualHost.*:[0-9]*/NameVirtualHost *:85/g' /etc/apache2/ports.conf
-sed -i 's/VirtualHost.*:[0-9]*>/VirtualHost *:85>/g'  /etc/apache2/sites-enabled/000-default.conf
+# --- Apache to port 88 ---
+sed -i 's/Listen.*[0-9]*/Listen 88/g' /etc/apache2/ports.conf
+sed -i 's/NameVirtualHost.*:[0-9]*/NameVirtualHost *:88/g' /etc/apache2/ports.conf
+sed -i 's/VirtualHost.*:[0-9]*>/VirtualHost *:88>/g'  /etc/apache2/sites-enabled/000-default.conf
 # -- restart service apache2 --
 a2enmod cgi 2>/dev/null
 service apache2 restart 2>/dev/null
@@ -296,7 +296,7 @@ echo -e "        /*       _\|/_
                  (o o)
          +----oOO-{_}-OOo------------------------------------------------------------+
          |                                                                           |
-         | Finish?, access to HaarpViewer: \e[4mhttp:///$IPLAN:85/cgi-bin/haarp.cgi\e[24m 
+         | Finish?, access to HaarpViewer: \e[4mhttp:///$IPLAN:88/cgi-bin/haarp.cgi\e[24m 
          +--------------------------------------------------------------------------*/"
 
 
