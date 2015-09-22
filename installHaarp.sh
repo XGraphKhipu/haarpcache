@@ -171,7 +171,12 @@ cd haarpcache
 make
 make install
 echo -e "${RED}Ingrese la contraseña root de Mysql${NOR}"
-mysql -u root -p < haarp2.sql
+while true; do
+	mysql -u root -p < haarp2.sql
+	if [ $? -eq 0 ]; then
+		break;
+	fi
+done
 mkdir /var/www/html/ 2>/dev/null
 yes | cp -u etc/haarp/haarp.php /var/www/  2>/dev/null
 yes | cp -u etc/haarp/haarp.php /var/www/html/ 2>/dev/null
@@ -251,6 +256,7 @@ a2enmod cgi 2>/dev/null
 service apache2 restart 2>/dev/null
 # -------- Conf Firewall -------
 mv /etc/rc.local "/etc/rc.local.backup_$(date +%Y%m%d)"
+touch /etc/rc.local
 chmod +x /etc/rc.local
 echo "#!/bin/bash
 echo 1 > /proc/sys/net/ipv4/ip_forward
