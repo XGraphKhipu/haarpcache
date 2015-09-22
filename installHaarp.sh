@@ -101,8 +101,9 @@ fi
 #
 clear
 apt-get update 
-yes | apt-get upgrade
-yes | apt-get install -y build-essential mysql-server mysql-client php5 apache2 php5-mysql libblkid-dev libcurl4-gnutls-dev libmysqlclient15-dev libapache2-mod-auth-mysql libapache2-mod-php5 sharutils curl autoconf squid3 git g++-4.4 bind9 dnsutils
+apt-get upgrade
+apt-get install -y aptitude
+aptitude install -y build-essential mysql-server mysql-client php5 apache2 php5-mysql libblkid-dev libcurl4-gnutls-dev libmysqlclient15-dev libapache2-mod-auth-mysql libapache2-mod-php5 sharutils curl autoconf squid3 git g++-4.4 bind9 dnsutils
 
 mv /etc/squid3/squid.conf "/etc/squid3/squid.conf.backup_$(date +%Y%m%d)"
 touch /etc/squid3/squid.conf
@@ -215,7 +216,7 @@ echo "options {
 };" >> /etc/bind/named.conf.options
 
 # Install Haarp-Viewer v1.x
-apt-get install unzip
+aptitude install unzip
 cd /var/www/html/
 wget http://extjs.cachefly.net/ext-3.4.0.zip 
 unzip  ext-3.4.0.zip
@@ -224,7 +225,7 @@ ln -s html/ext-3.4.0 ../ext
 
 # Install LibCGI
 cd /usr/src
-apt-get install autoconf git
+aptitude install autoconf git
 git clone git://github.com/keikurono/libcgi.git
 cd libcgi
 ./autogen.sh
