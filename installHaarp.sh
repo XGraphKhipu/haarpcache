@@ -71,14 +71,14 @@ if [[ $lenInter -eq 0 ]]; then
 	echo -e "${RED}Interfaces no encontrados!, configure sus interfaces!.${NOR}";
 	exit
 fi
-index=0;
+index=-2;
 if [ $[lenInter%2] -eq 1 ]; then
 	lenInter=$[lenInter-1];
 fi
 while [[ $name != "yes" ]]; do
+	index=$[$[index+2]%lenInter];
 	echo -n -e "${RED}Su red LAN se encuentra en ${interIP[$index]} -${interIP[$[index+1]]}-${NOR} (yes/no)?: ";
 	read name;
-	index=$[$[index+2]%lenInter];
 done
 sleep 0.5
 #~ 
@@ -261,11 +261,12 @@ mv /etc/rc.local "/etc/rc.local.backup_$(date +%Y%m%d)"
 touch /etc/rc.local
 chmod +x /etc/rc.local
 # --- Firewall Conf ---
+clear
 iptables -t nat -F
 iptables -t mangle -F
 iptables -F
 echo "#!/bin/bash
-o 1 > /proc/sys/net/ipv4/ip_forward
+1 > /proc/sys/net/ipv4/ip_forward
 iptables -A FORWARD -i $ETHLAN -p udp -m udp --dport 80  -j REJECT --reject-with icmp-port-unreachable
 iptables -A FORWARD -i $ETHLAN -p udp -m udp --dport 443 -j REJECT --reject-with icmp-port-unreachable
 iptables -A PREROUTING -t nat -i $ETHLAN -p tcp -m tcp --dport 80  -j REDIRECT --to-ports 3128" > /etc/rc.local
@@ -275,7 +276,7 @@ iptables -A FORWARD -i $ETHLAN -p udp -m udp --dport 80  -j REJECT --reject-with
 iptables -A FORWARD -i $ETHLAN -p udp -m udp --dport 443 -j REJECT --reject-with icmp-port-unreachable
 iptables -A PREROUTING -t nat -i $ETHLAN -p tcp -m tcp --dport 80  -j REDIRECT --to-ports 3128
 # Masquerade of others interfaces - WAN?.
-inter=0;
+index=0;
 while [[ $index < $lenInter ]]; do
 	if [ "${interIP[$index]}" != "$ETHLAN" ]; then
 		ethWan=${interIP[$index]};
