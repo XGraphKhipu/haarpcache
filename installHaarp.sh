@@ -254,9 +254,9 @@ chown www-data:www-data /var/log/haarp/webaccess.log
 echo "ACCESSWEBLOG /var/log/haarp/webaccess.log
 FORWARDED_IP true" >> /etc/haarp/haarp.conf
 # --- Apache to port 85 ---
-sed -i 's/Listen.*80/Listen 85/g' /etc/apache2/ports.conf
-sed -i 's/NameVirtualHost.*:80/NameVirtualHost *:85/g' /etc/apache2/ports.conf
-sed -i 's/VirtualHost.*:80>/VirtualHost *:85>/g'  /etc/apache2/sites-enabled/000-default
+sed -i 's/Listen.*[0-9]*/Listen 85/g' /etc/apache2/ports.conf
+sed -i 's/NameVirtualHost.*:[0-9]*/NameVirtualHost *:85/g' /etc/apache2/ports.conf
+sed -i 's/VirtualHost.*:[0-9]*>/VirtualHost *:85>/g'  /etc/apache2/sites-enabled/000-default.conf
 # -- restart service apache2 --
 a2enmod cgi 2>/dev/null
 service apache2 restart 2>/dev/null
@@ -265,6 +265,9 @@ mv /etc/rc.local "/etc/rc.local.backup_$(date +%Y%m%d)"
 touch /etc/rc.local
 chmod +x /etc/rc.local
 # --- Firewall Conf ---
+iptables -t nat -F
+iptables -t mangle -F
+iptables -F
 echo "#!/bin/bash
 o 1 > /proc/sys/net/ipv4/ip_forward
 iptables -A FORWARD -i $ETHLAN -p udp -m udp --dport 80  -j REJECT --reject-with icmp-port-unreachable
