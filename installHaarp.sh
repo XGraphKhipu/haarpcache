@@ -76,7 +76,7 @@ if [ $[lenInter%2] -eq 1 ]; then
 	lenInter=$[lenInter-1];
 fi
 while [[ $name != "yes" ]]; do
-	echo -n -e "${RED}Su red LAN se encuentra en ${interIP[$[index]]} -${interIP[$[index+1]]}-${NOR} (yes/no)?: ";
+	echo -n -e "${RED}Su red LAN se encuentra en ${interIP[$index]} -${interIP[$[index+1]]}-${NOR} (yes/no)?: ";
 	read name;
 	index=$[$[index+2]%lenInter];
 done
@@ -270,10 +270,12 @@ iptables -A FORWARD -i $ETHLAN -p udp -m udp --dport 443 -j REJECT --reject-with
 iptables -A PREROUTING -t nat -i $ETHLAN -p tcp -m tcp --dport 80  -j REDIRECT --to-ports 3128
 # Masquerade of others interfaces - WAN?.
 inter=0;
-while [ $index < $lenInter -a  "${interIP[$index]}" != "$ETHLAN" ]; do
-	echo "iptables -A POSTROUTING -t nat -o ${interIP[$index]} -j MASQUERADE" >> /etc/rc.local
-	iptables -A POSTROUTING -t nat -o ${interIP[$index]} -j MASQUERADE
-	let index+=2
+while [[ $index < $lenInter ]]; do
+	if [ "${interIP[$index]}" != "$ETHLAN" ]; then
+		echo "iptables -A POSTROUTING -t nat -o ${interIP[$index]} -j MASQUERADE" >> /etc/rc.local
+		iptables -A POSTROUTING -t nat -o ${interIP[$index]} -j MASQUERADE
+	fi 
+	let index+=2;
 done
 echo "exit 0" >> /etc/rc.local
 #~ 
