@@ -253,13 +253,18 @@ touch /var/log/haarp/webaccess.log
 chown www-data:www-data /var/log/haarp/webaccess.log
 echo "ACCESSWEBLOG /var/log/haarp/webaccess.log
 FORWARDED_IP true" >> /etc/haarp/haarp.conf
-
+# --- Apache to port 85 ---
+sed -i 's/Listen.*80/Listen 85/g' /etc/apache2/ports.conf
+sed -i 's/NameVirtualHost.*:80/NameVirtualHost *:85/g' /etc/apache2/ports.conf
+sed -i 's/VirtualHost.*:80>/VirtualHost *:85>/g'  /etc/apache2/sites-enabled/000-default
+# -- restart service apache2 --
 a2enmod cgi 2>/dev/null
 service apache2 restart 2>/dev/null
-# -------- Conf Firewall -------
+# -- create script rc.local --
 mv /etc/rc.local "/etc/rc.local.backup_$(date +%Y%m%d)"
 touch /etc/rc.local
 chmod +x /etc/rc.local
+# --- Firewall Conf ---
 echo "#!/bin/bash
 o 1 > /proc/sys/net/ipv4/ip_forward
 iptables -A FORWARD -i $ETHLAN -p udp -m udp --dport 80  -j REJECT --reject-with icmp-port-unreachable
@@ -288,7 +293,7 @@ echo -e "        /*       _\|/_
                  (o o)
          +----oOO-{_}-OOo------------------------------------------------------------+
          |                                                                           |
-         | Finish?, access to HaarpViewer: \e[4mhttp:///$IPLAN/cgi-bin/haarp.cgi\e[24m 
+         | Finish?, access to HaarpViewer: \e[4mhttp:///$IPLAN:85/cgi-bin/haarp.cgi\e[24m 
          +--------------------------------------------------------------------------*/"
 
 
