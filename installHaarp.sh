@@ -117,10 +117,6 @@ dns_nameservers 8.8.8.8 8.8.4.4
 dns_retransmit_interval 5 seconds
 dns_timeout 2 minutes
 
-acl manager proto cache_object
-acl localhost src 127.0.0.1/32 ::1
-acl to_localhost dst 127.0.0.0/8 0.0.0.0/32 ::1
-
 acl localnet src $NETMASK_LAN/$CIDR_LAN # Your LAN
 acl localnet src fc00::/7       # RFC 4193 local private network range
 acl localnet src fe80::/10      # RFC 4291 link-local (directly plugged) machines
@@ -143,8 +139,8 @@ http_access deny CONNECT !SSL_ports
 
 http_access allow manager localhost
 http_access deny manager 
-http_access allow localhost
 http_access allow localnet
+http_access allow localhost
 #################################
 acl google url_regex -i (googlevideo.com|www.youtube.com)
 acl iphone browser -i regexp (iPhone|iPad)
