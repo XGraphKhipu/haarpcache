@@ -261,7 +261,6 @@ mv /etc/rc.local "/etc/rc.local.backup_$(date +%Y%m%d)"
 touch /etc/rc.local
 chmod +x /etc/rc.local
 # --- Firewall Conf ---
-clear
 iptables -t nat -F
 iptables -t mangle -F
 iptables -F
