@@ -265,7 +265,7 @@ iptables -t nat -F
 iptables -t mangle -F
 iptables -F
 echo "#!/bin/bash
-1 > /proc/sys/net/ipv4/ip_forward
+echo 1 > /proc/sys/net/ipv4/ip_forward
 iptables -A FORWARD -i $ETHLAN -p udp -m udp --dport 80  -j REJECT --reject-with icmp-port-unreachable
 iptables -A FORWARD -i $ETHLAN -p udp -m udp --dport 443 -j REJECT --reject-with icmp-port-unreachable
 iptables -A PREROUTING -t nat -i $ETHLAN -p tcp -m tcp --dport 80  -j REDIRECT --to-ports 3128" > /etc/rc.local
