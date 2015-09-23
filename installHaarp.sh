@@ -137,10 +137,10 @@ acl CONNECT method CONNECT
 http_access deny !Safe_ports
 http_access deny CONNECT !SSL_ports
 
-http_access allow manager localhost
-http_access deny manager 
+#http_access allow manager localhost
+#http_access deny manager 
 http_access allow localnet
-http_access allow localhost
+#http_access allow localhost
 #################################
 acl google url_regex -i (googlevideo.com|www.youtube.com)
 acl iphone browser -i regexp (iPhone|iPad)
