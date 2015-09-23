@@ -252,7 +252,7 @@ FORWARDED_IP true" >> /etc/haarp/haarp.conf
 # --- Apache to port 88 ---
 sed -i 's/Listen.*[0-9]*/Listen 88/g' /etc/apache2/ports.conf
 sed -i 's/NameVirtualHost.*:[0-9]*/NameVirtualHost *:88/g' /etc/apache2/ports.conf
-sed -i 's/VirtualHost.*:[0-9]*>/VirtualHost *:88>/g'  /etc/apache2/sites-enabled/000-default.conf
+sed -i 's/VirtualHost.*:[0-9]*>/VirtualHost *:88>/g'  /etc/apache2/sites-enabled/000-default
 # -- restart service apache2 --
 a2enmod cgi 2>/dev/null
 service apache2 restart 2>/dev/null
