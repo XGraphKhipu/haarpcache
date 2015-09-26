@@ -57,6 +57,7 @@ HaarpCache is a robust static and dynamic cache that provides support to the DAS
 * Copy and paste the line above at the end of the file 'squid.conf' (or 'squid3.conf' which is in operation):
 
 		acl haarp_lst url_regex -i "/etc/haarp/haarp.lst"
+		never_direct allow haarp_lst
 		cache deny haarp_lst
 		cache_peer 127.0.0.1 parent 8080 0 proxy-only no-digest
 		dead_peer_timeout 2 seconds
@@ -268,6 +269,14 @@ Configure your file /etc/haarp/haarp.lst to disable or enable the plugins.
 
 	
 ## Changelog
+
+__Version 1.5.1__
+
+2015/09/26
+
+* Fix problem: "segfault at 10 ip 000000000042ee66 sp 00007fffb74d2270 error 4 in haarp[400000+45000]".
+* Manager of multiples ip in the header "X-forwarded-for".
+* Update bash script of installation: force the redirect to haarp from squid in squid.conf. 
 
 __Version 1.5__
 
