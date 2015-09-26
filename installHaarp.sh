@@ -154,6 +154,7 @@ request_header_replace User-Agent Mozilla/5.0 (compatible; Googlebot/2.1; +http:
 quick_abort_min 0 KB
 quick_abort_max 0 KB
 quick_abort_pct 100
+qos_flows local-hit=0x08
 coredump_dir /var/spool/squid3
 logfile_rotate 5
 access_log /var/log/squid3/access.log
