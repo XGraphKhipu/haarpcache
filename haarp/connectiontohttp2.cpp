@@ -33,10 +33,12 @@ void ConnectionToHTTP2::print_range(intervalPositionByteDisk range, string prefi
 
 void ConnectionToHTTP2::initializeVariables() {
 	lusers_db.clear();
-	oldfilesended = filesizeneto = size_orig_file = filedownloaded = filesended = expiration = 0;
+	acumulate = bwrite = oldfilesended = filesizeneto = size_orig_file = filedownloaded = filesended = expiration = 0;
 }
 void ConnectionToHTTP2::saveClientIP(string ip) {
-	ip_browser = ip;
+	vector<string> lip;
+	stringexplode(ip, " ", &lip);
+	ip_browser = lip.at(0);
 }
 void ConnectionToHTTP2::getLimitBytes(string &header) {
 	if (LL > 0) LogFile::ErrorMessage("******************** NEW CONNECTION ********************\n");
@@ -957,7 +959,8 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 	ssize_t BodyLength = 0;
 
 	string bodyTTemp = "";
-
+	
+	
 	if (resuming) {
 		if (LL > 2) LogFile::ErrorMessage("[DEBUG-ReadBodyPart] RESUMING!\n");
 		string bodyTmp = "";
