@@ -106,6 +106,7 @@ MYSQL_PASS &lt;haarpcache_password&gt;
 <p>Copy and paste the line above at the end of the file 'squid.conf' (or 'squid3.conf' which is in operation):</p>
 
 <pre><code>acl haarp_lst url_regex -i "/etc/haarp/haarp.lst"
+never_direct allow haarp_lst
 cache deny haarp_lst
 cache_peer 127.0.0.1 parent 8080 0 proxy-only no-digest
 dead_peer_timeout 2 seconds
@@ -346,6 +347,16 @@ Manabar;</p>
 
 <h2>
 <a id="changelog" class="anchor" href="#changelog" aria-hidden="true"><span class="octicon octicon-link"></span></a>Changelog</h2>
+
+<p><strong>Version 1.5.1</strong></p>
+
+<p>2015/09/26</p>
+
+<ul>
+<li>Fix problem: "segfault at 10 ip 000000000042ee66 sp 00007fffb74d2270 error 4 in haarp[400000+45000]".</li>
+<li>Manager of multiples ip in the header "X-forwarded-for".</li>
+<li>Update bash script of installation: force the redirect to haarp from squid in squid.conf. </li>
+</ul>
 
 <p><strong>Version 1.5</strong></p>
 
