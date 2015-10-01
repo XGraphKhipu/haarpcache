@@ -164,6 +164,7 @@ cache_store_log none" > /etc/squid3/squid.conf
 clear
 echo -e "${RED}*///////////////======= Instalando HaarpCache =======///////////////*${NOR}"
 cd /usr/src/
+mv haarpcache "haarpcache_$(date +%Y%m%d)" 2>/dev/null
 git clone https://github.com/keikurono/haarpcache.git
 cd haarpcache
 ./configure CXX=g++-4.4
@@ -234,6 +235,7 @@ make install
 
 # Install HaarpViewer
 cd /usr/src/
+mv haarp-viewer "haarp-viewer_$(date +%Y%m%d)" 2>/dev/null
 git clone git://github.com/keikurono/haarp-viewer.git
 cd haarp-viewer
 cd src/
