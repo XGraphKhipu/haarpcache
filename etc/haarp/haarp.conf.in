@@ -183,4 +183,8 @@ LOGLEVEL 0
 # Deja por defecto para escuchar en todas las interfaces
 # Default:
 # BIND_ADDRESS 127.0.0.1
+#
+# Log for the haarp-viewer panel administrator
+#
+ACCESSWEBLOG /var/log/haarp/webaccess.log
 

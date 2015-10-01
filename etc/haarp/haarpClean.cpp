@@ -39,7 +39,7 @@
 //#include "database_mysql.cpp"
 #define charmalloc(a) (char *)malloc(a*sizeof(char))  
 #define NUM_FILES 20000
-#define MAX_HIT 15
+#define MAX_HIT 100
 #define pb push_back
 #define MYSQL_PING_TIME 50
 #define p(a) cout<<a<<endl
@@ -147,10 +147,10 @@ MYSQL_RES * mysql_select_files(MYSQL* conn, struct tm *date_mx, int hit, int fla
 	string ds = date2str(date_min);
 	if(!flag) {
 		if( domain != "" ) {
-			sprintf(q, "SELECT file, domain, filesize, downloaded FROM haarp WHERE domain = '%s' AND date(downloaded) >= '%s' AND date(downloaded) <= '%s' AND bytes_requested = %i*filesize limit %i", domain.c_str(), ds.c_str(), d.c_str(), hit, NUM_FILES);
+			sprintf(q, "SELECT file, domain, filesize, downloaded FROM haarp WHERE domain = '%s' AND date(downloaded) >= '%s' AND date(downloaded) <= '%s' AND bytes_requested <= %i*filesize limit %i", domain.c_str(), ds.c_str(), d.c_str(), hit, NUM_FILES);
 		}
 		else {
-			sprintf(q, "SELECT file, domain, filesize, downloaded FROM haarp WHERE date(downloaded) >= '%s' AND  date(downloaded) <= '%s' AND bytes_requested = %i*filesize  limit %i", ds.c_str(), d.c_str(), hit, NUM_FILES);
+			sprintf(q, "SELECT file, domain, filesize, downloaded FROM haarp WHERE date(downloaded) >= '%s' AND  date(downloaded) <= '%s' AND bytes_requested <= %i*filesize  limit %i", ds.c_str(), d.c_str(), hit, NUM_FILES);
 		}
 	}
 	else {
@@ -226,9 +226,9 @@ int delete_by_block(MYSQL *connect, int fase, int hit, double *mb, int flag) {
 					numdelete++;
 					if ( !(numdelete % 100) ) {
 						if(atof(r[2]) > 1048576)
-							printf("Entry %i, Delete %.1lf MB (total:%.2lf GB), Downloaded : %s [Hits: %i], File: '%s'\n", numdelete, atof(r[2])/(1048576.0), *mb/1024, r[3], hit, f);
+							printf("Entry %i, Delete %.1lf MB (total:%.2lf GB), Downloaded : %s [Hits<= %i], File: '%s'\n", numdelete, atof(r[2])/(1048576.0), *mb/1024, r[3], hit, f);
 						else
-							printf("Entry %i, Delete %.1lf KB (total:%.2lf GB), Downloaded : %s [Hits: %i], File: '%s'\n", numdelete, atof(r[2])/(1024.0), *mb/1024, r[3], hit, f);
+							printf("Entry %i, Delete %.1lf KB (total:%.2lf GB), Downloaded : %s [Hits<= %i], File: '%s'\n", numdelete, atof(r[2])/(1024.0), *mb/1024, r[3], hit, f);
 					}
 					system(q);					
 					*mb = *mb + atof(r[2])/(1048576.0);
@@ -526,8 +526,6 @@ int main(int carg, char **varg) {
 		if(!date_end)
 			date_max = str2date2(++p);
 	}
-	p(date2str(date_min));
-	p(date2str(date_max));	
 	//~ 
 	double mb_eliminate = 0;
 	
@@ -538,12 +536,16 @@ int main(int carg, char **varg) {
 		fase++;
 		int hit = 0;
 		int re = 1;
-		for(hit = 0;hit < MAX_HIT;hit++) {
+		for(hit = 0;hit < MAX_HIT;) {
 			re = delete_by_block(connect, fase, hit, &mb_eliminate, 0);
 			if(!re) {
 				a = true;
 				break;
 			}
+			if( hit > 15 ) 
+				hit += 10;
+			else 
+				hit++;
 		}
 		if(a)
 			break;
