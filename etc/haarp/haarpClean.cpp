@@ -212,16 +212,16 @@ int delete_by_block(MYSQL *connect, int fase, int hit, double *mb, int flag) {
 				return 0;
 			return 1;
 		}
-		bool file_exis = false;
+		//bool file_exis = false;
 		//~ select files and delete from the disk.
 		while ( (r = mysql_fetch_row(res)) != NULL ) {
 			subdir = ConvertChar(r[0]);
-			file_exis = false;
+			//file_exis = false;
 			for(dir_index = list_dir.begin();dir_index != list_dir.end();dir_index++) {
 				sprintf(f,"%s%s/%s/%s",(*dir_index).c_str(),r[1],subdir.c_str(),r[0]);
 				//~ p(f);
 				if(file_exists(string(f))) {
-					file_exis = true;
+					//file_exis = true;
 					sprintf(q,"rm -f \"%s\"",f);
 					numdelete++;
 					if ( !(numdelete % 100) ) {
@@ -234,8 +234,8 @@ int delete_by_block(MYSQL *connect, int fase, int hit, double *mb, int flag) {
 					*mb = *mb + atof(r[2])/(1048576.0);
 				}
 			}
-			if ( !file_exis )
-				p("[WARNING] The file: '"+ string(r[0]) + "' not EXIST in the disks!");
+			/*if ( !file_exis )
+				p("[WARNING] The file: '"+ string(r[0]) + "' not EXIST in the disks!");*/
 			if ( time(NULL) >= m_tNextMysqlPingTime ) {
 				mysql_ping(connect);
 				m_tNextMysqlPingTime = time(NULL) + MYSQL_PING_TIME;
@@ -531,7 +531,6 @@ int main(int carg, char **varg) {
 	
 	int fase = -1;
 	bool a = false;
-
 	while( mb_eliminate < total_delete_mb ) {
 		fase++;
 		int hit = 0;
