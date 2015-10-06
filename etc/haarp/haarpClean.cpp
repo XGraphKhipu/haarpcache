@@ -177,14 +177,14 @@ void mysql_delete_files(MYSQL * conn, struct tm * date_mx, int hit, int flag) {
 	string ds = date2str(date_min);	
 	if( !flag ) {
 		if( domain == "" )
-			sprintf(q,"DELETE from haarp WHERE date(downloaded) >= '%s' AND date(downloaded) <= '%s' AND bytes_requested = %i*filesize limit %i", ds.c_str(), d.c_str(), hit, NUM_FILES);
+			sprintf(q,"DELETE from haarp WHERE date(downloaded) >= '%s' AND date(downloaded) <= '%s' AND bytes_requested <= %i*filesize limit %i", ds.c_str(), d.c_str(), hit, NUM_FILES);
 		else 
-			sprintf(q,"DELETE from haarp WHERE domain = '%s' AND date(downloaded) >= '%s' AND date(downloaded) <= '%s' AND bytes_requested = %i*filesize limit %i", (sqlconv2(domain)).c_str(), ds.c_str(), d.c_str(), hit, NUM_FILES);
+			sprintf(q,"DELETE from haarp WHERE domain = '%s' AND date(downloaded) >= '%s' AND date(downloaded) <= '%s' AND bytes_requested <= %i*filesize limit %i", (sqlconv2(domain)).c_str(), ds.c_str(), d.c_str(), hit, NUM_FILES);
 	} else {
 		if( domain == "" )  
-			sprintf(q,"DELETE from haarp WHERE date(downloaded) >= '%s' AND date(downloaded) <= '%s' AND bytes_requested >= %i*filesize limit %i", ds.c_str(), d.c_str(), hit, NUM_FILES);
+			sprintf(q,"DELETE from haarp WHERE date(downloaded) >= '%s' AND date(downloaded) <= '%s' AND bytes_requested > %i*filesize limit %i", ds.c_str(), d.c_str(), hit, NUM_FILES);
 		else 
-			sprintf(q,"DELETE from haarp WHERE domain = '%s' AND date(downloaded) >= '%s' AND date(downloaded) <='%s' AND bytes_requested >= %i*filesize limit %i", (sqlconv2(domain)).c_str(), ds.c_str(), d.c_str(), hit, NUM_FILES);
+			sprintf(q,"DELETE from haarp WHERE domain = '%s' AND date(downloaded) >= '%s' AND date(downloaded) <='%s' AND bytes_requested > %i*filesize limit %i", (sqlconv2(domain)).c_str(), ds.c_str(), d.c_str(), hit, NUM_FILES);
 	}
 	//p(q);
 	if( mysql_query(conn, q) ) {
