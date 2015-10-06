@@ -214,6 +214,8 @@ tc filter add dev $IF_LAN protocol ip parent 1:0 handle 666 fw classid 1:66
 
 <pre><code>    su
     cd /usr/src/
+    rm -fr haarpcache 2&gt;/dev/null
+    killall haarpclean 2&gt;/dev/null
     git clone https://github.com/keikurono/haarpcache.git
     cd haarpcache
     ./configure
