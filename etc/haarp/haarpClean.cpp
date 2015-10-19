@@ -165,8 +165,6 @@ MYSQL_RES * mysql_select_files(MYSQL* conn, struct tm *date_mx, int hit, int fla
 		cout<<"MYSQL Error: Query: '"<<q<<"'; "<<mysql_error(conn)<<endl;
 		exit(1);
 	}
-	//p(q);
-	//p("Select files from the DB ...");
 	return mysql_store_result(conn);
 }
 
@@ -177,16 +175,15 @@ void mysql_delete_files(MYSQL * conn, struct tm * date_mx, int hit, int flag) {
 	string ds = date2str(date_min);	
 	if( !flag ) {
 		if( domain == "" )
-			sprintf(q,"DELETE from haarp WHERE date(downloaded) >= '%s' AND date(downloaded) <= '%s' AND bytes_requested = %i*filesize limit %i", ds.c_str(), d.c_str(), hit, NUM_FILES);
+			sprintf(q,"DELETE from haarp WHERE date(downloaded) >= '%s' AND date(downloaded) <= '%s' AND bytes_requested <= %i*filesize limit %i", ds.c_str(), d.c_str(), hit, NUM_FILES);
 		else 
-			sprintf(q,"DELETE from haarp WHERE domain = '%s' AND date(downloaded) >= '%s' AND date(downloaded) <= '%s' AND bytes_requested = %i*filesize limit %i", (sqlconv2(domain)).c_str(), ds.c_str(), d.c_str(), hit, NUM_FILES);
+			sprintf(q,"DELETE from haarp WHERE domain = '%s' AND date(downloaded) >= '%s' AND date(downloaded) <= '%s' AND bytes_requested <= %i*filesize limit %i", (sqlconv2(domain)).c_str(), ds.c_str(), d.c_str(), hit, NUM_FILES);
 	} else {
 		if( domain == "" )  
 			sprintf(q,"DELETE from haarp WHERE date(downloaded) >= '%s' AND date(downloaded) <= '%s' AND bytes_requested >= %i*filesize limit %i", ds.c_str(), d.c_str(), hit, NUM_FILES);
 		else 
 			sprintf(q,"DELETE from haarp WHERE domain = '%s' AND date(downloaded) >= '%s' AND date(downloaded) <='%s' AND bytes_requested >= %i*filesize limit %i", (sqlconv2(domain)).c_str(), ds.c_str(), d.c_str(), hit, NUM_FILES);
 	}
-	//p(q);
 	if( mysql_query(conn, q) ) {
 		cout<<"MYSQL Error "<<mysql_errno(conn)<<": Query: '"<<q<<"' --> "<<mysql_error(conn)<<endl;
 		exit(1);
@@ -207,11 +204,12 @@ int delete_by_block(MYSQL *connect, int fase, int hit, double *mb, int flag) {
 		//~ mysql_update_deleted(connect, date_new_max, hit, flag);
 		res = mysql_select_files(connect, date_new_max, hit, flag);
 		if(!mysql_num_rows(res)) {
-			//printf("Salida por termino de archivos eliminados con hit '%i'\n",hit);
+			printf("Salida por termino de archivos eliminados con hit '%i'\n",hit);
 			if( flag && mktime(date_max) == mktime(date_new_max) )
 				return 0;
 			return 1;
 		}
+		printf("files selected: %i\n", mysql_num_rows(res));
 		bool file_exis = false;
 		//~ select files and delete from the disk.
 		while ( (r = mysql_fetch_row(res)) != NULL ) {
@@ -219,7 +217,7 @@ int delete_by_block(MYSQL *connect, int fase, int hit, double *mb, int flag) {
 			file_exis = false;
 			for(dir_index = list_dir.begin();dir_index != list_dir.end();dir_index++) {
 				sprintf(f,"%s%s/%s/%s",(*dir_index).c_str(),r[1],subdir.c_str(),r[0]);
-				//~ p(f);
+				//p(f);
 				if(file_exists(string(f))) {
 					file_exis = true;
 					sprintf(q,"rm -f \"%s\"",f);
@@ -234,8 +232,8 @@ int delete_by_block(MYSQL *connect, int fase, int hit, double *mb, int flag) {
 					*mb = *mb + atof(r[2])/(1048576.0);
 				}
 			}
-			if ( !file_exis )
-				p("[WARNING] The file: '"+ string(r[0]) + "' not EXIST in the disks!");
+			/*if ( !file_exis )
+				p("[WARNING] The file: '"+ string(r[0]) + "' not EXIST in the disks!");*/
 			if ( time(NULL) >= m_tNextMysqlPingTime ) {
 				mysql_ping(connect);
 				m_tNextMysqlPingTime = time(NULL) + MYSQL_PING_TIME;
@@ -244,7 +242,7 @@ int delete_by_block(MYSQL *connect, int fase, int hit, double *mb, int flag) {
 		mysql_delete_files(connect, date_new_max, hit, flag);
 		mysql_free_result(res);
 		if( *mb > total_delete_mb ) {
-			//p("SALIDA POR EL PASO DE LOS MB'S LIMITE.");
+			p("SALIDA POR EL PASO DE LOS MB'S LIMITE.");
 			return 0;
 		}
 	}
@@ -531,6 +529,7 @@ int main(int carg, char **varg) {
 	
 	int fase = -1;
 	bool a = false;
+	printf("total_delete_mb = %lf\n", total_delete_mb);
 
 	while( mb_eliminate < total_delete_mb ) {
 		fase++;
@@ -552,6 +551,7 @@ int main(int carg, char **varg) {
 		re = delete_by_block(connect, fase, hit, &mb_eliminate, 1);
 		if(!re)
 			break;
+		printf("mb_eliminate = %lf\n", mb_eliminate);
 	}
 	
 	cout<<"Entries deleted: "<<numdelete<<endl;

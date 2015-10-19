@@ -102,6 +102,7 @@ OBJECTS = grandchase.com.br.so \
 	viddler.com.so \
 	vostucdn.com.so \
 	wooga.com.so \
+	steampowered.com.so \
 	zgncdn.com.so 
 		
 

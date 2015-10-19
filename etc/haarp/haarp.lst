@@ -10,7 +10,7 @@
 ^http.{3,4}download\.bitdefender\.com\/((\w|\_|-)*\/){7}(\w|\_|-)*(\.exe)$
 ^http.{3,10}patches.{1,40}\.bitdefender\.net\/.*\/patches\/.*(\.gzip|\.zip)$
 ^http.{1,15}\.4shared\.com.*(\.exe|\.iso|\.torrent|\.zip|\.rar|\.pdf|\.doc|\.tar|\.mp3|\.mp4|\.avi|\.wmv|\.mpg)
-http.*\.googlevideo\.com.*videoplayback\?
+http.*\.googlevideo\.com.*(videoplayback\?|\/videoplayback\/.*itag\/[0-9]+\/.*mime\/(audio|video).*\/range\/[0-9]+-[0-9]+)
 ^http.{1,40}\.youtube\.com\/(videoplayback\?|watch\?.*v=)
 ^http.{1,4}\w*\.ytimg\.com.*((hq|mq)default(\.jpg|\.mp4)$|M[0-9]+\.jpg\?sigh=)
 ^http.{1,4}\w*google(\.\w|\w)*\.doubleclick\.net\/pagead\/ads\?.*
@@ -113,3 +113,4 @@ http.{1,7}(\.|[a-z]|[0-9]|-)+(\/\w+)?(\/speedtest)+\/(random[0-9]+x[0-9]+\.jpg|l
 ^http.{3,35}\.modovideo\.com.*(\.flv|\.mp4)
 ^http.{3,35}cutmu\.net.*(\.swf|\.mp3)
 ^http.{3,35}\.telaxo\.com.*(\.jpg|\.png|\.gif|\.swf|\.mp3)
+^http.{3,4}cdn\.(\w|\.)*cs\.steampowered\.com\/depot\/[0-9]+\/chunk\/\w{40}
