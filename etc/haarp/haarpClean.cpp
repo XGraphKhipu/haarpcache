@@ -180,9 +180,9 @@ void mysql_delete_files(MYSQL * conn, struct tm * date_mx, int hit, int flag) {
 			sprintf(q,"DELETE from haarp WHERE domain = '%s' AND date(downloaded) >= '%s' AND date(downloaded) <= '%s' AND bytes_requested <= %i*filesize limit %i", (sqlconv2(domain)).c_str(), ds.c_str(), d.c_str(), hit, NUM_FILES);
 	} else {
 		if( domain == "" )  
-			sprintf(q,"DELETE from haarp WHERE date(downloaded) >= '%s' AND date(downloaded) <= '%s' AND bytes_requested >= %i*filesize limit %i", ds.c_str(), d.c_str(), hit, NUM_FILES);
+			sprintf(q,"DELETE from haarp WHERE date(downloaded) >= '%s' AND date(downloaded) <= '%s' AND bytes_requested > %i*filesize limit %i", ds.c_str(), d.c_str(), hit, NUM_FILES);
 		else 
-			sprintf(q,"DELETE from haarp WHERE domain = '%s' AND date(downloaded) >= '%s' AND date(downloaded) <='%s' AND bytes_requested >= %i*filesize limit %i", (sqlconv2(domain)).c_str(), ds.c_str(), d.c_str(), hit, NUM_FILES);
+			sprintf(q,"DELETE from haarp WHERE domain = '%s' AND date(downloaded) >= '%s' AND date(downloaded) <='%s' AND bytes_requested > %i*filesize limit %i", (sqlconv2(domain)).c_str(), ds.c_str(), d.c_str(), hit, NUM_FILES);
 	}
 	if( mysql_query(conn, q) ) {
 		cout<<"MYSQL Error "<<mysql_errno(conn)<<": Query: '"<<q<<"' --> "<<mysql_error(conn)<<endl;
@@ -209,17 +209,11 @@ int delete_by_block(MYSQL *connect, int fase, int hit, double *mb, int flag) {
 				return 0;
 			return 1;
 		}
-		printf("files selected: %i\n", mysql_num_rows(res));
-		bool file_exis = false;
-		//~ select files and delete from the disk.
 		while ( (r = mysql_fetch_row(res)) != NULL ) {
 			subdir = ConvertChar(r[0]);
-			file_exis = false;
 			for(dir_index = list_dir.begin();dir_index != list_dir.end();dir_index++) {
 				sprintf(f,"%s%s/%s/%s",(*dir_index).c_str(),r[1],subdir.c_str(),r[0]);
-				//p(f);
 				if(file_exists(string(f))) {
-					file_exis = true;
 					sprintf(q,"rm -f \"%s\"",f);
 					numdelete++;
 					if ( !(numdelete % 100) ) {
@@ -529,8 +523,6 @@ int main(int carg, char **varg) {
 	
 	int fase = -1;
 	bool a = false;
-	printf("total_delete_mb = %lf\n", total_delete_mb);
-
 	while( mb_eliminate < total_delete_mb ) {
 		fase++;
 		int hit = 0;

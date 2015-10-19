@@ -142,6 +142,8 @@ For a common update:
 	
 		su
 		cd /usr/src/
+		rm -fr haarpcache
+		killall haarpclean 2>/dev/null
 		git clone https://github.com/keikurono/haarpcache.git
 		cd haarpcache
 		./configure

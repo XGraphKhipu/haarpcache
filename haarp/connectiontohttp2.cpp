@@ -38,7 +38,7 @@ void ConnectionToHTTP2::initializeVariables() {
 void ConnectionToHTTP2::saveClientIP(string ip) {
 	vector<string> lip;
 	stringexplode(ip, " ", &lip);
-	ip_browser = lip.at(0);
+	ip_browser = lip.at(lip.size() - 1);
 }
 void ConnectionToHTTP2::getLimitBytes(string &header) {
 	if (LL > 0) LogFile::ErrorMessage("******************** NEW CONNECTION ********************\n");
