@@ -169,7 +169,7 @@ MYSQL_RES * mysql_select_files(MYSQL* conn, struct tm *date_mx, int hit, int fla
 }
 
 void mysql_delete_files(MYSQL * conn, struct tm * date_mx, int hit, int flag) {
-	p("Delete files from DB .... ");
+	//p("Delete files from DB .... ");
 	char q[500];
 	string d = date2str(date_mx);
 	string ds = date2str(date_min);	
@@ -204,7 +204,7 @@ int delete_by_block(MYSQL *connect, int fase, int hit, double *mb, int flag) {
 		//~ mysql_update_deleted(connect, date_new_max, hit, flag);
 		res = mysql_select_files(connect, date_new_max, hit, flag);
 		if(!mysql_num_rows(res)) {
-			printf("Salida por termino de archivos eliminados con hit '%i'\n",hit);
+			//printf("Salida por termino de archivos eliminados con hit '%i'\n",hit);
 			if( flag && mktime(date_max) == mktime(date_new_max) )
 				return 0;
 			return 1;
@@ -543,7 +543,7 @@ int main(int carg, char **varg) {
 		re = delete_by_block(connect, fase, hit, &mb_eliminate, 1);
 		if(!re)
 			break;
-		printf("mb_eliminate = %lf\n", mb_eliminate);
+		//printf("mb_eliminate = %lf\n", mb_eliminate);
 	}
 	
 	cout<<"Entries deleted: "<<numdelete<<endl;

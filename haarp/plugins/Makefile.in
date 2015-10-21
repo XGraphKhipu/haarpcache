@@ -131,6 +131,7 @@ copiar:
 	cp speedtest.net.so testdevelocidad.es.so
 	cp vimeo.com.so vimeocdn.com.so
 	cp nflximg.net.so nflximg.com.so
+	cp friv.com.so friv.wf.so
 
 clean:
 	rm -f *.so
