@@ -196,7 +196,7 @@ extern "C" resposta hgetmatch2(string url) {
 	r.total_file_size = 0;
 	
 	if( url.find("/videoplayback?") != string::npos ) {
-		if ( regex_match("[\\?&]begin=[0-9]*[1-9]+[0-9]*", url) == "" && regex_match("[\\?&]cms_redirect=yes(&.*)?$", url) == "" && regex_match("[\\?&]redirect_counter=1(&.*)?$", url) == "" &&  url.find("&ir=1") == string::npos && url.find("&rr=12") == string::npos && url.find("source=yt_live") == string::npos ) {
+		if ( regex_match("[\\?&]begin=[0-9]*[1-9]+[0-9]*", url) == "" && regex_match("[\\?&]cms_redirect=yes(&.*)?$", url) == "" && regex_match("[\\?&]redirect_counter=1(&.*)?$", url) == "" &&  url.find("&ir=1") == string::npos && url.find("&rr=12") == string::npos && url.find("source=yt_live") == string::npos && url.find("&otf=1") == string::npos ) {
 			get_videoid(url, r.file, &r.exist_range, &r.range_min, &r.range_max, &r.total_file_size);
 			if ( !r.file.empty() ) {
 				r.match = true;
