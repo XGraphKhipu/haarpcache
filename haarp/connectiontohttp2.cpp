@@ -42,6 +42,9 @@ void ConnectionToHTTP2::saveClientIP(string ip) {
 }
 void ConnectionToHTTP2::getLimitBytes(string &header) {
 	if (LL > 0) LogFile::ErrorMessage("******************** NEW CONNECTION ********************\n");
+	/*header_browser = header;
+	if (LL > 2) LogFile::ErrorMessage("[DEBUG] Header Browser: \"%s\"\n", header_browser.c_str());*/
+	
 	range_min = 0;
 	range_max = 0;
 	np = 0;
@@ -227,12 +230,16 @@ int ConnectionToHTTP2::lockFile(int singleDomain) {
 	} else if (singleDomain) {
 		if (LL > 2) LogFile::ErrorMessage("[DEBUG] file '%s', parts: '%s', '%s'!\n", r.file.c_str(), lname.at(0).c_str(), lname.at(1).c_str());
 	}
-	if (domaindb.set("START TRANSACTION;") != 0)
+	if (domaindb.set("START TRANSACTION;") != 0) {
+		if (LL > 2) LogFile::ErrorMessage("[DEBUG] Aqui 1\n");
+		
 		return -1;
+	}
 
 	if (singleDomain == 0) {
 		if (domaindb.get("SELECT * FROM haarp WHERE file='" + domaindb.sqlconv(r.file) + "' and domain='" + r.domain + "' FOR UPDATE;") != 0) {
 			domaindb.set("ROLLBACK;");
+			if (LL > 2) LogFile::ErrorMessage("[DEBUG] Aqui 2\n");
 			return -1;
 		}
 	} else {
@@ -240,6 +247,7 @@ int ConnectionToHTTP2::lockFile(int singleDomain) {
 		if (domaindb.get(query_mysql) != 0) {
 			if (LL > 2) LogFile::ErrorMessage("[DEBUG] Error, mysql query: '%s'!!\n", query_mysql.c_str());
 			domaindb.set("ROLLBACK;");
+			if (LL > 2) LogFile::ErrorMessage("[DEBUG] Aqui 3\n");
 			return -1;
 		}
 		if (LL > 2) LogFile::ErrorMessage("[DEBUG-lockfile] mysql query: '%s'!!\n", query_mysql.c_str());
@@ -251,6 +259,7 @@ int ConnectionToHTTP2::lockFile(int singleDomain) {
 			if (domaindb.set("INSERT INTO haarp (domain, file, size, modified, downloaded, bytes_requested, last_request, file_used, users) VALUES ('" + r.domain + "', '" + domaindb.sqlconv(r.file) + "', 0, now(),now(),0,now(), 1,'" + lusercache2str(lusers_db) + "');") != 0) {
 				domaindb.set("ROLLBACK;");
 				if (LL > 0) LogFile::ErrorMessage("[DEBUG] File %s [%lli-%lli] Error on INSERT! (NOT EXISTS FILE ON DB) ========.=======\n", r.file.c_str(), range_min, range_max);
+				if (LL > 2) LogFile::ErrorMessage("[DEBUG] Aqui 4\n");
 				return -1;
 			}
 		}
@@ -266,6 +275,7 @@ int ConnectionToHTTP2::lockFile(int singleDomain) {
 		string mysql_query = "SELECT abs(unix_timestamp(now()) - UNIX_TIMESTAMP(modified))<=30 as difftime, file_used FROM haarp WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';";
 		if (domaindb.get(mysql_query) != 0) {
 			domaindb.set("ROLLBACK;");
+			if (LL > 2) LogFile::ErrorMessage("[DEBUG] Aqui 5\n");
 			return -1;
 		}
 		string difftime = domaindb.get("difftime", 1);
@@ -274,6 +284,7 @@ int ConnectionToHTTP2::lockFile(int singleDomain) {
 			if (domaindb.set("UPDATE haarp set modified=now(), file_used=1 WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") != 0) {
 				if (LL > 2) LogFile::ErrorMessage("[DEBUG] File %s [%lli-%lli] status is ..... BLOCKED or ERROR MYSQL!.\n", r.file.c_str(), range_min, range_max);
 				domaindb.set("ROLLBACK;");
+				if (LL > 2) LogFile::ErrorMessage("[DEBUG] Aqui 6\n");
 				return -1;
 			}
 			if (LL > 2) LogFile::ErrorMessage("[DEBUG] File %s [%lli-%lli] BLOCKING from mysql.\n", r.file.c_str(), range_min, range_max);
@@ -290,6 +301,7 @@ int ConnectionToHTTP2::lockFile(int singleDomain) {
 			} else {
 				if (domaindb.set("UPDATE haarp set modified=now(), file_used=1 WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") != 0) {
 					domaindb.set("ROLLBACK;");
+					if (LL > 2) LogFile::ErrorMessage("[DEBUG] Aqui 7\n");
 					return -1;
 				}
 				if (LL > 2) LogFile::ErrorMessage("[DEBUG] File %s [%lli-%lli] BLOCKING STRICT from mysql.\n", r.file.c_str(), range_min, range_max);
@@ -317,7 +329,7 @@ bool ConnectionToHTTP2::liberate_edition() {
 }
 
 void ConnectionToHTTP2::Cache() {
-	if (LL > 2) LogFile::ErrorMessage("Pasando por Cache (1.2)\n");
+	if (LL > 2) LogFile::ErrorMessage("[DEBUG] Pasando por Cache (1.2)\n");
 	msghit = "MISS";
 	hasupdate = false;
 	unlimit = false;
@@ -329,7 +341,9 @@ void ConnectionToHTTP2::Cache() {
 	hit = downloading = r.match = rewrited = resuming = passouheader = general = etag = closed = false;
 	limit = 0;
 	np = 0;
-	
+
+	isgeneralplugin = false;
+
 	lrangeswork.clear();
 	lranges.clear();
 	
@@ -389,21 +403,50 @@ void ConnectionToHTTP2::Cache() {
 			if (LL > 2) LogFile::ErrorMessage("[DEBUG_Cache] Resposta Match %d Domain %s File %s\n", r.match, r.domain.c_str(), r.file.c_str());
 		}
 	}
-
+	else {
+		pluginpath = pluginsdir + "generalplugin.so";
+		if (file_exists(pluginpath)) {
+			if (LL > 0) LogFile::AccessMessage("Loading plugin %s\n", pluginpath.c_str());
+			void *handle = dlopen(pluginpath.c_str(), RTLD_LAZY);
+			if (!handle) {
+				if (LL > 0) LogFile::ErrorMessage("Cannot open library: %s\n", dlerror());
+			}
+			typedef resposta( *plugin_t)(string);
+			plugin_t plugin = (plugin_t) dlsym(handle, "hgetmatch2");
+			if (!plugin) {
+				if (LL > 0) LogFile::ErrorMessage("Cannot load symbol: %s\n", dlerror());
+				dlclose(handle);
+			} else { // Plugin cargado correctamente, ok para atribuir valores a struc
+				r = plugin(domain + request);
+				if (partial) {
+					if (LL > 2) LogFile::ErrorMessage("[DEBUG] Partial file with the generic plugin: '%s' [%lli-%lli]\n", (r.file).c_str(), range_min, range_max);
+					//r.file = "206-" + r.file;
+				} else {
+					range_min = r.range_min;
+					range_max = r.range_max;
+				}
+				if (LL > 2) LogFile::ErrorMessage("Info: '%s' [%lli-%lli]\n", (r.file).c_str(), range_min, range_max);
+				isgeneralplugin = true;
+			}
+		}		
+	}
 	if (r.match) { // Es la url de un dominio
-
+		if (LL > 2) LogFile::ErrorMessage("[DEBUG] match! file: '%s', domain: '%s' [%lli-%lli]\n", (r.file).c_str(), r.domain.c_str(), range_min, range_max);
 		int lfile;
-		if (r.domain == "netflix")
-			lfile = lockFile(1);
-		else
-			lfile = lockFile(0);
-
-		if (lfile <= 0) {
-			if (lfile == -1) if (LL > 0) LogFile::ErrorMessage("Error mysql: '%s'\n", domaindb.getError().c_str());
-			exists_transaction_editing_file = true;
-			r.match = hit = false;
-			return;
-		}
+		if( !isgeneralplugin ) {
+			if (r.domain == "netflix")
+				lfile = lockFile(1);
+			else
+				lfile = lockFile(0);
+			if (lfile <= 0) {
+				if (lfile == -1) if (LL > 0) LogFile::ErrorMessage("Error mysql - :) : '%s'\n", domaindb.getError().c_str());
+				exists_transaction_editing_file = true;
+				r.match = hit = false;
+				return;
+			}
+		} else 
+			was_liberate = true;
+		
 		exists_transaction_editing_file = false;
 
 		subdir = ConvertChar(r.file);
@@ -455,7 +498,25 @@ void ConnectionToHTTP2::Cache() {
 		if (LL > 0) LogFile::AccessMessage("File: %s\n", string(completefilepath).c_str());
 		if (range_max > 0)
 			filesizeneto = range_max - range_min + 1;
-
+		
+		if ( isgeneralplugin ) {
+			// comprobate if the file is being used
+			if (domaindb.get("SELECT abs(UNIX_TIMESTAMP(now()) - UNIX_TIMESTAMP(modified))<=30 as difftime FROM haarp WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") != 0 ) {
+				LogFile::ErrorMessage("Error!, '%s'\n", domaindb.getError().c_str());
+				r.match = hit = false;
+				return;
+			}
+				
+			string dt = domaindb.get("difftime", 1);
+			if ( dt != "" && dt.find(1) != string::npos ) {
+				if (LL > 2) LogFile::ErrorMessage("[DEBUG-Cache] MISS: the file '%s' is being used/modified!\n", r.file.c_str());
+				r.match = hit = false;
+				return;
+			}
+			/*if ( !domaindb.get_num_rows() ) {
+				header = 
+			}*/
+		}
 		if (r.domain == "rewrite") {
 			r.match = false;
 			rewrited = true;
@@ -469,7 +530,20 @@ void ConnectionToHTTP2::Cache() {
 				if (LL>2) print_list_lranges(lrangeswork, "Cache()-lrangeswork");
 			}
 			if (disco_con_espacio) {
-				if (domaindb.set("UPDATE haarp SET modified=now(), last_request=now(), rg='', pos='', np=0, deleted=0, static=0, size=" + llitoa(r.total_file_size) + " WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") != 0) {
+				if( isgeneralplugin ) {
+					if( domaindb.set("DELETE from haarp where domain='" + r.domain  + "' and file='" + domaindb.sqlconv(r.file) + "';") != 0 ) {
+						LogFile::ErrorMessage("Error!, '%s'\n", domaindb.getError().c_str());
+						r.match = hit = false;
+						return;
+					}
+					addUserCache(lusers_db, ip_browser, time(NULL), 0, 0);
+					if (domaindb.set("INSERT INTO haarp (domain, file, size, modified, downloaded, bytes_requested, last_request, file_used, users) VALUES ('" + r.domain + "', '" + domaindb.sqlconv(r.file) + "', 0, now(),now(),0,now(), 0,'" + lusercache2str(lusers_db) + "');") != 0) {
+						LogFile::ErrorMessage("Error!, '%s'\n", domaindb.getError().c_str());
+						r.match = hit = false;
+						return;
+					}
+				}
+				else if (domaindb.set("UPDATE haarp SET modified=now(), last_request=now(), rg='', pos='', np=0, deleted=0, static=0, size=" + llitoa(r.total_file_size) + " WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") != 0) {
 					LogFile::ErrorMessage("Error, it can not update the record of mysql: '%s'\n", domaindb.getError().c_str());
 					r.match = hit = false;
 					return;
@@ -480,14 +554,11 @@ void ConnectionToHTTP2::Cache() {
 				}
 				if (LL > 0) LogFile::AccessMessage("MISS: Domain: %s File: %s\n", r.domain.c_str(), r.file.c_str());
 				if (LL > 2) LogFile::ErrorMessage("[DEBUG] MISS: Domain: %s File: %s\n", r.domain.c_str(), r.file.c_str());
-			} else {
+			} else 
 				hit = r.match = false;
-			}
 
 		} else { /* The file are in disk */
-
 			if (LL > 1) LogFile::AccessMessage("The file is ON disk!\n");
-
 			if (domaindb.get("SELECT size, rg, pos, users FROM haarp WHERE file='" + domaindb.sqlconv(r.file) + "' and domain='" + r.domain + "';") != 0) {
 				LogFile::ErrorMessage("Error select mysql: %s\n", domaindb.getError().c_str());
 				r.match = hit = false;
@@ -496,10 +567,20 @@ void ConnectionToHTTP2::Cache() {
 				return;
 			}
 			if (domaindb.get_num_rows() == 0) { // No existe en la db, pero sí en disco.
-				LogFile::ErrorMessage("Error, the row of the file '%s' not exist on the db!", r.file.c_str());
-				r.match = hit = false;
-				if (!exists_transaction_editing_file) liberate_edition();
-				return;
+				if ( isgeneralplugin ) {
+					if (LL > 2) LogFile::AccessMessage("[DEBUG] generalplugin is run!, The file not exists IN the DB!\n");
+					addUserCache(lusers_db, ip_browser, time(NULL), 0, 0);
+					if (domaindb.set("INSERT INTO haarp (domain, file, size, modified, downloaded, bytes_requested, last_request, file_used, users) VALUES ('" + r.domain + "', '" + domaindb.sqlconv(r.file) + "', 0, now(),now(),0,now(), 0,'" + lusercache2str(lusers_db) + "');") != 0) {
+						if (LL > 0) LogFile::ErrorMessage("Error mysql!: '%s'\n", domaindb.getError().c_str());
+						r.match = hit = false;
+						return;
+					}
+				} else {
+					LogFile::ErrorMessage("Error, the row of the file '%s' not exist on the db!", r.file.c_str());
+					r.match = hit = false;
+					if (!exists_transaction_editing_file) liberate_edition();
+					return;
+				}
 			} else { // Existe el archivo en disco y en la base de datos, miss o hit?.
 				/* 'size' es el tamaño del archivo, si estubiera entero (como en el mismo servidor de video)*/
 				size_orig_file = atol(domaindb.get("size", 1).c_str());
@@ -537,8 +618,8 @@ void ConnectionToHTTP2::Cache() {
 					lrangeswork = getRangeWork(lranges, range_min, range_max, &hit); /* hit, can not change it later */
 					if (LL>2) print_list_lranges(lrangeswork, "Cache()/size_orig_file-lrangeswork");
 					if (LL>2) {
-						if (hit) LogFile::ErrorMessage("Cache()/size_orig_file - HIT -");
-						else  LogFile::ErrorMessage("Cache()/size_orig_file - MISS -");
+						if (hit) LogFile::ErrorMessage("Cache()/size_orig_file - HIT -\n");
+						else  LogFile::ErrorMessage("Cache()/size_orig_file - MISS -\n");
 					}
 				} else {
 					if (range_max > 0 && (getExtremeb(lranges) < range_min || range_max <= getExtremeb(lranges))) {
@@ -560,7 +641,6 @@ void ConnectionToHTTP2::Cache() {
 			}
 			domaindb.clear();
 		}
-
 	} else if (!rewrited) { // sistema de cache de arquivos ESTÁTICOS GENERAL
 		if (Params::GetConfigInt(getFileExtension(getFileName(request)) + "_EXP") > 0 && request.find_first_not_of("()[]?&=;,´`'\"") == string::npos) { // se está configurada essa extensão
 			//~ if (LL > 0) LogFile::AccessMessage("(2)**** Entró !rewrited!!\n");
@@ -810,6 +890,52 @@ bool ConnectionToHTTP2::ReadHeader(string &headerT) {
 
 		if (getFileExtension(r.file) == "SWF")
 			tmp << "Content-Type: application/x-shockwave-flash\r\n";
+		else if (getFileExtension(r.file) == "HTML")
+            		tmp << "Content-Type: text/html\r\n";
+	 	else if (getFileExtension(r.file) == "HTM")
+            		tmp << "Content-Type: text/html\r\n";
+	 	else if (getFileExtension(r.file) == "ASP")
+            		tmp << "Content-Type: text/html\r\n";
+	 	else if (getFileExtension(r.file) == "PHP")
+            		tmp << "Content-Type: text/html\r\n";
+	 	else if (getFileExtension(r.file) == "BMP")
+            		tmp << "Content-Type: image/bmp\r\n";
+		else if (getFileExtension(r.file) == "IEF")
+            		tmp << "Content-Type: image/ief\r\n"; 
+		else if (getFileExtension(r.file) == "JPEG")
+            		tmp << "Content-Type: image/jpeg\r\n"; 
+		else if (getFileExtension(r.file) == "JPG")
+            		tmp << "Content-Type: image/jpeg\r\n"; 
+		else if (getFileExtension(r.file) == "JPE")
+            		tmp << "Content-Type: image/jpeg\r\n"; 
+		else if (getFileExtension(r.file) == "TIFF")
+           		tmp << "Content-Type: image/tiff\r\n"; 
+		else if (getFileExtension(r.file) == "TIF")
+            		tmp << "Content-Type: image/tiff\r\n"; 
+		else if (getFileExtension(r.file) == "RAS")
+            		tmp << "Content-Type: image/x-cmu-raster\r\n"; 
+		else if (getFileExtension(r.file) == "PNM")
+            		tmp << "Content-Type: image/x-portable-anymap\r\n"; 
+		else if (getFileExtension(r.file) == "PBM")
+            		tmp << "Content-Type: image/x-portable-bitmap\r\n"; 
+		else if (getFileExtension(r.file) == "PGM")
+            		tmp << "Content-Type: image/x-portable-graymap\r\n"; 
+		else if (getFileExtension(r.file) == "PPM")
+            		tmp << "Content-Type: image/x-portable-pixmap\r\n"; 
+		else if (getFileExtension(r.file) == "RGB")
+            		tmp << "Content-Type: image/x-rgb\r\n"; 
+		else if (getFileExtension(r.file) == "XBM")
+            		tmp << "Content-Type: image/x-xbitmap\r\n"; 
+		else if (getFileExtension(r.file) == "XPM")
+            		tmp << "Content-Type: image/x-xpixmap\r\n"; 
+		else if (getFileExtension(r.file) == "XWD")
+            		tmp << "Content-Type: image/x-xwindowdump\r\n"; 
+		else if (getFileExtension(r.file) == "AU")
+			tmp << "Content-Type: audio/basic\r\n"; 
+		else if (getFileExtension(r.file) == "XML")
+            		tmp << "Content-Type: text/xml\r\n";  
+		else if (getFileExtension(r.file) == "XLS")
+            		tmp << "Content-Type: text/xml\r\n";  
 		else if (getFileExtension(r.file) == "FLV")
 			tmp << "Content-Type: application/octet-stream\r\n";
 		else if (getFileExtension(r.file) == "MP4")
@@ -904,7 +1030,7 @@ int64_t ConnectionToHTTP2::GetContentLength() {
 	return tmp;
 }
 bool ConnectionToHTTP2::IsItChunked() {
-	//if (LL > 0) LogFile::AccessMessage("Pasando por IsItChunked (6)\n");
+	if (LL > 2) LogFile::ErrorMessage("[DEBUG] Pasando por IsItChunked (6)\n");
 	bool tmp;
 	if (hit) return false;
 	else tmp = ConnectionToHTTP::IsItChunked();
@@ -914,7 +1040,7 @@ bool ConnectionToHTTP2::IsItChunked() {
 }
 string ConnectionToHTTP2::PrepareHeaderForBrowser() {
 	//if (LL > 0) LogFile::AccessMessage("Pasando por PrepareHeaderForBrowser (7)\n");
-	if (LL > 2) LogFile::ErrorMessage("Pasando por PrepareHeaderForBrowser (7)\n");
+	if (LL > 2) LogFile::ErrorMessage("[DEBUG] Pasando por PrepareHeaderForBrowser (7)\n");
 	if (hit) {
 		string header;
 		ReadHeader(header);
@@ -1051,8 +1177,13 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 		// HACEMOS UN TRACK DEL VIDEO
 		if (r.domain.find("youtube_IDs") != string::npos) {
 			bodyTTemp = bodyT;
-			SearchReplace(bodyTTemp, "videoplayback%3F", "TEMPORAL");
-			SearchReplace(bodyTTemp, "TEMPORAL", "videoplayback%3Fwatchid%3D" + r.file + "%26");
+			SearchReplace(bodyTTemp, "videoplayback%3F", "TEMPORAL_HAARP");
+			SearchReplace(bodyTTemp, "TEMPORAL_HAARP", "videoplayback%3Fwatchid%3D" + r.file + "%26");
+			string range_trash = regex_match("%2Frange%2F[0-9]+-[0-9]+%3F", bodyTTemp);
+			if(range_trash != "") {
+				SearchReplace(bodyTTemp, range_trash, "TEMPORAL_HAARP");
+				SearchReplace(bodyTTemp, "TEMPORAL_HAARP", range_trash + "watchid%3D" + r.file + "%26");
+			}
 
 			bodyT = bodyTTemp;
 		} else if (r.domain.find("NetflixID") != string::npos) {
@@ -1123,7 +1254,7 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 				string peti = "SELECT * FROM haarp WHERE file like concat('" + domaindb.sqlconv(lname.at(0)) + "','"DELIM"',md5('" + domaindb.getRealEscapeString(partVideo) + "'),'"DELIM"%') and domain='" + r.domain + "' FOR UPDATE;";
 				if (domaindb.get(peti) != 0) {
 					if (LL > 2) LogFile::ErrorMessage("[DEBUG-readpart] Error mysql '%s', query: '%s'!\n", domaindb.getError().c_str(), peti.c_str());
-					if (LL > 0) LogFile::ErrorMessage("Error mysql: '%s'\n", domaindb.getError().c_str());
+					if (LL > 0) LogFile::ErrorMessage("Error mysql 2 : '%s'\n", domaindb.getError().c_str());
 					domaindb.set("ROLLBACK;");
 					return BodyLength;
 				}
@@ -1136,7 +1267,7 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 					if (domaindb.set(queryStr) != 0) {
 						domaindb.set("ROLLBACK;");
 						if (LL > 0) LogFile::ErrorMessage("[DEBUG-readpart] File %s [%lli-%lli] Error on INSERT! (NOT EXISTS FILE ON DB): '%s'\n", r.file.c_str(), range_min, range_max, queryStr.c_str());
-						if (LL > 0) LogFile::ErrorMessage("Error mysql: '%s'\n", domaindb.getError().c_str());
+						if (LL > 0) LogFile::ErrorMessage("Error mysql 3: '%s'\n", domaindb.getError().c_str());
 						return BodyLength;
 					}
 				} else {

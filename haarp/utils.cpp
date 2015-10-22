@@ -402,6 +402,19 @@ int SearchReplace(string &source, string search, string replace) {
 	}
 	return numberReplace;
 }
+int SearchReplaceAny(string &source, string search, string replace) {
+	int numberReplace = 0;
+	string::size_type position = source.find(search);
+
+	size_t sr = replace.size();
+    
+	while (position != string::npos) {
+		source.replace(position, search.size(), replace);
+		position = source.find(search, position + sr);
+		numberReplace++;
+	}
+	return numberReplace;
+}
 
 int select_eintr(int fds, fd_set *readfds, fd_set *writefds, fd_set *errorfds, struct timeval *timeout) {
     if (timeout->tv_sec == 0) {

@@ -9,6 +9,26 @@ using namespace std;
 // g++ -I. -fPIC -shared -g -o plugin.so plugin.cpp
 typedef long long int lli;
 
+bool getRanges(string range, lli *a, lli *b) {
+	vector<string> interval;
+	stringexplode(range,"-", &interval);
+	if(interval.size() < 2) {
+		return false;
+	}
+	*a = atoll(interval.at(0).c_str()) - 0;
+	*b = atoll(interval.at(1).c_str()) - 0;
+	return true;
+}
+
+string getiValue(string regex, string url, int index) {
+	vector<string> explode;
+	string regex_trash = regex_match(regex, url);
+	stringexplode(regex_trash, "/", &explode);
+	if( !explode.size() || explode.size() <= index )
+		return "";
+	return explode.at(index);
+}
+
 void get_videoid(string url, string &file, bool *exist_range, lli *a, lli *b, lli *clen) {
 	vector<string> resultado,valor;
 	
@@ -47,14 +67,10 @@ void get_videoid(string url, string &file, bool *exist_range, lli *a, lli *b, ll
 			    itag  = "-" + valor.at(1);
 		    else if( valor.at(0) == "range") {
 				range = true;
-				vector<string> interval;
-				stringexplode(valor.at(1),"-", &interval);
-				if(interval.size() < 2) {
+				if( !getRanges(valor.at(1), a, b) ) {
 					file = "";
 					return;
 				}
-				*a = atoll(interval.at(0).c_str()) - 0;
-				*b = atoll(interval.at(1).c_str()) - 0;
 				*exist_range = true;
 			}
 			else if( valor.at(0) == "cm2" && valor.at(1) == "0" ) {
@@ -88,6 +104,60 @@ void get_videoid(string url, string &file, bool *exist_range, lli *a, lli *b, ll
 	}
 	return;
 }
+void get_videoid2(string url, string &file, bool *exist_range, lli *a, lli *b, lli *clen) {
+	vector<string> url_get, url_param, url_path, paths, values;
+	bool watchID = false;
+	string codeVide = "";
+	stringexplode(url, "?", &url_get);
+	if( url_get.size() != 2 ) {
+		file = "";
+		return;
+	}
+	stringexplode(url_get.at(1), "&", &url_param);
+	for(int i = 0; i < url_param.size(); i++) {
+		stringexplode(url_param.at(i), "=", &values);
+		if( values.size() != 2 ) {
+			values.clear();
+			continue;
+		}
+		if ( values.at(0) == "watchid" ) {
+			codeVide = values.at(1);
+			watchID = true;
+			break;
+		}
+		values.clear();
+	}
+	string urlDir = url_get.at(0);
+	if ( !watchID ) {
+		string id = getiValue("/id/\\w{16}/", urlDir, 1);
+		if ( id.empty() ) {
+			file = "";
+			return;
+		} 
+		codeVide = id;
+	}
+	string itag = getiValue("/itag/[0-9]+/", urlDir, 1);
+	if ( urlDir.find("/mime/video") != string::npos ) 
+		file = codeVide + "-" + itag + "-vid";
+	else
+		file = codeVide + "-" + itag + "-aud";
+
+	string ranges = getiValue("/range/[0-9]+-[0-9]+$", urlDir, 1);
+
+	if ( !getRanges(ranges, a, b) ) {
+		file = "";
+		return;
+	}
+	*exist_range = true;
+
+	string clen_str = getiValue("/clen/[0-9]+/", urlDir, 1);
+	*clen = atoll(clen_str.c_str());
+	
+	if(*clen && *clen >= *a && *clen <= *b) {
+		file = "";
+		return;
+	}
+}
 void get_watchID(string url, string &watchid) {
 	vector<string> resultado, valor;
 	int size;
@@ -119,36 +189,46 @@ void get_watchID(string url, string &watchid) {
 }
 
 extern "C" resposta hgetmatch2(string url) {
-    resposta r;
+	resposta r;
 	r.range_min = 0;
 	r.range_max = 0;
 	r.exist_range = false;
 	r.total_file_size = 0;
-
-	if ( regex_match("[\\?&]begin=[0-9]*[1-9]+[0-9]*", url) == "" && regex_match("[\\?&]cms_redirect=yes(&.*)?$", url) == "" && regex_match("[\\?&]redirect_counter=1(&.*)?$", url) == "" &&  url.find("&ir=1") == string::npos && url.find("&rr=12") == string::npos && url.find("videoplayback") != string::npos && url.find("source=yt_live") == string::npos ) {
-		get_videoid(url, r.file, &r.exist_range, &r.range_min, &r.range_max, &r.total_file_size);
-		if ( !r.file.empty() ) {
-			r.match = true;
-			r.domain = "youtube";
-			/*if( regex_match("-aud(-[0-9]+)?$", r.file) != "" )
-				r.file += ".mp4a";
-			else if( regex_match("-vid(-[0-9]+)?$", r.file) != "" )
-				r.file += ".mp4";
-			else*/
+	
+	if( url.find("/videoplayback?") != string::npos ) {
+		if ( regex_match("[\\?&]begin=[0-9]*[1-9]+[0-9]*", url) == "" && regex_match("[\\?&]cms_redirect=yes(&.*)?$", url) == "" && regex_match("[\\?&]redirect_counter=1(&.*)?$", url) == "" &&  url.find("&ir=1") == string::npos && url.find("&rr=12") == string::npos && url.find("source=yt_live") == string::npos && url.find("&otf=1") == string::npos ) {
+			get_videoid(url, r.file, &r.exist_range, &r.range_min, &r.range_max, &r.total_file_size);
+			if ( !r.file.empty() ) {
+				r.match = true;
+				r.domain = "youtube";
 				r.file += ".flv";
-		}
-		else
+			}
+			else
+				r.match = false;
+		} else 
 			r.match = false;
-	} else if ( url.find("watch?") != string::npos ) {
+	} else if (url.find("/videoplayback/") != string::npos ) {
+		if ( regex_match("begin[/=][0-9]*[1-9]+[0-9]*", url) == "" && regex_match("cms_redirect[=/]yes", url) == "" && regex_match("redirect_counter[=/]1", url) == "" &&  regex_match("[\\?&/]ir[=/]1", url) == "" && regex_match("[\\?&/]rr[=/]12", url) == "" && regex_match("source[=/]yt_live", url) == "" && regex_match("[\\?&/]otf[/=]1", url) == "" && regex_match("cmd2[=/]0", url) == "" ) {
+			get_videoid2(url, r.file, &r.exist_range, &r.range_min, &r.range_max, &r.total_file_size);
+			if( !r.file.empty() ) {
+				r.match = true;
+				r.domain = "youtube";
+				r.file += ".flv";
+			} else 
+				r.match = false;
+
+		} else
+			r.match = false;
+	}
+	else if ( url.find(".com/watch?") != string::npos ) {
 		get_watchID(url, r.file);
 		if( !r.file.empty() ) {
 			r.domain = "youtube_IDs";
 			r.match = false;
 		} 
 		else r.match = false;
-	}
-	else {
+	} else
 		r.match = false;
-	}
+
 	return r;
 }

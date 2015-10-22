@@ -71,6 +71,7 @@ static const std::string base64_chars =
 
 string UpperCase( string CaseString );
 int SearchReplace( string &source, string search, string replace );
+int SearchReplaceAny( string &source, string search, string replace );
 int select_eintr( int fds, fd_set *readfds, fd_set *writefds, fd_set *errorfds, struct timeval *timeout );
 bool MatchSubstr(string &hay, const char* needle, int startpos);
 bool MatchBegin(string &hay, const char *needle, int needlelength);

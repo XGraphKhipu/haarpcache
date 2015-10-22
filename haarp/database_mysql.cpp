@@ -46,7 +46,10 @@ int Database::get(string sql) {
 }
 
 int Database::get_num_rows() {
-	return mysql_num_rows(qry);
+	if ( qry )
+		return mysql_num_rows(qry);
+	else 
+		return 0;
 }
 string Database::get(string field, int line) {
     //cout << "get2: "<<field<<endl;

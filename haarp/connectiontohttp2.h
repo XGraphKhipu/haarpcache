@@ -11,7 +11,7 @@ using namespace std;
 class ConnectionToHTTP2 : public ConnectionToHTTP {
     private:
         string pluginsdir, cachedir, subdir, completefilepath, completepath;
-		int cache_limit;
+	int cache_limit;
         fstream cachefile;
         fstream outfile;
         double timerecord,timerecord2,timeout;
@@ -20,6 +20,7 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
         bool passouheader,closed;
         bool was_liberate;
     public:
+		string header_browser;
 		lintervalPositionByteDisk lranges, lrangeswork;
 		lintervalPositionByteDisk::iterator brange;
 		long long int range_min, range_max;//ADD
@@ -37,6 +38,7 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
 		bool bchrome;
 		bool miss2hit;
 		bool haveUpdateDB;
+		bool isgeneralplugin;
 		bool exists_transaction_editing_file; //This process blocked the edition the of file?
 		int64_t contentLengthServer;
 		int64_t acumulateBodyLength;

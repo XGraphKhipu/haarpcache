@@ -1,6 +1,7 @@
 CXX = @CXX@
 
 OBJECTS = grandchase.com.br.so \
+	generalplugin.so \
 	eset.com.so \
         vimeo.com.so \
 	kaspersky.com.so \
