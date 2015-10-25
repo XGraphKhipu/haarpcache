@@ -191,7 +191,7 @@ int ProxyHandler::CommunicationHTTP()
 {
     string HeaderToServer = ToBrowser.PrepareHeaderForServer(UseParentProxy );
     
-    ToServer.initializeVariables();
+    ToServer.initializeVariables(DropBrowser);
     ToServer.saveClientIP(ToBrowser.GetIP());
     
     ToServer.getLimitBytes(HeaderToServer);
@@ -211,11 +211,25 @@ int ProxyHandler::CommunicationHTTP()
     {
         if ( ServerConnected == false )
         {
-            if ( ToServer.SetDomainAndPort( ParentHost, ParentPort ) == false ) //llamada a Cache()
-            {
-                LogFile::ErrorMessage("Could not resolve parent proxy (%s)\n", ParentHost.c_str());
-                return -51;
-            }
+            int errcode = ToServer.SetDomainAndPort( ParentHost, ParentPort ); //llamada a Cache()
+		if ( errcode < 0 ) 
+          	{
+			if ( errcode == -1 ) {
+               			LogFile::ErrorMessage("Could not resolve parent proxy (%s)\n", ParentHost.c_str());
+                		return -51;
+			} else if ( errcode == -2 ) {
+                		LogFile::ErrorMessage("Could not connect to parent proxy (%s/%s:%d)\n", ToServer.GetIP().c_str(), ParentHost.c_str(), ParentPort);
+                		return -61;
+			}  else if ( errcode == -3 ) {
+        			if (LL>0) LogFile::ErrorMessage("(%s) Could not send header to server (%s/%s:%d) \n", ToServer.GetIP().c_str(), ToBrowser.GetIP().c_str(), ToBrowser.GetHost().c_str(), ToBrowser.GetPort());
+        			DropServer = true;
+        			return -60;
+			} else if (errcode == -4 ) {
+        			if (LL>0) LogFile::ErrorMessage("(%s) Could not read server header (%s/%s:%d)\n", ToServer.GetIP().c_str(), ToBrowser.GetIP().c_str(), ToBrowser.GetHost().c_str(), ToBrowser.GetPort());
+			        DropServer = true;
+        			return -80;
+			}
+            	}
             if ( ToServer.ConnectToServer() == false )
             {
                 LogFile::ErrorMessage("Could not connect to parent proxy (%s/%s:%d)\n", ToServer.GetIP().c_str(), ParentHost.c_str(), ParentPort);
@@ -234,11 +248,25 @@ int ProxyHandler::CommunicationHTTP()
 
         if ( ServerConnected == false )
         {
-            if ( ToServer.SetDomainAndPort( ToBrowser.GetHost(), ToBrowser.GetPort(),ToBrowser.GetRequest() ) == false ) //llamada a Cache()
-            {
-                if (LL>0) LogFile::ErrorMessage("Could not resolve hostname (%s)\n", ToBrowser.GetHost().c_str() );
-                return -50;
-            }
+            int errcode = ToServer.SetDomainAndPort( ToBrowser.GetHost(), ToBrowser.GetPort(),ToBrowser.GetRequest() ); //llamada a Cache()
+		if ( errcode < 0 ) 
+          	{
+			if ( errcode == -1 ) {
+               			LogFile::ErrorMessage("Could not resolve parent proxy (%s)\n", ParentHost.c_str());
+                		return -51;
+			} else if ( errcode == -2 ) {
+                		LogFile::ErrorMessage("Could not connect to parent proxy (%s/%s:%d)\n", ToServer.GetIP().c_str(), ParentHost.c_str(), ParentPort);
+                		return -61;
+			}  else if ( errcode == -3 ) {
+        			if (LL>0) LogFile::ErrorMessage("(%s) Could not send header to server (%s/%s:%d) \n", ToServer.GetIP().c_str(), ToBrowser.GetIP().c_str(), ToBrowser.GetHost().c_str(), ToBrowser.GetPort());
+        			DropServer = true;
+        			return -60;
+			} else if (errcode == -4 ) {
+        			if (LL>0) LogFile::ErrorMessage("(%s) Could not read server header (%s/%s:%d)\n", ToServer.GetIP().c_str(), ToBrowser.GetIP().c_str(), ToBrowser.GetHost().c_str(), ToBrowser.GetPort());
+			        DropServer = true;
+        			return -80;
+			}
+            	}
             if ( ToServer.ConnectToServer() == false )
             {
                 if (LL>0) LogFile::ErrorMessage("Could not connect to server (%s/%s:%d)\n", ToServer.GetIP().c_str(), ToBrowser.GetHost().c_str(), ToBrowser.GetPort());
@@ -528,11 +556,25 @@ int ProxyHandler::CommunicationSSL()
 
     if ( UseParentProxy )
     {
-        if ( ToServer.SetDomainAndPort( ParentHost, ParentPort, ToBrowser.GetRequest() ) == false ) //llamada a Cache()
-        {
-            LogFile::ErrorMessage("Could not resolve parent proxy (%s)\n", ParentHost.c_str() );
-            return -51;
-        }
+        int errcode = ToServer.SetDomainAndPort( ParentHost, ParentPort, ToBrowser.GetRequest() ); //llamada a Cache()
+		if ( errcode < 0 ) 
+          	{
+			if ( errcode == -1 ) {
+               			LogFile::ErrorMessage("Could not resolve parent proxy (%s)\n", ParentHost.c_str());
+                		return -51;
+			} else if ( errcode == -2 ) {
+                		LogFile::ErrorMessage("Could not connect to parent proxy (%s/%s:%d)\n", ToServer.GetIP().c_str(), ParentHost.c_str(), ParentPort);
+                		return -61;
+			}  else if ( errcode == -3 ) {
+        			if (LL>0) LogFile::ErrorMessage("(%s) Could not send header to server (%s/%s:%d) \n", ToServer.GetIP().c_str(), ToBrowser.GetIP().c_str(), ToBrowser.GetHost().c_str(), ToBrowser.GetPort());
+        			DropServer = true;
+        			return -60;
+			} else if (errcode == -4 ) {
+        			if (LL>0) LogFile::ErrorMessage("(%s) Could not read server header (%s/%s:%d)\n", ToServer.GetIP().c_str(), ToBrowser.GetIP().c_str(), ToBrowser.GetHost().c_str(), ToBrowser.GetPort());
+			        DropServer = true;
+        			return -80;
+			}
+            	}
         if ( ToServer.ConnectToServer() == false )
         {
             LogFile::ErrorMessage("Could not connect to parent proxy (%s/%s:%d)\n", ToServer.GetIP().c_str(), ParentHost.c_str(), ParentPort);
@@ -625,11 +667,25 @@ int ProxyHandler::CommunicationSSL()
     }
     else
     {
-        if ( ToServer.SetDomainAndPort( ToBrowser.GetHost(), ToBrowser.GetPort() ) == false )
-        {
-            if (LL>0) LogFile::ErrorMessage("Could not resolve hostname: %s\n", ToBrowser.GetHost().c_str() );
-            return -50;
-        }
+        int errcode = ToServer.SetDomainAndPort( ToBrowser.GetHost(), ToBrowser.GetPort() );
+		if ( errcode < 0 ) 
+          	{
+			if ( errcode == -1 ) {
+               			LogFile::ErrorMessage("Could not resolve parent proxy (%s)\n", ParentHost.c_str());
+                		return -51;
+			} else if ( errcode == -2 ) {
+                		LogFile::ErrorMessage("Could not connect to parent proxy (%s/%s:%d)\n", ToServer.GetIP().c_str(), ParentHost.c_str(), ParentPort);
+                		return -61;
+			}  else if ( errcode == -3 ) {
+        			if (LL>0) LogFile::ErrorMessage("(%s) Could not send header to server (%s/%s:%d) \n", ToServer.GetIP().c_str(), ToBrowser.GetIP().c_str(), ToBrowser.GetHost().c_str(), ToBrowser.GetPort());
+        			DropServer = true;
+        			return -60;
+			} else if (errcode == -4 ) {
+        			if (LL>0) LogFile::ErrorMessage("(%s) Could not read server header (%s/%s:%d)\n", ToServer.GetIP().c_str(), ToBrowser.GetIP().c_str(), ToBrowser.GetHost().c_str(), ToBrowser.GetPort());
+			        DropServer = true;
+        			return -80;
+			}
+            	}
         if ( ToServer.ConnectToServer() == false )
         {
             if (LL>0) LogFile::ErrorMessage("Could not connect to server (%s/%s:%d)\n", ToServer.GetIP().c_str(), ToBrowser.GetHost().c_str(), ToBrowser.GetPort());

@@ -252,8 +252,7 @@ yes | cp -r images /var/www/html/ 2>/dev/null
 yes | cp -r images /var/www/ 2>/dev/null
 touch /var/log/haarp/webaccess.log
 chown www-data:www-data /var/log/haarp/webaccess.log
-echo "ACCESSWEBLOG /var/log/haarp/webaccess.log
-FORWARDED_IP true" >> /etc/haarp/haarp.conf
+echo "FORWARDED_IP true" >> /etc/haarp/haarp.conf
 # --- Apache to port 88 ---
 sed -i 's/Listen.*[0-9]*/Listen 88/g' /etc/apache2/ports.conf
 sed -i 's/NameVirtualHost.*:[0-9]*/NameVirtualHost *:88/g' /etc/apache2/ports.conf

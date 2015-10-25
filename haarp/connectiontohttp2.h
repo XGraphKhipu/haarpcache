@@ -19,8 +19,12 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
         Database domaindb;
         bool passouheader,closed;
         bool was_liberate;
+	string header_browser;
     public:
-		string header_browser;
+		bool flag_change_top_range_max;
+		bool flag_truncate_top_range_max;
+		long long int flag_truncate_old_range_max;
+
 		lintervalPositionByteDisk lranges, lrangeswork;
 		lintervalPositionByteDisk::iterator brange;
 		long long int range_min, range_max;//ADD
@@ -44,21 +48,28 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
 		int64_t acumulateBodyLength;
 		lusercache lusers_db;
 		string ip_browser;
-		
+		bool browserclosed;
+		bool headerReader;
+		double prob;
+		time_t expires;
+
 		void UpdateFileSizeinPartial( string header );
 		void getLimitBytes(string &header);
+		bool isForCache(string header);
 		long long int getOnlyContentLength( string header );
 		void Cache2( long long int cl );
-		
+		string getHeaderFromServer(int *errcode);
+	void GetProbExpiresFromHeader(string header, double *proba, time_t *texpires);
         string request, domain,msghit;
         string readFileHeader;
+	string headerServer;
 		int port;
 		string origin_header;
         resposta r;
         int64_t size_orig_file,filedownloaded,filesended,expiration,filesizeneto,oldfilesended;
         bool hit,downloading,rewrited,resuming,general,etag;        
-        void Cache();
-        bool SetDomainAndPort( string domainT, int portT, string requestT="" );
+        int Cache();
+        int SetDomainAndPort( string domainT, int portT, string requestT="" );
         bool ConnectToServer();
         bool SendHeader( string header, bool ConnectionClose, string requestT="" );
         string GetIP();
@@ -73,7 +84,8 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
         bool CheckForData( int timeout );
         ssize_t ReadBodyPart( string &bodyT, bool Chunked );
         
-        void initializeVariables();
+	void initializeVariables(bool db);
+
         void saveClientIP(string ip);
 			
         void Update();

@@ -7,14 +7,25 @@
 #include <cstring>
 #include "database_mysql.h"
 #include "utils.h"
-
+int Database::ping() {
+	return mysql_ping(&conn);
+}
 int Database::open(string host,string username,string password,string database) {
-    mysql_init(&conn);
-    if (mysql_real_connect(&conn, host.c_str(), username.c_str(), password.c_str(), database.c_str(), 0, NULL, 0)) {
-        //mysql_autocommit(&conn,1);
-        connected = true;
-        return 0;
-    } else return -1;
+	mysql_init(&conn);
+	
+	/*const unsigned int connect_timeout = 2400;
+	const unsigned int wtimeout = 2400;
+	const unsigned int rtimeout = 2400;
+
+	mysql_options(&conn, MYSQL_OPT_CONNECT_TIMEOUT, &connect_timeout);
+	mysql_options(&conn, MYSQL_OPT_READ_TIMEOUT, &rtimeout);
+	mysql_options(&conn, MYSQL_OPT_WRITE_TIMEOUT, &wtimeout);*/
+	
+	if (mysql_real_connect(&conn, host.c_str(), username.c_str(), password.c_str(), database.c_str(), 0, NULL, 0)) {
+		//mysql_autocommit(&conn,1);
+		connected = true;
+		return 0;
+	} else return -1;
 }
 
 bool Database::isconnect() {
@@ -26,8 +37,8 @@ long int Database::getID() {
 }
 
 int Database::set(string sql) {  //o ok, -1 no ok
-    //cout << "set: "<<sql<<endl;
-    if(!mysql_query(&conn, sql.c_str())) 
+	//cout << "set: "<<sql<<endl;
+	if(!mysql_query(&conn, sql.c_str())) 
 		return 0; 
 	else 
 		return -1;
@@ -46,10 +57,10 @@ int Database::get(string sql) {
 }
 
 int Database::get_num_rows() {
-	if ( qry )
+	//if ( qry )
 		return mysql_num_rows(qry);
-	else 
-		return 0;
+	//else 
+	//	return 0;
 }
 string Database::get(string field, int line) {
     //cout << "get2: "<<field<<endl;

@@ -15,6 +15,8 @@ using namespace std;
 
 #define DELIM "_-DELHAARP-_"
 #define LIMIT_USER_CACHE_DB 10
+#define V_INT 0
+#define V_DATE 1
 
 struct resposta {
 	bool match;
@@ -61,8 +63,11 @@ bool appendSubNode(lintervalPositionByteDisk &listIntervalPositionByteDisk, inte
 //~ void ordenar(lintervalPositionByteDisk listIntervalPositionByteDisk);
 bool compareIntervals(intervalPositionByteDisk &a, intervalPositionByteDisk &b);
 void list2string(lintervalPositionByteDisk listIntervalPositionByteDisk,string &s1, string &s2);
-
+string getValuesHeader(string header, string label, int type);
 string trimstr(string str);
+time_t dateformat2epoch(string date);
+string time2DateStr(time_t t);
+time_t dateStr2Time(string date);
 
 static const std::string base64_chars = 
 			"nopq?rst@#u789+RST&UyzMNOPQhi"
@@ -78,6 +83,7 @@ bool MatchBegin(string &hay, const char *needle, int needlelength);
 void stringexplode(string str, string separator, vector<string>* results);
 void stringexplodetrim(string str, string separator, vector<string>* results);
 void splitstring(string str, string separator, vector<string>* results);
+void splitstring_nocase(string str, string separator, vector<string>* results);
 string getdomain(string url);
 bool file_exists(string strFilename);
 int64_t file_size( string szFileName );
@@ -89,7 +95,9 @@ string regex_match_nocase(string er, string line);
 string itoa(int val);
 string llitoa(long long int val);
 string lldtoa(long long int val);
+string lftoa(double val);
 double now();
+time_t tnow();
 long file_getmodif( string szFileName );
 int file_setmodif( string szFileName,long fdate =0); 
 string url2host(string &url);

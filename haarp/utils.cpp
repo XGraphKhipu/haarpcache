@@ -499,21 +499,41 @@ void splitstring(string str, string separator, vector<string>* results) {
     }
 }
 
-string getdomain(string url) {
-    if (regex_match("^74\\.125\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?$)", url) != "") return "youtube.com";
-    if (regex_match("^(205\\.196\\.|199\\.91\\.)[0-9]{2,3}\\.[0-9]{1,3}", url) != "") return "mediafire.com";
-    if (regex_match("^(\\.|[a-z]|[0-9]|-)+(\\/\\w+)?(\\/speedtest)+\\/(random[0-9]+x[0-9]+\\.jpg|latency\\.txt)", url) != "") return "speedtest.net";
-    if (regex_match("^[0-9]{2,3}\\.[0-9]{2,3}\\.[0-9]{2,3}\\.[0-9]{1,3}\\/youku\\/", url) != "") return "youku.com";
-    if (regex_match("198\\.38\\.(9[6-9]|1[0-2][0-9])\\.[0-9]{1,3}\\/range\\/", url) != "") return "netflix.com";
-    if (regex_match("108\\.175\\.(3[2-9]|4[0-9])\\.[0-9]{1,3}\\/range\\/", url) != "") return "netflix.com";
+void splitstring_nocase(string str, string separator, vector<string>* results) {
+	size_t found;
+	separator = UpperCase(separator);
+	string ustr = UpperCase(str);
+	found = ustr.find(separator);
+	while (found != string::npos) {
+		if (found > 0) {
+			results->push_back(str.substr(0, found));
+		}
+		str   = str.substr( found + separator.size());
+		ustr  = ustr.substr(found + separator.size());
+		found = ustr.find(separator);
+	}
+	if (str.length() > 0) {
+		results->push_back(str);
+	}
+}
 
-	
+string getdomain(string url) {
+	if (regex_match("^74\\.125\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?$)", url) != "") return "youtube.com";
+	if (regex_match("^(205\\.196\\.|199\\.91\\.)[0-9]{2,3}\\.[0-9]{1,3}", url) != "") return "mediafire.com";
+	if (regex_match("^(\\.|[a-z]|[0-9]|-)+(\\/\\w+)?(\\/speedtest)+\\/(random[0-9]+x[0-9]+\\.jpg|latency\\.txt)", url) != "") return "speedtest.net";
+	if (regex_match("^[0-9]{2,3}\\.[0-9]{2,3}\\.[0-9]{2,3}\\.[0-9]{1,3}\\/youku\\/", url) != "") return "youku.com";
+	if (regex_match("198\\.38\\.(9[6-9]|1[0-2][0-9])\\.[0-9]{1,3}\\/range\\/", url) != "") return "netflix.com";
+	if (regex_match("108\\.175\\.(3[2-9]|4[0-9])\\.[0-9]{1,3}\\/range\\/", url) != "") return "netflix.com";
     vector<string> resultado;
     if (!url.empty()) {
         stringexplode(url, "/", &resultado);
         if (resultado.size() > 1) {
             url = resultado.at(0);
         }
+
+	if (regex_match("^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$", url) != "")
+		return url;
+
         resultado.clear();
         stringexplode(url, ".", &resultado);
         if (resultado.size() > 1) {
@@ -633,13 +653,22 @@ string lldtoa(long long int val) {
     return str;
 }
 
+string lftoa(double val) {
+	char res[1024];
+	sprintf(res, "%.6lf", val);
+	return string(res);
+}
 double now() {
     struct timeval tv;
     gettimeofday(&tv, 0);
 
     return tv.tv_sec + tv.tv_usec / 1e6;
 }
-
+time_t tnow() {
+	struct timeval tv;
+	gettimeofday(&tv, 0);
+	return tv.tv_sec;
+}
 long file_getmodif(string szFileName) {
     struct stat fileStat;
     int err = stat(szFileName.c_str(), &fileStat);
@@ -840,11 +869,52 @@ void longSeekpFile(fstream &f, long long int pos) {
 }
 
 
+string getValuesHeader(string header, string label, int type) {
+	vector<string> lines, splits;
+	string linei, value_trash;
+	stringexplode(header, "\r\n", &lines);
+	int size = lines.size();
+	for(int i = 0; i < size; i++) {
+		linei = lines.at(i);
+		if ( regex_match_nocase(label, linei) != "" ) {
+			if (type == V_INT) {
+				value_trash = regex_match_nocase(label + " ?[0-9]+", linei);
+				if (value_trash != "") {
+					splitstring_nocase(value_trash, label, &splits);
+					return trimstr(splits.at(0));
+				} else 
+					continue;
+			} else if (type == V_DATE) {
+				value_trash = regex_match_nocase(label + " ?\\w{3}, [0-9]{1,2} \\w{2,3} [0-9]{4} [0-9]+:[0-9]+:[0-9]+ [a-zA-Z]{3}", linei);
+				if (value_trash != "") {
+					splitstring_nocase(value_trash, label, &splits);
+					return trimstr(splits.at(0));
+				} else
+					continue;
+			}
+		}
+	}
+	return "";
+}
 
+time_t dateformat2epoch(string df) {
+	struct tm t;
+	strptime(df.c_str(), "%a, %d %b %Y %H:%M:%S %Z", &t);
+	return mktime(&t);
+}
 
+string time2DateStr(time_t t) {
+	char re[100];
+        strftime(re, 100, "%Y-%m-%d %H:%M:%S", localtime(&t));
+	return string(re);
 
+}
 
-
+time_t dateStr2Time(string date) {
+	struct tm t;
+	strptime(date.c_str(), "%Y-%m-%d %H:%M:%S", &t);
+	return mktime(&t);
+}
 
 
 

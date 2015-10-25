@@ -13,7 +13,7 @@
 // use this line to compile
 // g++ -I. -fPIC -shared -g -o friv.com.so friv.com.cpp
 // regex
-// http.*\.friv\.com.*(\.swf|\.jpg|\.png)
+// http.*\.friv(\.com|\.wf).*(\.swf|\.jpg|\.png)
 
 
 string get_filename(string url) {
@@ -29,22 +29,15 @@ string get_filename(string url) {
 }
 
 extern "C" resposta hgetmatch2(const string url) {
-    resposta r;
-	 r.range_min = r.range_max = 0;
+	resposta r;
+	r.range_min = r.range_max = 0;
+       
+	r.file = get_filename(url);
+	if (!r.file.empty()) {
+		r.match = true;         
+		r.domain = "FrivIntro";
+	} else 
+		r.match = false;
    
-
-if ( (url.find(".friv.com") != string::npos) 
-   ) {
-      
-       r.file = get_filename(url);
-      if (!r.file.empty()) {
-         r.match = true;         
-         r.domain = "FrivIntro";
-      } else {
-         r.match = false;
-      }
-   } else {
-      r.match = false;
-   }
-   return r;
+	return r;
 }

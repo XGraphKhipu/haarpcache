@@ -13,18 +13,18 @@ string get_filename(string url, string &domain) {
 	SearchReplaceAny(url, "http://" , "");
 	SearchReplaceAny(url, "https://", "");
 	string domain_ = getdomain(url);
-	
-	vector<string> split;
-	
+		
 	domain = domain_;
+	vector<string> split;
 
 	stringexplode(domain_, ".", &split);
 
-	if(split.size() == 3)
+	/*if(split.size() == 3)
 		domain = split.at(1) + "." + split.at(2);
-	else if (split.size() == 2)
+	else */
+	if (split.size() == 2)
 		domain = split.at(0);
-
+	
 	split.clear();
 	size_t find = url.find("/");
 	if( find != string::npos ) {

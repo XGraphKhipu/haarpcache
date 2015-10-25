@@ -165,13 +165,11 @@ MYSQL_RES * mysql_select_files(MYSQL* conn, struct tm *date_mx, int hit, int fla
 		cout<<"MYSQL Error: Query: '"<<q<<"'; "<<mysql_error(conn)<<endl;
 		exit(1);
 	}
-	//p(q);
-	//p("Select files from the DB ...");
 	return mysql_store_result(conn);
 }
 
 void mysql_delete_files(MYSQL * conn, struct tm * date_mx, int hit, int flag) {
-	p("Delete files from DB .... ");
+	//p("Delete files from DB .... ");
 	char q[500];
 	string d = date2str(date_mx);
 	string ds = date2str(date_min);	
@@ -186,7 +184,6 @@ void mysql_delete_files(MYSQL * conn, struct tm * date_mx, int hit, int flag) {
 		else 
 			sprintf(q,"DELETE from haarp WHERE domain = '%s' AND date(downloaded) >= '%s' AND date(downloaded) <='%s' AND bytes_requested > %i*filesize limit %i", (sqlconv2(domain)).c_str(), ds.c_str(), d.c_str(), hit, NUM_FILES);
 	}
-	//p(q);
 	if( mysql_query(conn, q) ) {
 		cout<<"MYSQL Error "<<mysql_errno(conn)<<": Query: '"<<q<<"' --> "<<mysql_error(conn)<<endl;
 		exit(1);
@@ -212,16 +209,11 @@ int delete_by_block(MYSQL *connect, int fase, int hit, double *mb, int flag) {
 				return 0;
 			return 1;
 		}
-		//bool file_exis = false;
-		//~ select files and delete from the disk.
 		while ( (r = mysql_fetch_row(res)) != NULL ) {
 			subdir = ConvertChar(r[0]);
-			//file_exis = false;
 			for(dir_index = list_dir.begin();dir_index != list_dir.end();dir_index++) {
 				sprintf(f,"%s%s/%s/%s",(*dir_index).c_str(),r[1],subdir.c_str(),r[0]);
-				//~ p(f);
 				if(file_exists(string(f))) {
-					//file_exis = true;
 					sprintf(q,"rm -f \"%s\"",f);
 					numdelete++;
 					if ( !(numdelete % 100) ) {
@@ -244,7 +236,7 @@ int delete_by_block(MYSQL *connect, int fase, int hit, double *mb, int flag) {
 		mysql_delete_files(connect, date_new_max, hit, flag);
 		mysql_free_result(res);
 		if( *mb > total_delete_mb ) {
-			//p("SALIDA POR EL PASO DE LOS MB'S LIMITE.");
+			p("SALIDA POR EL PASO DE LOS MB'S LIMITE.");
 			return 0;
 		}
 	}
@@ -551,6 +543,7 @@ int main(int carg, char **varg) {
 		re = delete_by_block(connect, fase, hit, &mb_eliminate, 1);
 		if(!re)
 			break;
+		//printf("mb_eliminate = %lf\n", mb_eliminate);
 	}
 	
 	cout<<"Entries deleted: "<<numdelete<<endl;
