@@ -191,8 +191,9 @@ dead_peer_timeout 2 seconds
 cache_peer_access 127.0.0.1 allow haarp_lst
 cache_peer_access 127.0.0.1 deny all" >> /etc/squid3/squid.conf
 #
-echo "# HaarpClean: 
-0 */1     * * *   root    /etc/init.d/haarpclean" >> /etc/crontab
+echo "# HaarpCache-Scripts: 
+0 */1     * * *   root    /etc/init.d/haarpclean
+*/1 *     * * *   root    /etc/haarp/checkHaarpCache.sh" >> /etc/crontab
 clear
 # restart servers
 /etc/init.d/haarp restart
