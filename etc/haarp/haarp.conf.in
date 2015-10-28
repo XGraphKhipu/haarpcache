@@ -135,9 +135,9 @@ MAXSERVERS 1000
 
 #
 # Niveles de logs
-#  0 = Sólo errores graves
-#  1 = Informacion detallada.
-#
+#  0 = Only main errors.
+#  1 = Detailed information
+#  2,3 = More information, only for development!
 # Default:
 LOGLEVEL 0
 

@@ -40,7 +40,7 @@ extern "C" resposta hgetmatch2(const string url) {
 	r.range_min = 0;
 	r.range_max = 0;
 	string domain; 
-	if( url.find("?") == string::npos ) {
+	if ( (url.find("?") == string::npos) && (regex_match("\\.\\w{2,4}$",url) != "") ) {
 		r.file = get_filename(url, domain);
 		if( !r.file.empty() ) {
 			r.domain = domain;

@@ -171,7 +171,7 @@ void ConnectionToHTTP2::UpdateFileSizeinPartial(string header) {
 }
 void ConnectionToHTTP2::Update() {
 	string rang_, part_;
-	if (LL > 2) LogFile::ErrorMessage("[DEBUG] Update() ---- ..(%li).. ---- \n", domaindb.getID());
+	if (LL > 2) LogFile::ErrorMessage("[DEBUG] Update() ---- ..(db.id=%li).. ---- \n", domaindb.getID());
 	if (r.match && !hit) {
 		if (acumulate && bwrite) {
 			if (cachefile.is_open()) {
@@ -291,7 +291,7 @@ int ConnectionToHTTP2::lockFile(int singleDomain) {
 			r.file = domaindb.get("file", 1);
 			if (LL > 2) LogFile::ErrorMessage("[DEBUG] Change r.file for netflix; new name: '%s'\n", r.file.c_str());
 		}
-		string mysql_query = "SELECT abs(UNIX_TIMESTAMP(now()) - GREATEST(UNIX_TIMESTAMP(modified),UNIX_TIMESTAMP(last_request)))<=30 as difftime, file_used FROM haarp WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';";
+		string mysql_query = "SELECT abs(TIMESTAMPDIFF(SECOND,now(),GREATEST(modified,last_request)))<=30 as difftime, file_used FROM haarp WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';";
 		if (domaindb.get(mysql_query) != 0) {
 			domaindb.set("ROLLBACK;");
 			if (LL > 2) LogFile::ErrorMessage("[DEBUG] Aqui 5\n");
@@ -312,7 +312,7 @@ int ConnectionToHTTP2::lockFile(int singleDomain) {
 		}
 		//if (LL > 2) LogFile::ErrorMessage("[DEBUG - lockfile()] difftime: '%s', toint: '%i'\n", difftime.c_str(), atoi(difftime.c_str()));
 		if (difftime != "") {
-			if (atoi(difftime.c_str())) { // After of 30 seconds without modifications, is secure that the file not is working as cache.
+			if (atoi(difftime.c_str())) { // After of 60 seconds without modifications, is secure that the file not is working as cache.
 				if (LL > 1) LogFile::ErrorMessage("Info: file '%s' with persistent changes\n", r.file.c_str());
 				if (LL > 1) LogFile::AccessMessage("The file on disk is working as cache, go direct to internet.\n");
 				domaindb.set("COMMIT;");
@@ -364,13 +364,11 @@ void ConnectionToHTTP2::GetProbExpiresFromHeader(string header, double *proba, t
 	if ( !maxage.empty() ) {
 		tmaxage = atoi(maxage.c_str());
 		if ( !tmaxage )
-			*texpires = tdate + 3600;
+			*texpires = tdate + 3600*24*3;
 		else
 			*texpires = tdate + tmaxage;
 	} else if ( !*texpires || *texpires < tdate )
-		*texpires = tdate + 3600;
-	if (domaindb.ping()) 
-		LogFile::ErrorMessage("IN getexpiresfromheader! - 4PING MYSQL - FAILED! -\n");
+		*texpires = tdate + 3600*24*3;
 	if ( !lm.empty() )
 		tlm = dateformat2epoch(lm);
 	else
@@ -384,16 +382,16 @@ string ConnectionToHTTP2::getHeaderFromServer(int *errcode) {
 	string header;
 	bool s1 = ConnectionToHTTP::SetDomainAndPort(domain, port);
 	if ( s1 ) {
-		LogFile::ErrorMessage("IN getHeaderFromServer, paso #1! -\n");
+		if(LL>2) LogFile::ErrorMessage("IN getHeaderFromServer, paso #1! -\n");
 		s1 = ConnectionToHTTP::ConnectToServer();
 		if ( s1 ) {
-			LogFile::ErrorMessage("IN getHeaderFromServer, paso #2! -\n");
+			if (LL>2) LogFile::ErrorMessage("IN getHeaderFromServer, paso #2! -\n");
 			s1 = ConnectionToHTTP::SendHeader(header_browser, browserclosed);
 			if ( s1 ) {
-				LogFile::ErrorMessage("IN getHeaderFromServer, paso #3! -\n");
+				if (LL>2) LogFile::ErrorMessage("IN getHeaderFromServer, paso #3! -\n");
 				s1 = ConnectionToHTTP::ReadHeader(header);
 				if ( s1 ) {
-					LogFile::ErrorMessage("IN getHeaderFromServer, paso #4 - OK!! -\n");
+					if (LL>2) LogFile::ErrorMessage("IN getHeaderFromServer, paso #4 - OK!! -\n");
 					headerReader = true;
 					return header;
 				}
@@ -436,6 +434,8 @@ int ConnectionToHTTP2::Cache() {
 
 	srand(time(0));
 
+	struct timeval v1,v2;
+	gettimeofday(&v1,NULL);
 	if (LL > 0) LogFile::AccessMessage("Url %s%s\n", domain.c_str(), request.c_str());
 	if (LL > 2) LogFile::ErrorMessage("[DEBUG_Cache] Url %s%s\n", domain.c_str(), request.c_str());
 	string domaintmp = getdomain(domain + request); //youtube.com
@@ -508,28 +508,33 @@ int ConnectionToHTTP2::Cache() {
 					range_max = r.range_max;
 					isgeneralplugin = true;
 				}
+				r.total_file_size = 0;
 				if (LL > 2) LogFile::ErrorMessage("Info: '%s' [%lli-%lli]\n", (r.file).c_str(), range_min, range_max);
 			}
 		}		
 	}
+	gettimeofday(&v2,NULL);
+	if (LL > 2) LogFile::ErrorMessage("[DEBUG] Time of loading of plugin: %.4lf msec\n", timevaldiff(&v1,&v2));
 	if (r.match) { // Es la url de un dominio
 		if (LL > 2) LogFile::ErrorMessage("[DEBUG] match! file: '%s', domain: '%s' [%lli-%lli]\n", (r.file).c_str(), r.domain.c_str(), range_min, range_max);
 		int lfile;
 		if( !isgeneralplugin ) {
+			gettimeofday(&v1,NULL);
 			if (r.domain == "netflix")
 				lfile = lockFile(1);
 			else
 				lfile = lockFile(0);
 			if (lfile <= 0) {
-				if (lfile == -1) if (LL > 0) LogFile::ErrorMessage("Error mysql - :) : '%s'\n", domaindb.getError().c_str());
+				if (lfile == -1) if (LL > 0) LogFile::ErrorMessage("Error mysql: '%s'!\n", domaindb.getError().c_str());
 				exists_transaction_editing_file = true;
 				r.match = hit = false;
 				return 0;
 			}
+			gettimeofday(&v2,NULL);
+			if (LL > 2) LogFile::ErrorMessage("[DEBUG] Time of lock db!: %.4lf msec\n", timevaldiff(&v1,&v2));
 		} else 
 			was_liberate = true;
 		
-		LogFile::ErrorMessage("passou - 1 -\n");
 		exists_transaction_editing_file = false;
 
 		subdir = ConvertChar(r.file);
@@ -541,7 +546,6 @@ int ConnectionToHTTP2::Cache() {
 		bool disco_con_espacio = false;
 		bool file_in_cache = false;
 
-		LogFile::ErrorMessage("passou - 2 -\n");
 		for (int i = 0; i < (int) list_dir.size(); i++) {
 			directory = trimstr(list_dir.at(i));
 
@@ -573,7 +577,6 @@ int ConnectionToHTTP2::Cache() {
 				completepathtmp = completepath;
 			}
 		}
-		LogFile::ErrorMessage("passou - 3 -\n");
 		if (!file_in_cache && disco_con_espacio) {
 			completefilepath = completefilepathtmp;
 			completepath = completepathtmp;
@@ -585,48 +588,36 @@ int ConnectionToHTTP2::Cache() {
 			filesizeneto = range_max - range_min + 1;
 		
 		if ( isgeneralplugin ) {
+			gettimeofday(&v1,NULL);
 			// comprobate if the file is being used
-			LogFile::ErrorMessage("IN isgeneralplugin! - 1 -\n");
-			if ( domaindb.get("SELECT prob, expires, modified, abs(UNIX_TIMESTAMP(now()) - GREATEST(UNIX_TIMESTAMP(modified),UNIX_TIMESTAMP(last_request)))<=30 as difftime, file_used FROM haarp WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") ) {
+			if ( domaindb.get("SELECT prob, expires, modified, file_used FROM haarp WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") ) {
 				LogFile::ErrorMessage("Error, can't select prob, expires an others entries of the mysql: '%s'\n", domaindb.getError().c_str());
 				r.match = hit = false;
 				return 0;
 			}
-			LogFile::ErrorMessage("IN isgeneralplugin! - 2 -\n");
-				
-			string dt = domaindb.get("difftime", 1);
-			if ( dt != "" && dt.find(1) != string::npos ) {
+			/*string dt = domaindb.get("difftime", 1);
+			if ( dt != "" && dt.find("1") != string::npos ) {
 				if (LL > 2) LogFile::ErrorMessage("[DEBUG-Cache] MISS: the file '%s' is being used/modified!\n", r.file.c_str());
 				r.match = hit = false;
 				return 0;
-			}
-			LogFile::ErrorMessage("IN isgeneralplugin! - 3 -\n");
+			}*/
 			if ( !domaindb.get_num_rows() ) {
-				LogFile::ErrorMessage("IN isgeneralplugin! - existe file in DB -\n");
 				if ( header_browser.find("Content-Length:") != string::npos ) {
 					r.match = hit = false;
 					return 0;
 				}
 				int ecode;
-				LogFile::ErrorMessage("IN isgeneralplugin! - get Header From Server! -\n");
-				if ( domaindb.ping() ) 
-					LogFile::ErrorMessage("IN isgeneralplugin! - PING MYSQL - FAILED! -\n");
 				
 				headerServer = getHeaderFromServer(&ecode);
-				LogFile::ErrorMessage("IN HEADER READER: \"%s\"\n", headerServer.c_str());
+				if (LL>2) LogFile::ErrorMessage("[DEBUG] IN HEADER READER PREV: \"%s\"\n", headerServer.c_str());
 				if ( ecode < 0 || headerServer.empty() || headerServer.find(" 200 OK") == string::npos ) {
 					r.match = hit = false;
 					return ecode;
 				}
 				GetProbExpiresFromHeader(headerServer, &prob, &expires);
-				if (domaindb.ping()) 
-					LogFile::ErrorMessage("IN isgeneralplugin! - PING MYSQL - FAILED! -\n");
-				LogFile::ErrorMessage("IN isgeneralplugin! - get prob and expires from HEADER: (%.5lf,%li)! -\n", prob, expires);
+				if (LL>2) LogFile::ErrorMessage("[DEBUG] Not exist register in the DB, calculated prob and expires from HEADER: (%.5lf,%li)! -\n", prob, expires);
 				addUserCache(lusers_db, ip_browser, time(NULL), 0, 0);
-				if (domaindb.ping()) 
-					LogFile::ErrorMessage("IN isgeneralplugin! - PING MYSQL - FAILED! -\n");
 				string msg_pet = "INSERT INTO haarp (domain, file, size, modified, downloaded, bytes_requested, last_request, file_used, users, prob, expires) VALUES ('" + r.domain + "', '" + domaindb.sqlconv(r.file) + "', 0, now(),now(),0,now(), 0,'" + lusercache2str(lusers_db) + "', " + lftoa(prob) + ", '" + time2DateStr(expires)  + "' );";
-				LogFile::ErrorMessage("IN isgeneralplugin! - Inserting regiter in MYSQL: '%s'! -\n", msg_pet.c_str());
 				if ( domaindb.set(msg_pet) != 0 ) {
 					LogFile::ErrorMessage("Error!, '%s'\n", domaindb.getError().c_str());
 					r.match = hit = false;
@@ -654,15 +645,15 @@ int ConnectionToHTTP2::Cache() {
 					tmodified = dateStr2Time(modi);
 				else
 					tmodified = 0;
-				LogFile::ErrorMessage("IN isgeneralplugin! - prob: %.4lf, expires: %li IN DB! -\n", prob, expires);
+				if (LL>2) LogFile::ErrorMessage("[DEBUG] IN isgeneralplugin! - prob: %.4lf, expires: %li IN DB! -\n", prob, expires);
 				if ( expires < tnow() ) {
-					LogFile::ErrorMessage("IN isgeneralplugin! - Expires(%li) < tnow() (%li)! -\n", expires, tnow());
+					if (LL>2) LogFile::ErrorMessage("IN isgeneralplugin! - Expires(%li) < tnow() (%li)! -\n", expires, tnow());
 					double drand = rand()/(RAND_MAX + 0.0);
 					if ( drand < prob ) {
 						if (LL > 2) LogFile::ErrorMessage("[DEBUG] rand (%.4lf) < prob (%.4lf)!\n", drand, prob);
 						int ecode;
 						headerServer = getHeaderFromServer(&ecode);
-						LogFile::ErrorMessage("IN HEADER READER: \"%s\"\n", headerServer.c_str());
+						if (LL>2) LogFile::ErrorMessage("[DEBUG] IN HEADER READER: \"%s\"\n", headerServer.c_str());
 						if ( ecode < 0 || headerServer.empty() || headerServer.find(" 200 OK") == string::npos ) {
 							r.match = hit = false;
 							return ecode;
@@ -674,6 +665,7 @@ int ConnectionToHTTP2::Cache() {
 						else
 							tlastmod = tnow();
 						GetProbExpiresFromHeader(headerServer, &prob, &expires);
+						if (LL>2) LogFile::ErrorMessage("IN isgeneralplugin! - get prob and expires from HEADER: (%.5lf,%li)! -\n", prob, expires);
 						if (tlastmod > tmodified) {
 							if (LL>2) LogFile::ErrorMessage("[DEBUG] FILE MODIFIED FROM SERVER - get prob and expires from HEADER: (%.5lf,%li)! -\n", prob, expires);
 							if (domaindb.set("UPDATE haarp SET prob=" + lftoa(prob) + ", expires='" + time2DateStr(expires)  +"', rg='', pos='', size=0, filesize=0, modified=now() WHERE domain='" + r.domain + "' and file='" + domaindb.sqlconv(r.file) + "';") != 0) {
@@ -694,7 +686,11 @@ int ConnectionToHTTP2::Cache() {
 				} else 
 					if (LL > 2) LogFile::ErrorMessage("[DEBUG] the file '%s' expired (%s)!\n", r.file.c_str(), exp.c_str());
 			}
+			gettimeofday(&v2,NULL);
+			if (LL > 2) LogFile::ErrorMessage("[DEBUG] Time of create file in  db - general plugin!: %.4lf msec\n", timevaldiff(&v1,&v2));
 		}
+		gettimeofday(&v1,NULL);
+			
 		if (r.domain == "rewrite") {
 			r.match = false;
 			rewrited = true;
@@ -815,6 +811,8 @@ int ConnectionToHTTP2::Cache() {
 			}
 			domaindb.clear();
 		}
+		gettimeofday(&v2,NULL);
+		if (LL > 2) LogFile::ErrorMessage("[DEBUG] Time of determinate MISS/HITS - Any plugins!: %.4lf msec\n", timevaldiff(&v1,&v2));
 	} else if (!rewrited) { // sistema de cache de arquivos ESTÁTICOS GENERAL
 		if (Params::GetConfigInt(getFileExtension(getFileName(request)) + "_EXP") > 0 && request.find_first_not_of("()[]?&=;,´`'\"") == string::npos) { // se está configurada essa extensão
 			//~ if (LL > 0) LogFile::AccessMessage("(2)**** Entró !rewrited!!\n");
@@ -1109,6 +1107,8 @@ bool ConnectionToHTTP2::ReadHeader(string &headerT) {
            		tmp << "Content-Type: image/tiff\r\n"; 
 		else if (extension == "TIF")
             		tmp << "Content-Type: image/tiff\r\n"; 
+		else if (extension == "WOFF")
+            		tmp << "Content-Type: application/font-woff\r\n"; 
 		else if (extension == "RAS")
             		tmp << "Content-Type: image/x-cmu-raster\r\n"; 
 		else if (extension == "PNM")
@@ -1628,8 +1628,8 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 
 void ConnectionToHTTP2::Close() {
 	if (LL > 2) LogFile::ErrorMessage("[DEBUG] Closing Connection!\n");
-	Update();
-	if (!exists_transaction_editing_file) liberate_edition();
+		//Update();
+		if (!exists_transaction_editing_file) liberate_edition();
 	if (LL > 2) LogFile::ErrorMessage("[DEBUG] Liberated edition from db\n");
 	domaindb.close();
 	if (cachefile.is_open()) cachefile.close();

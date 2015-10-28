@@ -112,4 +112,5 @@ const string getFileExtension(string file);
 const string getFileName(string file);
 const string sqlconv(string sql);
 void longSeekpFile(fstream &f, long long int pos);
+double timevaldiff(struct timeval *starttime, struct timeval *finishtime);
 #endif

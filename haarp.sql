@@ -35,6 +35,13 @@ end if;
 IF NOT EXISTS (SELECT * from information_schema.COLUMNS where TABLE_SCHEMA = 'haarp' AND TABLE_NAME = 'haarp' AND COLUMN_NAME = 'bytes_requested') THEN
         ALTER TABLE haarp CHANGE requested bytes_requested bigint unsigned NOT NULL DEFAULT 0;
 end if;
+IF NOT EXISTS (SELECT * from information_schema.COLUMNS where TABLE_SCHEMA = 'haarp' AND TABLE_NAME = 'haarp' AND COLUMN_NAME = 'prob') THEN
+        ALTER TABLE haarp ADD prob double NOT NULL DEFAULT 0 AFTER np;
+end if;
+IF NOT EXISTS (SELECT * from information_schema.COLUMNS where TABLE_SCHEMA = 'haarp' AND TABLE_NAME = 'haarp' AND COLUMN_NAME = 'expires') THEN
+        ALTER TABLE haarp ADD expires datetime NOT NULL DEFAULT "2050-10-10 00:00:00" AFTER np;
+end if;
+
 END
 $$
 delimiter ;

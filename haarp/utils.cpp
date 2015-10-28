@@ -916,5 +916,10 @@ time_t dateStr2Time(string date) {
 	return mktime(&t);
 }
 
+double timevaldiff(struct timeval *starttime, struct timeval *finishtime) {
+        unsigned long t1 = starttime->tv_sec*1000000 + starttime->tv_usec;
+        unsigned long t2 = finishtime->tv_sec*1000000 + finishtime->tv_usec;
+        return (t2-t1)/1000.0;
+}
 
 

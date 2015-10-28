@@ -7,19 +7,13 @@
 #include <cstring>
 #include "database_mysql.h"
 #include "utils.h"
+
 int Database::ping() {
 	return mysql_ping(&conn);
 }
+
 int Database::open(string host,string username,string password,string database) {
 	mysql_init(&conn);
-	
-	/*const unsigned int connect_timeout = 2400;
-	const unsigned int wtimeout = 2400;
-	const unsigned int rtimeout = 2400;
-
-	mysql_options(&conn, MYSQL_OPT_CONNECT_TIMEOUT, &connect_timeout);
-	mysql_options(&conn, MYSQL_OPT_READ_TIMEOUT, &rtimeout);
-	mysql_options(&conn, MYSQL_OPT_WRITE_TIMEOUT, &wtimeout);*/
 	
 	if (mysql_real_connect(&conn, host.c_str(), username.c_str(), password.c_str(), database.c_str(), 0, NULL, 0)) {
 		//mysql_autocommit(&conn,1);
@@ -96,7 +90,7 @@ string Database::getError(){
 }
 
 void Database::close() {
-	if(!connected) return;
+	//if(!connected) return;
 	connected = false;
 	mysql_close(&conn);
 }

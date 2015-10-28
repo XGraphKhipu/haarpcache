@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS `haarp` (
   `pos` varchar(2500) NOT NULL DEFAULT '',
   `filesize` int(11) DEFAULT '0',
   `np` int(11) DEFAULT '0',
+  `expires` datetime NOT NULL DEFAULT '2050-10-10 00:00:00',
+  `prob` double NOT NULL DEFAULT '0',
   `deleted` tinyint(1) NOT NULL default '0',
   `static` tinyint(1) NOT NULL default '0',
   `users` varchar(1000) NOT NULL default '',  

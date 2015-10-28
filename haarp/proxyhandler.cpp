@@ -134,7 +134,7 @@ void ProxyHandler::Proxy( SocketHandler &ProxyServerT )
             DropBrowser = true;
             continue;
         }
-        ToServer.Update();
+        //ToServer.Update();
         if ( LOK )
         {
 			//~ if (LL > 1) LogFile::AccessMessage("(1)*** Teminó La descarga_LUGAR? header: %d, body: %d, range_min=%d, range_max=%d\n",TransferredHeader, TransferredBody, ToServer.range_min, ToServer.range_max);
@@ -478,6 +478,7 @@ int ProxyHandler::CommunicationHTTP()
 	//ContentLengthReference - total
 	//ContentLength - browser
     //Server Body Transfer Loop
+    bool readBodyServer = false;
     for(;;)
     {
         //If we received more than Content-Length, discard the rest
@@ -502,6 +503,7 @@ int ProxyHandler::CommunicationHTTP()
             /*Change log*/
             if (LL>0) if (alivecount==1) LogFile::ErrorMessage("(%s) - Could not send body to browser\n", ToBrowser.GetIP().c_str());
             LogFile::ErrorMessage("(%s) - Could not send body to browser\n", ToBrowser.GetIP().c_str());
+    		if (readBodyServer) ToServer.Update();
             return -10;
         }
         //if (LL > 2) LogFile::ErrorMessage("[DEBUG-proxyHander] PASSO! por for;; - BODY-BROWSER-SEND\n");
@@ -511,8 +513,9 @@ int ProxyHandler::CommunicationHTTP()
         //Read more of body
         if ( (BodyLength = ToServer.ReadBodyPart( BodyTemp, ChunkedTransfer )) < 0 )
         {
-            DropServer = true;
-            if (LL>0) LogFile::ErrorMessage("(%s) Could not read server body (%s/%s:%d)\n", ToServer.GetIP().c_str(), ToBrowser.GetIP().c_str(), ToBrowser.GetHost().c_str(), ToBrowser.GetPort());
+		DropServer = true;
+		if (LL>0) LogFile::ErrorMessage("(%s) Could not read server body (%s/%s:%d)\n", ToServer.GetIP().c_str(), ToBrowser.GetIP().c_str(), ToBrowser.GetHost().c_str(), ToBrowser.GetPort());
+    		if (readBodyServer) ToServer.Update();
             return -75;
         }
         //if (LL > 2) LogFile::ErrorMessage("[DEBUG-proxyHander] paso readbodypart %i!\n", BodyLength);
@@ -530,11 +533,12 @@ int ProxyHandler::CommunicationHTTP()
         TransferredBody = ContentLength;
 	//if (LL > 2) LogFile::ErrorMessage("[DEBUG-proxyHander] contentLength "LLD"\n", ContentLength);
         //Continue bodyloop..
-    }
-    if (LL > 2) LogFile::ErrorMessage("[DEBUG-proxyHander] OUT of FOR(;;)!\n");
-    ToServer.Update();
-    //Return clean
-    return 0;
+        readBodyServer = true;
+   }
+	if (LL > 2) LogFile::ErrorMessage("[DEBUG-proxyHander] OUT of FOR(;;)!\n");
+	ToServer.Update();
+	//Return clean
+	return 0;
 
 }
 

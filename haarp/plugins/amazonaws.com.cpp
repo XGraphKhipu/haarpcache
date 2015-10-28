@@ -32,7 +32,7 @@ extern "C" resposta hgetmatch2(const string url) {
 	 r.range_min = r.range_max = 0;
  
  
-        if ( (url.find(".amazonaws.com/") != string::npos) and ((url.find(".jpg") != string::npos) or (url.find(".png") != string::npos) or (url.find(".gif") != string::npos) or (url.find(".swf") != string::npos) or (url.find(".mp3") != string::npos))
+        if ( (url.find(".amazonaws.com/") != string::npos) and ((url.find(".jpg") != string::npos) or (url.find(".png") != string::npos) or (url.find(".gif") != string::npos) or (url.find(".swf") != string::npos) or (url.find(".mp3") != string::npos) )
         ) {
                 
             r.file = get_filename(url);
