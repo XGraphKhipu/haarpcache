@@ -352,7 +352,7 @@ void ConnectionToHTTP2::GetProbExpiresFromHeader(string header, double *proba, t
 	string date  	= getValuesHeader(header, "Date:", 		V_DATE);
 	string expires 	= getValuesHeader(header, "Expires:", 		V_DATE);
 	string maxage 	= getValuesHeader(header, "max-age=", 		V_INT);
-	time_t tdate, tmaxage, tlm;
+	time_t tdate, tmaxage=0, tlm;
 	if ( !date.empty() )
 		tdate = dateformat2epoch(date);
 	else
