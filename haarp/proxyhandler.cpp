@@ -242,7 +242,7 @@ int ProxyHandler::CommunicationHTTP()
         //We need to close Keep-Alive connection if host to connect changes
         if ( ServerConnected && (ToBrowser.GetHost() != ConnectedHost || ToBrowser.GetPort() != ConnectedPort) )
         {
-            LogFile::ErrorMessage("Keep Alive Problem .. change ip or port: (%s:%i -> %s:%i)\n", ToBrowser.GetHost().c_str(), ToBrowser.GetPort(), ConnectedHost.c_str(), ConnectedPort);
+           // LogFile::ErrorMessage("Keep Alive Problem .. change ip or port: (%s:%i -> %s:%i)\n", ToBrowser.GetHost().c_str(), ToBrowser.GetPort(), ConnectedHost.c_str(), ConnectedPort);
             ToServer.Close();
             ServerConnected = false;
         }
