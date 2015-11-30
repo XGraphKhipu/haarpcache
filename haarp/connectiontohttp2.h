@@ -85,6 +85,7 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
         ssize_t ReadBodyPart( string &bodyT, bool Chunked );
         
 	void initializeVariables(bool db);
+	void liberateMemory();
 
         void saveClientIP(string ip);
 			
@@ -93,6 +94,7 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
         bool liberate_edition();
         int lockFile(int singleDomain);
         void Close();
+        void CloseUpdate();
         
         void print_list_lranges(lintervalPositionByteDisk lRangesPositionDisk, string prefix);
         void print_range(intervalPositionByteDisk range, string prefix);

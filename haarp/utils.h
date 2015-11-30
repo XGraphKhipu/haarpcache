@@ -47,7 +47,7 @@ class intervalPositionByteDisk {
 typedef list<usercache> lusercache;
 typedef list<intervalPositionByteDisk>  lintervalPositionByteDisk;
 
-void addUserCache(lusercache &luc, string ip, time_t date_modified, long long int bytes, bool hit);
+bool addUserCache(lusercache &luc, string ip, time_t date_modified, long long int bytes, bool hit);
 bool str2lusercache(string str, lusercache &lre);
 string lusercache2str(lusercache luc);
 bool compareUserCache(usercache &l1, usercache &l2);

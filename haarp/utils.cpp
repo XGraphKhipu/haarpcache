@@ -25,8 +25,14 @@
 #include <fstab.h>
 #include <cstdio>
 
-void addUserCache(lusercache &luc, string ip, time_t date_modified, long long int bytes, bool hit) {
+bool addUserCache(lusercache &luc, string ip, time_t date_modified, long long int bytes, bool hit) {
 	lusercache::iterator itluc = luc.begin();
+	bool re = true;
+	if (ip == "" || date_modified <= 0) {
+		ip = "0.0.0.0";
+		date_modified = 1;
+		re = false;
+	}
 	while(itluc != luc.end()) {
 		if ( itluc->ip == ip ) {
 			itluc->date_modified = date_modified;
@@ -34,7 +40,7 @@ void addUserCache(lusercache &luc, string ip, time_t date_modified, long long in
 				itluc->bytes_requested += bytes;
 			else
 				itluc->bytes_acumulate += bytes;
-			return;
+			return re;
 		}
 		itluc++;
 	}
@@ -49,6 +55,7 @@ void addUserCache(lusercache &luc, string ip, time_t date_modified, long long in
 	else
 		uc.bytes_acumulate = bytes;
 	luc.push_back(uc);
+	return re;
 }
 
 bool str2lusercache(string str, lusercache &lre) {

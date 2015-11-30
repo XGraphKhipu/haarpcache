@@ -97,6 +97,7 @@ void get_videoid(string url, string &file, bool *exist_range, lli *a, lli *b, ll
 		return;
 	}
 	if( !file.empty() )
+		//file = file + itag + sclen + mime;
 		file = file + itag + mime;
 	if(*clen && *clen >= *a && *clen <= *b) {
 		file = "";
@@ -136,11 +137,6 @@ void get_videoid2(string url, string &file, bool *exist_range, lli *a, lli *b, l
 		} 
 		codeVide = id;
 	}
-	string itag = getiValue("/itag/[0-9]+/", urlDir, 1);
-	if ( urlDir.find("/mime/video") != string::npos ) 
-		file = codeVide + "-" + itag + "-vid";
-	else
-		file = codeVide + "-" + itag + "-aud";
 
 	string ranges = getiValue("/range/[0-9]+-[0-9]+$", urlDir, 1);
 
@@ -153,7 +149,14 @@ void get_videoid2(string url, string &file, bool *exist_range, lli *a, lli *b, l
 	string clen_str = getiValue("/clen/[0-9]+/", urlDir, 1);
 	*clen = atoll(clen_str.c_str());
 	
-	if(*clen && *clen >= *a && *clen <= *b) {
+	string itag = getiValue("/itag/[0-9]+/", urlDir, 1);
+	if ( urlDir.find("/mime/video") != string::npos )
+		//file = codeVide + "-" + itag + "-" + clen_str + "-vid";
+		file = codeVide + "-" + itag + "-vid";
+	else
+		file = codeVide + "-" + itag + "-aud";
+
+	if (*clen && *clen >= *a && *clen <= *b) {
 		file = "";
 		return;
 	}

@@ -13,8 +13,8 @@ int Database::ping() {
 }
 
 int Database::open(string host,string username,string password,string database) {
+	operation = "";
 	mysql_init(&conn);
-	
 	if (mysql_real_connect(&conn, host.c_str(), username.c_str(), password.c_str(), database.c_str(), 0, NULL, 0)) {
 		//mysql_autocommit(&conn,1);
 		connected = true;
@@ -31,6 +31,9 @@ long int Database::getID() {
 }
 
 int Database::set(string sql) {  //o ok, -1 no ok
+	string reg = regex_match_nocase("^(UPDATE|DELETE|INSERT) ", trimstr(sql));
+	if (reg != "")
+		operation = UpperCase(trimstr(reg));
 	//cout << "set: "<<sql<<endl;
 	if(!mysql_query(&conn, sql.c_str())) 
 		return 0; 
@@ -43,8 +46,11 @@ long long int Database::get_affect_rows() {
 } 
 
 int Database::get(string sql) {
+	string reg = regex_match_nocase("^(SELECT) ", trimstr(sql));
+	if (reg != "")
+		operation = UpperCase(trimstr(reg));
     //cout << "get: "<<sql<<endl;
-    if(!mysql_query(&conn, sql.c_str())){
+    if ( !mysql_query(&conn, sql.c_str()) ) {
         qry = mysql_store_result(&conn);
         return 0;
     } else return -1;
@@ -90,7 +96,7 @@ string Database::getError(){
 }
 
 void Database::close() {
-	//if(!connected) return;
+	if(!connected) return;
 	connected = false;
 	mysql_close(&conn);
 }
@@ -111,7 +117,8 @@ string Database::getRealEscapeString(string source) {
 }
 
 Database::Database() {
-    connected = false;
+	connected = false;
+	operation = "";
 }
 
 Database::~Database() {

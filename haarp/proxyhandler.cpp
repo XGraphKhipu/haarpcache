@@ -146,7 +146,7 @@ void ProxyHandler::Proxy( SocketHandler &ProxyServerT )
         retries = 0;
         while ( (CommunicationAnswer == -80 && ToBrowser.GetRequestType() == "GET") || CommunicationAnswer == -60 || CommunicationAnswer == -61 )
         {
-            ToServer.Close();
+            ToServer.CloseUpdate();
             ServerConnected = false;
 
             //Sleep second before retry
@@ -164,7 +164,7 @@ void ProxyHandler::Proxy( SocketHandler &ProxyServerT )
         //Make sure server connection is closed if needed
         if ( DropServer || DropBrowser || BrowserDropped )
         {
-            ToServer.Close();
+            ToServer.CloseUpdate();
             ServerConnected = false;
         }
 
@@ -242,6 +242,7 @@ int ProxyHandler::CommunicationHTTP()
         //We need to close Keep-Alive connection if host to connect changes
         if ( ServerConnected && (ToBrowser.GetHost() != ConnectedHost || ToBrowser.GetPort() != ConnectedPort) )
         {
+            LogFile::ErrorMessage("Keep Alive Problem .. change ip or port: (%s:%i -> %s:%i)\n", ToBrowser.GetHost().c_str(), ToBrowser.GetPort(), ConnectedHost.c_str(), ConnectedPort);
             ToServer.Close();
             ServerConnected = false;
         }
@@ -478,11 +479,10 @@ int ProxyHandler::CommunicationHTTP()
 	//ContentLengthReference - total
 	//ContentLength - browser
     //Server Body Transfer Loop
-    bool readBodyServer = false;
+//    bool readBodyServer = false;
     for(;;)
     {
         //If we received more than Content-Length, discard the rest
-        //Si recibimos más que Content-Length (total), desechar el resto
         if ( (ContentLengthReference > 0) && (ContentLength > ContentLengthReference) )
         {
             BodyTemp.erase( BodyTemp.size() - (ContentLength - ContentLengthReference) );
@@ -499,12 +499,13 @@ int ProxyHandler::CommunicationHTTP()
         //Send body to browser
         if ( ToBrowser.Send( BodyTemp ) == false )
         {
-            BrowserDropped = true;
-            /*Change log*/
-            if (LL>0) if (alivecount==1) LogFile::ErrorMessage("(%s) - Could not send body to browser\n", ToBrowser.GetIP().c_str());
-            LogFile::ErrorMessage("(%s) - Could not send body to browser\n", ToBrowser.GetIP().c_str());
-    		if (readBodyServer) ToServer.Update();
-            return -10;
+		BrowserDropped = true;
+		/*Change log*/
+		if (LL>0) if (alivecount==1) LogFile::ErrorMessage("(%s) - Could not send body to browser\n", ToBrowser.GetIP().c_str());
+		LogFile::ErrorMessage("(%s) - Could not send body to browser\n", ToBrowser.GetIP().c_str());
+		//if (readBodyServer) 
+			ToServer.Update();
+		return -10;
         }
         //if (LL > 2) LogFile::ErrorMessage("[DEBUG-proxyHander] PASSO! por for;; - BODY-BROWSER-SEND\n");
         //File completely received?
@@ -515,11 +516,13 @@ int ProxyHandler::CommunicationHTTP()
         {
 		DropServer = true;
 		if (LL>0) LogFile::ErrorMessage("(%s) Could not read server body (%s/%s:%d)\n", ToServer.GetIP().c_str(), ToBrowser.GetIP().c_str(), ToBrowser.GetHost().c_str(), ToBrowser.GetPort());
-    		if (readBodyServer) ToServer.Update();
-            return -75;
+    		//if (readBodyServer) 
+			ToServer.Update();
+		return -75;
         }
         //if (LL > 2) LogFile::ErrorMessage("[DEBUG-proxyHander] paso readbodypart %i!\n", BodyLength);
         //if (LL > 0) LogFile::AccessMessage("Pasando por for;; - BODY-SERVER: '%s' \n", BodyTemp.c_str());
+        //readBodyServer = true;
         //Server finished, end loop
         if ( BodyLength == 0 )
         {
@@ -533,10 +536,10 @@ int ProxyHandler::CommunicationHTTP()
         TransferredBody = ContentLength;
 	//if (LL > 2) LogFile::ErrorMessage("[DEBUG-proxyHander] contentLength "LLD"\n", ContentLength);
         //Continue bodyloop..
-        readBodyServer = true;
    }
 	if (LL > 2) LogFile::ErrorMessage("[DEBUG-proxyHander] OUT of FOR(;;)!\n");
-	ToServer.Update();
+	//if (readBodyServer) 
+		ToServer.Update();
 	//Return clean
 	return 0;
 

@@ -16,6 +16,7 @@ class Database {
 
     public:
         bool connected;
+	string operation;
         int open(string host,string username,string password,string database);
         long int getID();
 	int ping();
