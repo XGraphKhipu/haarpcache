@@ -43,11 +43,6 @@ void ConnectionToHTTP2::initializeVariables(bool db) {
 	flag_truncate_old_range_max = -2;
 	browserclosed = db;
 }
-void ConnectionToHTTP2::liberateMemory() {
-	header_browser = headerServer = pluginsdir = subdir = completefilepath = completepath = "";
-	readFileHeader = origin_header = "";
-
-}
 void ConnectionToHTTP2::saveClientIP(string ip) {
 	vector<string> lip;
 	stringexplode(ip, " ", &lip);
@@ -1645,7 +1640,6 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 void ConnectionToHTTP2::CloseUpdate() {
 	if (LL > 2) LogFile::ErrorMessage("[DEBUG-CU] Closing Connection!\n");
 	Update();
-	//liberateMemory();
 	if (!exists_transaction_editing_file) liberate_edition();
 	if (LL > 2) LogFile::ErrorMessage("[DEBUG-CU] Liberated edition from db\n");
 	domaindb.close();
@@ -1662,7 +1656,6 @@ void ConnectionToHTTP2::CloseUpdate() {
 
 void ConnectionToHTTP2::Close() {
 	if (LL > 2) LogFile::ErrorMessage("[DEBUG] Closing Connection!\n");
-	//liberateMemory();
 	domaindb.close();
 	if (LL > 2) LogFile::ErrorMessage("[DEBUG] Closed domaindb!\n");
 	if (cachefile.is_open()) cachefile.close();

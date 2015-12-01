@@ -85,7 +85,6 @@ class ConnectionToHTTP2 : public ConnectionToHTTP {
         ssize_t ReadBodyPart( string &bodyT, bool Chunked );
         
 	void initializeVariables(bool db);
-	void liberateMemory();
 
         void saveClientIP(string ip);
 			
