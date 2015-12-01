@@ -18,6 +18,21 @@ Proxy HaarpCache is a fork of ThunderCache.
 HaarpCache is a robust static and dynamic cache that provides support to the DASH technology.
 
 ## Installing
+* You can to install HaarpCache, in distributions Debian/Ubuntu, using a bash script:
+
+		wget https://raw.githubusercontent.com/keikurono/haarpcache/master/installHaarp.sh
+		chmod +x installHaarp.sh
+		bash installHaarp.sh
+
+	Video installation:
+		
+		http://www.youtube.com/watch?v=ZdSrxnjY2OA
+
+	More information (Installation with Mikrotik, etc): 
+		
+		https://perufw.wordpress.com/2015/10/28/new-version-haarpcache-v2-0b/
+	
+* For manual installation: 
 
 	su
 	apt-get update 
@@ -271,6 +286,23 @@ Configure your file /etc/haarp/haarp.lst to disable or enable the plugins.
 
 	
 ## Changelog
+
+__Version 2.1__
+
+2015/12/01
+
+* Improve performance for the use of the Mysql. 
+* Fixed the problem: 'general protection ip:7fc4e8d35b9f sp:7fff604fde10 error:0 in libmysqlclient.so'.
+* Update regular expression (in the haarp.lst file) for netflix, globo and amazonwas. Delete plugin for amazonwas domain.
+
+__Version 2.0b__
+
+2015/10/28
+
+* Plugin general.
+* Adding script for check status of haarp; update process installation from a script
+* Update reg. expressions for multiples plugins; reedit some messages of errors for Debug mode.
+* Fixed problem with reader of header HTTP.
 
 __Version 1.5.1__
 
