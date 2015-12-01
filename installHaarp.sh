@@ -184,7 +184,6 @@ cd /etc/init.d
 update-rc.d haarp defaults 98
 echo "#------------- HaarpCache ------------------------
 acl haarp_lst url_regex -i \"/etc/haarp/haarp.lst\"
-never_direct allow haarp_lst
 cache deny haarp_lst
 cache_peer 127.0.0.1 parent 8080 0 proxy-only no-digest
 dead_peer_timeout 2 seconds
