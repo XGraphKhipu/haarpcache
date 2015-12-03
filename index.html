@@ -63,14 +63,36 @@
 <h2>
 <a id="installing" class="anchor" href="#installing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installing</h2>
 
-<pre><code>su
+<ul>
+<li>
+<p>You can to install HaarpCache, in distributions Debian/Ubuntu, using a bash script:</p>
+
+<pre><code>wget https://raw.githubusercontent.com/keikurono/haarpcache/master/installHaarp.sh
+chmod +x installHaarp.sh
+bash installHaarp.sh
+</code></pre>
+
+<p>Video installation:</p>
+
+<pre><code>http://www.youtube.com/watch?v=ZdSrxnjY2OA
+</code></pre>
+
+<p>More information (Installation with Mikrotik, etc): </p>
+
+<pre><code>https://perufw.wordpress.com/2015/10/28/new-version-haarpcache-v2-0b/
+</code></pre>
+</li>
+<li>
+<p>For manual installation: </p>
+
+<p>su
 apt-get update 
 apt-get upgrade
 apt-get install build-essential mysql-server mysql-client php5 apache2 php5-mysql \
 libblkid-dev libcurl4-gnutls-dev libmysqlclient15-dev libapache2-mod-auth-mysql \
 libapache2-mod-php5 sharutils curl autoconf squid3 git g++-4.4
 cd /usr/src/
-git clone https://github.com/keikurono/haarpcache.git
+git clone <a href="https://github.com/keikurono/haarpcache.git">https://github.com/keikurono/haarpcache.git</a>
 cd haarpcache
 ./configure
 ./configure CXX=g++-4.4 # &lt;--- for ubuntu
@@ -78,10 +100,8 @@ make
 make install
 mysql -u root -p &lt; haarp.sql
 cd /etc/init.d
-update-rc.d haarp defaults 98
-</code></pre>
-
-<ul>
+update-rc.d haarp defaults 98</p>
+</li>
 <li>
 <p>Create a user for database of haarpcache:</p>
 
@@ -214,11 +234,13 @@ tc filter add dev $IF_LAN protocol ip parent 1:0 handle 666 fw classid 1:66
 
 <pre><code>    su
     cd /usr/src/
-    rm -fr haarpcache 2&gt;/dev/null
+    rm -fr haarpcache
     killall haarpclean 2&gt;/dev/null
     git clone https://github.com/keikurono/haarpcache.git
     cd haarpcache
     ./configure
+    # IF you have problems with the last command, then (for debian and ubuntu systems) do:
+    ./configure CXX=g++-4.4
     make
     make install
     mysql -u root -p &lt; haarp.sql
@@ -349,6 +371,27 @@ Manabar;</p>
 
 <h2>
 <a id="changelog" class="anchor" href="#changelog" aria-hidden="true"><span class="octicon octicon-link"></span></a>Changelog</h2>
+
+<p><strong>Version 2.1</strong></p>
+
+<p>2015/12/01</p>
+
+<ul>
+<li>Improve performance for the use of the Mysql. </li>
+<li>Fixed the problem: 'general protection ip:7fc4e8d35b9f sp:7fff604fde10 error:0 in libmysqlclient.so'.</li>
+<li>Update regular expression (in the haarp.lst file) for netflix, globo and amazonwas. Delete plugin for amazonwas domain.</li>
+</ul>
+
+<p><strong>Version 2.0b</strong></p>
+
+<p>2015/10/28</p>
+
+<ul>
+<li>Plugin general.</li>
+<li>Adding script for check status of haarp; update process installation from a script</li>
+<li>Update reg. expressions for multiples plugins; reedit some messages of errors for Debug mode.</li>
+<li>Fixed problem with reader of header HTTP.</li>
+</ul>
 
 <p><strong>Version 1.5.1</strong></p>
 
