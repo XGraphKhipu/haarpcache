@@ -95,8 +95,9 @@ string lusercache2str(lusercache luc) {
 	if ( lsize > LIMIT_USER_CACHE_DB )
 		lsize = LIMIT_USER_CACHE_DB;
 	
-	lusercache::iterator itluc = luc.begin();
 	
+	lusercache::iterator itluc = luc.begin();
+	int limit_users = 0;
 	while ( itluc != luc.end() ) {
 		sprintf(user, "%s,%li,%li,%lli,%lli", itluc->ip.c_str(), itluc->date_downloaded, itluc->date_modified, itluc->bytes_acumulate, itluc->bytes_requested);
 		if ( itluc != luc.begin() )
@@ -104,6 +105,8 @@ string lusercache2str(lusercache luc) {
 		else
 			re = user;
 		itluc++;
+		if (++limit_users >= lsize) 
+			break;
 	}
 	return re;
 }
