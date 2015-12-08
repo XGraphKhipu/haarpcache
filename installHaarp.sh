@@ -191,7 +191,7 @@ cache_peer_access 127.0.0.1 allow haarp_lst
 cache_peer_access 127.0.0.1 deny all" >> /etc/squid3/squid.conf
 #
 echo "# HaarpCache-Scripts: 
-0 */1     * * *   root    /etc/init.d/haarpclean
+0 0     * * *   root    /etc/init.d/haarpclean
 */1 *     * * *   root    /etc/haarp/checkHaarpCache.sh" >> /etc/crontab
 clear
 # restart servers
