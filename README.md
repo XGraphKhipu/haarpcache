@@ -162,6 +162,8 @@ For a common update:
 		git clone https://github.com/keikurono/haarpcache.git
 		cd haarpcache
 		./configure
+		# IF you have problems with the last command, then (for debian and ubuntu systems) do:
+		./configure CXX=g++-4.4
 		make
 		make install
 		mysql -u root -p < haarp.sql
