@@ -40,7 +40,7 @@ http.{1,4}\w*\.juegosjuegos\.com\/games(\w|\/|-)*\.swf$
 http.*\.ziddu\.com.*(\.exe|\.iso|\.torrent|\.zip|\.rar|\.pdf|\.doc|\.tar|\.mp3|\.mp4|\.avi|\.wmv)
 http.*edgecastcdn\.net/.*(\.mp4|\.flv)
 http.*adobe\.com/.*(\.cab|\.aup|\.exe|\.msi|\.upd|\.msp)
-http.*\.eset\.com.*\.nup
+http.{1,10}update\.eset\.com\/v[0-9]+(.*\/){2}.*\.nup$
 http.*\.nai\.com.*(\.zip|\.tar|\.exe|\.gem)
 http.*\.pop6\.com.*(\.flv)
 http.*\.symantecliveupdate\.com.*(\.zip|\.exe)

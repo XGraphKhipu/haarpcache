@@ -38,7 +38,7 @@
 
 //#include "database_mysql.cpp"
 #define charmalloc(a) (char *)malloc(a*sizeof(char))  
-#define NUM_FILES 20000
+#define NUM_FILES 10000
 #define MAX_HIT 100
 #define pb push_back
 #define MYSQL_PING_TIME 50
@@ -204,13 +204,14 @@ int delete_by_block(MYSQL *connect, int fase, int hit, double *mb, int flag) {
 		//~ mysql_update_deleted(connect, date_new_max, hit, flag);
 		res = mysql_select_files(connect, date_new_max, hit, flag);
 		if(!mysql_num_rows(res)) {
-			//printf("Salida por termino de archivos eliminados con hit '%i'\n",hit);
+			printf("Salida por termino de archivos eliminados con hit '%i'\n",hit);
 			if( flag && mktime(date_max) == mktime(date_new_max) )
 				return 0;
 			return 1;
 		}
 		while ( (r = mysql_fetch_row(res)) != NULL ) {
 			subdir = ConvertChar(r[0]);
+			//puts(r[0]);
 			for(dir_index = list_dir.begin();dir_index != list_dir.end();dir_index++) {
 				sprintf(f,"%s%s/%s/%s",(*dir_index).c_str(),r[1],subdir.c_str(),r[0]);
 				if(file_exists(string(f))) {
@@ -222,10 +223,12 @@ int delete_by_block(MYSQL *connect, int fase, int hit, double *mb, int flag) {
 						else
 							printf("Entry %i, Delete %.1lf KB (total:%.2lf GB), Downloaded : %s [Hits<= %i], File: '%s'\n", numdelete, atof(r[2])/(1024.0), *mb/1024, r[3], hit, f);
 					}
+					//puts(q);
 					system(q);					
 					*mb = *mb + atof(r[2])/(1048576.0);
 				}
 			}
+			//puts("NExt fetch_row ...");
 			/*if ( !file_exis )
 				p("[WARNING] The file: '"+ string(r[0]) + "' not EXIST in the disks!");*/
 			if ( time(NULL) >= m_tNextMysqlPingTime ) {
@@ -543,7 +546,7 @@ int main(int carg, char **varg) {
 		re = delete_by_block(connect, fase, hit, &mb_eliminate, 1);
 		if(!re)
 			break;
-		//printf("mb_eliminate = %lf\n", mb_eliminate);
+		printf("mb_eliminate = %lf\n", mb_eliminate);
 	}
 	
 	cout<<"Entries deleted: "<<numdelete<<endl;
