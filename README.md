@@ -289,6 +289,14 @@ Configure your file /etc/haarp/haarp.lst to disable or enable the plugins.
 	
 ## Changelog
 
+__Version 2.1.1__
+
+2015/12/08
+
+* Update of the eset plugin.
+* Reducing the workload on the haarpclean.
+* Limit of count of users in the database.
+
 __Version 2.1__
 
 2015/12/01
