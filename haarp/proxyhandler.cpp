@@ -53,7 +53,7 @@ void ProxyHandler::Proxy( SocketHandler &ProxyServerT )
         if ( ++alivecount > 1 )
         {
             //Keep-Alive timeout 10 seconds
-            if ( ToBrowser.CheckForData(10) == false )
+            if ( ToBrowser.CheckForData(5) == false )
             {
                 DropBrowser = true;
                 continue;
@@ -447,7 +447,6 @@ int ProxyHandler::CommunicationHTTP()
     if ( BodyLength == 0 )
     {
         //Lets be safe and close all connections
-        //Vamos a ser seguro y cerrar todas las conexiones
         DropBrowser = true;
 
         //Send header to browser
@@ -475,11 +474,11 @@ int ProxyHandler::CommunicationHTTP()
 	}
     int64_t ContentLength = BodyLength; // to server
     TransferredBody = ContentLength;
-	//BodyTemp - server_readpart
-	//ContentLengthReference - total
-	//ContentLength - browser
-    //Server Body Transfer Loop
-//    bool readBodyServer = false;
+	//Server Body Transfer Loop
+	//BodyTemp - string of data read from the server
+	//ContentLengthReference - ContentLength got from the header of the server
+	//ContentLength - size of string of data read from the server
+	// bool readBodyServer = false;
     for(;;)
     {
         //If we received more than Content-Length, discard the rest
@@ -527,9 +526,8 @@ int ProxyHandler::CommunicationHTTP()
         if ( BodyLength == 0 )
         {
             //If we did not receive all data, close all connections
-            //Si no hemos recibido todos los datos, cierre todas las conexiones.
             if ( ContentLength < ContentLengthReference ) DropBrowser = true;
-
+		if (LL>0) LogFile::ErrorMessage("(%s) Size of date got from server is zero, terminate connection!\n", ToServer.GetIP().c_str());
             break;
         }
         ContentLength += BodyLength;

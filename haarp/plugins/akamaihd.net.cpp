@@ -52,13 +52,15 @@ extern "C" resposta hgetmatch2(const string url) {
        ) {
     dominiotxt="GF_akamaihd_cheff";
     }
-    if ( (url.find(".akamaihd.net") != string::npos) and 
-   ((url.find(".jpg")!= string::npos) or
-   (url.find(".png")!= string::npos) or
-   (url.find(".mp3")!= string::npos) or
-   (url.find(".swf")!= string::npos))
-        ) {
-                
+    if ( (url.find("/wow/") != string::npos)
+       ) {
+    dominiotxt="GF_akamaihd_worldofwarcraft";
+    }
+    if ( (url.find("/d3/") != string::npos)
+       ) {
+    	dominiotxt="GF_akamaihd_diablo3";
+    }
+    if (url.find(".akamaihd.net") != string::npos) {
             r.file = get_filename(url);
                 if (!r.file.empty()) {
                         r.match = true;

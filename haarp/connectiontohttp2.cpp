@@ -1227,7 +1227,7 @@ int64_t ConnectionToHTTP2::GetContentLength() {
 		int64_t ContentLengthReference;
 		ContentLengthReference = ConnectionToHTTP::GetContentLength(); //del server..
 		contentLengthServer = ContentLengthReference;
-		if (LL > 2) LogFile::ErrorMessage("ContentLength: "LLD"\n", ContentLengthReference);
+		if (LL > 2) LogFile::ErrorMessage("[DEBUG] ContentLength: "LLD"\n", ContentLengthReference);
 		if (r.match) {
 			if ((
 					ContentLengthReference < Params::GetConfigInt(getFileExtension(r.file) + "_MIN") ||
@@ -1252,8 +1252,12 @@ bool ConnectionToHTTP2::IsItChunked() {
 	bool tmp;
 	if (hit) return false;
 	else tmp = ConnectionToHTTP::IsItChunked();
-	if(tmp)
-		if (LL > 2) LogFile::AccessMessage("[DEBUG-IsItChunked] It Is CHUNKED (!HIT-%s) %%%%%%%%%%!\n", r.file.c_str());
+	if(tmp) {
+		if (LL > 2) LogFile::ErrorMessage("[DEBUG-IsItChunked] It Is CHUNKED (!HIT-%s) %%%%%%%%%%!\n", r.file.c_str());
+	}
+	else
+		if (LL > 2) LogFile::ErrorMessage("[DEBUG-IsItChunked] Is Plane, not chunked (%s)!\n", r.file.c_str());
+		
 	return tmp;
 }
 string ConnectionToHTTP2::PrepareHeaderForBrowser() {
@@ -1314,7 +1318,7 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 		}
 		if (BodyLength > 0)
 			outfile.write(bodyTmp.c_str(), BodyLength);
-		if ((time(NULL) - timerecord2) > 1) {
+		if ((time(NULL) - timerecord2) > 1.2) {
 			outfile.flush();
 			file_setmodif(completefilepath);
 		}
@@ -1391,6 +1395,7 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 		BodyLength = 0;
 		ssize_t BodyLengthTmp = 0;
 		BodyLength = ConnectionToHTTP::ReadBodyPart(bodyT, Chunked);
+		if (LL > 2) LogFile::ErrorMessage("[DEBUG] Read Body Part -- BodyLength: '%i'\n", BodyLength);
 		BodyLengthTmp = BodyLength;
 		// HACEMOS UN TRACK DEL VIDEO
 		if (r.domain.find("youtube_IDs") != string::npos) {
@@ -1414,7 +1419,7 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 			acumulateBodyLength += BodyLength;
 			int64_t diffLength = contentLengthServer - acumulateBodyLength;
 			if (LL > 2) LogFile::ErrorMessage("[DEBUG]BodyLength: '%i', acuBodyLength: "LLD", contentLengthServer: "LLD"\n", BodyLength, acumulateBodyLength, contentLengthServer);
-			if (diffLength <= 3000) {
+			if (diffLength <= 3000 && contentLengthServer > 0) {
 				//~ if (LL > 2) LogFile::ErrorMessage("[DEBUG] OK entro!!!!: diff : "LLD"\n", diffLength);
 				string spaces(diffLength, ' ');
 				bodyT += spaces;
@@ -1430,9 +1435,12 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 			string strobject, strreplace;
 			bodyTTemp = bodyT;
 
-			strobject = "function fd(a,b,c,d){var f=";
+			strobject  = "function Oe(a,b,d,f){var g=";
 			//string strreplace = "function fd(a,b,c,d){console.log(b);if(b.search(\"?o=\")>=0){b+='&watchid=" + r.file + "';} var";
-			strreplace = "function fd(a,b,c,d){var urlcache=document.location.href;if(/^http.{3,4}www.netflix.com\\/watch\\/[0-9]+(\\?.*|$)/.test(urlcache) && /\\?o=/.test(b)){var watchid=(urlcache.split('?'))[0].split('watch/')[1];b+='&watchid='+watchid;} if(/^http.{3,4}www.netflix.com\\/WiPlayer\\?.*movieid=[0-9]+/.test(urlcache) && /\\?o=/.test(b) && !/episodeId=/.test(urlcache)){var watchid=urlcache.split('movieid=')[1].split('&')[0];b+='&watchid='+watchid;} var f=";
+			strreplace = "function Oe(a,b,d,f){var urlcache=document.location.href;if(/^http.{3,4}www.netflix.com\\/watch\\/[0-9]+(\\?.*|$)/.test(urlcache) && /\\?o=/.test(b)){var watchid=(urlcache.split('?'))[0].split('watch/')[1];b+='&watchid='+watchid;} if(/^http.{3,4}www.netflix.com\\/WiPlayer\\?.*movieid=[0-9]+/.test(urlcache) && /\\?o=/.test(b) && !/episodeId=/.test(urlcache)){var watchid=urlcache.split('movieid=')[1].split('&')[0];b+='&watchid='+watchid;} var g=";
+			//if (bodyT.find("Oe(a,b,d") != string::npos)
+				if (LL > 2) LogFile::ErrorMessage("[DEBUG] string Function_NETFLIX_JS found: \"%s\"\n", bodyT.c_str());
+
 			n = SearchReplace(bodyTTemp, strobject, strreplace);
 			BodyLength += n * (strreplace.size() - strobject.size());
 
@@ -1440,7 +1448,7 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 			bodyT = bodyTTemp;
 			int64_t diffLength = contentLengthServer - acumulateBodyLength;
 			if (LL > 2) LogFile::ErrorMessage("[DEBUG]BodyLength: '%i', acuBodyLength: "LLD", contentLengthServer: "LLD"\n", BodyLength, acumulateBodyLength, contentLengthServer);
-			if (diffLength <= 3000) {
+			if (diffLength <= 3000 && contentLengthServer > 0) {
 				string spaces(diffLength, ' ');
 				bodyT += spaces;
 				BodyLength += spaces.size();
@@ -1448,7 +1456,7 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 				if (LL > 2) LogFile::ErrorMessage("[DEBUG]Entro! BodyLength: '%i', acuBodyLength: "LLD", contentLengthServer: "LLD"\n", BodyLength, acumulateBodyLength, contentLengthServer);
 				if (LL > 2) LogFile::ErrorMessage("[DEBUG] OK entro!!!!: BODY[%i]\n", BodyLength);
 			} else {
-				if (LL > 2) LogFile::ErrorMessage("[DEBUG] No entro!: diff : "LLD"\n", diffLength);
+				if (LL > 2) LogFile::ErrorMessage("[DEBUG] size to downloaded is great yet: "LLD"\n", diffLength);
 			}
 		} else if (r.domain == "netflix" && !r.match) {
 			acumulateBodyLength += BodyLength;
@@ -1609,12 +1617,12 @@ ssize_t ConnectionToHTTP2::ReadBodyPart(string &bodyT, bool Chunked) {
 					}
 					if (LL > 2) LogFile::ErrorMessage("[DEBUG-ReadPartBody] after - acumulate == Limit!\n");
 				}
-				if ((time(NULL) - timerecord) > 0.8) {
+				if ((time(NULL) - timerecord) > 1.2) {
 					if (LL > 2) LogFile::ErrorMessage("[DEBUG-ReadBodyPart] in time now - time record!\n");
 					cachefile.flush();
 					file_setmodif(completefilepath);
 					timerecord = time(NULL);
-					if (++count_wait > 9 && acumulate && bwrite) {
+					if (++count_wait > 15 && acumulate && bwrite) {
 						count_wait = 0;
 						if (!appendSubNode(lranges, *brange, acumulate)) {
 							if (LL > 0) LogFile::ErrorMessage("Warning: adding a sub block with lost position!\n");

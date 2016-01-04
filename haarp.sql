@@ -10,8 +10,8 @@ CREATE TABLE IF NOT EXISTS `haarp` (
   `downloaded` datetime NOT NULL,
   `bytes_requested` bigint unsigned NOT NULL default 0,
   `last_request` datetime NOT NULL,
-  `rg` varchar(5000) NOT NULL DEFAULT '',
-  `pos` varchar(2500) NOT NULL DEFAULT '',
+  `rg` text character set latin1 default NULL,
+  `pos` text character set latin1 default NULL,
   `filesize` int(11) DEFAULT '0',
   `np` int(11) DEFAULT '0',
   `deleted` tinyint(1) NOT NULL default '0',
@@ -40,6 +40,12 @@ IF NOT EXISTS (SELECT * from information_schema.COLUMNS where TABLE_SCHEMA = 'ha
 end if;
 IF NOT EXISTS (SELECT * from information_schema.COLUMNS where TABLE_SCHEMA = 'haarp' AND TABLE_NAME = 'haarp' AND COLUMN_NAME = 'expires') THEN
         ALTER TABLE haarp ADD expires datetime NOT NULL DEFAULT "2050-10-10 00:00:00" AFTER np;
+end if;
+IF NOT EXISTS (SELECT * from information_schema.COLUMNS where TABLE_SCHEMA = 'haarp' AND TABLE_NAME = 'haarp' AND COLUMN_NAME = 'rg' AND DATA_TYPE='text') THEN
+        ALTER TABLE haarp MODIFY COLUMN rg text character set latin1 default null;
+end if;
+IF NOT EXISTS (SELECT * from information_schema.COLUMNS where TABLE_SCHEMA = 'haarp' AND TABLE_NAME = 'haarp' AND COLUMN_NAME = 'pos' AND DATA_TYPE='text') THEN
+        ALTER TABLE haarp MODIFY COLUMN pos text character set latin1 default NULL;
 end if;
 
 END

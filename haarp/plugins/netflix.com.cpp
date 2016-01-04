@@ -74,7 +74,7 @@ extern "C" resposta hgetmatch2(const string url) {
 			r.file = getNID(url);
 			r.domain = "NetflixID";
 			r.match = false;
-	} else if( url.find("wwwplayer") != string::npos ) {
+	} else if( url.find("wwwplayer") != string::npos || url.find("cadmium-playercore") != string::npos ) {
 			//r.file = getNIDjs(url);
 			r.file = "NetflixjsID";
 			r.domain = "NetflixjsID";

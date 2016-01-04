@@ -182,7 +182,7 @@ string ConnectionToBrowser::PrepareHeaderForServer( bool UseParentProxy )
 		else if ( MatchBegin( it, "ACCEPT-ENCODING", 15 ) ) {
 				if ( ( UpperCase(Host) == "WWW.YOUTUBE.COM" && UpperCase(Request).find("/WATCH?") != string::npos) ||
 					 ( UpperCase(Host) == "WWW.NETFLIX.COM" && UpperCase(Request).find("/WATCH/") != string::npos) || 
-					 ( UpperCase(Host) == "SECURE.NETFLIX.COM" && UpperCase(Request).find("/PLAYER/HTML/WWWPLAYER-") != string::npos )
+					 ( UpperCase(Host) == "SECURE.NETFLIX.COM" && UpperCase(Request).find("/PLAYER/HTML/") != string::npos )
 				 )
 				{
 					*itvec = "Accept-Encoding: ";

@@ -289,6 +289,15 @@ Configure your file /etc/haarp/haarp.lst to disable or enable the plugins.
 	
 ## Changelog
 
+__Version 2.1.2__
+
+2016/01/04
+
+* New plugins: Nvidia (drivers), Blazzers (World Of Wordcraft, Diablo 3, etc), League of Legends.
+* Update plugin akamaihd.
+* Change of format in some columns of the databases: support for cache of files of great size.
+* Disabled for default the general plugin (in BETA).
+
 __Version 2.1.1__
 
 2015/12/08
