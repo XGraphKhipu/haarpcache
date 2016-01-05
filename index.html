@@ -239,11 +239,15 @@ tc filter add dev $IF_LAN protocol ip parent 1:0 handle 666 fw classid 1:66
     git clone https://github.com/keikurono/haarpcache.git
     cd haarpcache
     ./configure
-    # IF you have problems with the last command, then (for debian and ubuntu systems) do:
-    ./configure CXX=g++-4.4
+    # IF you have problems with the last command, then (for debian/ubuntu systems) do:
+        apt-get install g++-4.4
+        ./configure CXX=g++-4.4
+    #
     make
     make install
     mysql -u root -p &lt; haarp.sql
+    # ... and enter your password of Mysql.
+
     cp -b etc/haarp/haarp.lst /etc/haarp/haarp.lst
     /etc/init.d/haarp restart
     squid -k reconfigure
@@ -371,6 +375,17 @@ Manabar;</p>
 
 <h2>
 <a id="changelog" class="anchor" href="#changelog" aria-hidden="true"><span class="octicon octicon-link"></span></a>Changelog</h2>
+
+<p><strong>Version 2.1.2</strong></p>
+
+<p>2016/01/04</p>
+
+<ul>
+<li>New plugins: Nvidia (drivers), Blazzers (World Of Wordcraft, Diablo 3, etc), League of Legends.</li>
+<li>Update plugin akamaihd.</li>
+<li>Change of format in some columns of the databases: support for cache of files of great size.</li>
+<li>Disabled for default the general plugin (in BETA).</li>
+</ul>
 
 <p><strong>Version 2.1.1</strong></p>
 
