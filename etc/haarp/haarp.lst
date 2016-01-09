@@ -20,7 +20,7 @@ http.*\.googlevideo\.com.*(videoplayback\?|\/videoplayback\/.*itag\/[0-9]+\/.*mi
 ^http.{1,4}\w*google(\.\w|\w)*\.doubleclick\.net\/pagead\/ads\?.*
 ^http.{1,4}\w*\.doubleclick\.net\/\w*\/pfadx\/.*main.*;.*
 ^http.{1,8}(page|image)\.issuu\.com\/.*(swf|jpg)\/page.*(\.swf|\.jpg|\.png)$
-^http.{3,20}\.dailymotion\.com\/sec\(\w*\)\/frag\([0-9]*\)\/.*(\.\w{2,3})$
+#^http.{3,20}\.dailymotion\.com\/sec\(\w*\)\/frag\([0-9]*\)\/.*(\.\w{2,3})$
 http.*\.avast\.com.*(\.def|\.vpu|\.vpaa|\.stamp)
 http.*(\.avg\.com|\.grisoft\.com|\.grisoft\.cz).*(\.bin|\.exe)
 ^http.{1,10}\.bp\.blogspot\.com\/.*(\.jpg|\.mp4|\.flv|\.swf)$
