@@ -34,22 +34,22 @@ HaarpCache is a robust static and dynamic cache that provides support to the DAS
 	
 * For manual installation: 
 
-	su
-	apt-get update 
-	apt-get upgrade
-	apt-get install build-essential mysql-server mysql-client php5 apache2 php5-mysql \
-	libblkid-dev libcurl4-gnutls-dev libmysqlclient15-dev libapache2-mod-auth-mysql \
-	libapache2-mod-php5 sharutils curl autoconf squid3 git g++-4.4
-	cd /usr/src/
-	git clone https://github.com/keikurono/haarpcache.git
-	cd haarpcache
-	./configure
-	./configure CXX=g++-4.4 # <--- for ubuntu
-	make
-	make install
-	mysql -u root -p < haarp.sql
-	cd /etc/init.d
-	update-rc.d haarp defaults 98
+		su
+		apt-get update 
+		apt-get upgrade
+		apt-get install build-essential mysql-server mysql-client php5 apache2 php5-mysql \
+		libblkid-dev libcurl4-gnutls-dev libmysqlclient15-dev libapache2-mod-auth-mysql \
+		libapache2-mod-php5 sharutils curl autoconf squid3 git g++-4.4
+		cd /usr/src/
+		git clone https://github.com/keikurono/haarpcache.git
+		cd haarpcache
+		./configure
+		./configure CXX=g++-4.4 # <--- for ubuntu
+		make
+		make install
+		mysql -u root -p < haarp.sql
+		cd /etc/init.d
+		update-rc.d haarp defaults 98
 	
 	
 * Create a user for database of haarpcache:
