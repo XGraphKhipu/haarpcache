@@ -31,10 +31,10 @@
       </header>
       <section>
         <h1>
-<a id="haarpcache" class="anchor" href="#haarpcache" aria-hidden="true"><span class="octicon octicon-link"></span></a>HaarpCache</h1>
+<a id="haarpcache" class="anchor" href="#haarpcache" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>HaarpCache</h1>
 
 <h2>
-<a id="maintainer" class="anchor" href="#maintainer" aria-hidden="true"><span class="octicon octicon-link"></span></a>Maintainer</h2>
+<a id="maintainer" class="anchor" href="#maintainer" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Maintainer</h2>
 
 <ul>
 <li>
@@ -42,7 +42,7 @@
 </ul>
 
 <h2>
-<a id="table-of-contents" class="anchor" href="#table-of-contents" aria-hidden="true"><span class="octicon octicon-link"></span></a>Table of contents</h2>
+<a id="table-of-contents" class="anchor" href="#table-of-contents" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Table of contents</h2>
 
 <ul>
 <li><a href="#introduction">Introduction</a></li>
@@ -54,14 +54,14 @@
 </ul>
 
 <h2>
-<a id="introduction" class="anchor" href="#introduction" aria-hidden="true"><span class="octicon octicon-link"></span></a>Introduction</h2>
+<a id="introduction" class="anchor" href="#introduction" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Introduction</h2>
 
 <p>Proxy HaarpCache is a fork of ThunderCache.</p>
 
 <p>HaarpCache is a robust static and dynamic cache that provides support to the DASH technology.</p>
 
 <h2>
-<a id="installing" class="anchor" href="#installing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installing</h2>
+<a id="installing" class="anchor" href="#installing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installing</h2>
 
 <ul>
 <li>
@@ -85,14 +85,14 @@ bash installHaarp.sh
 <li>
 <p>For manual installation: </p>
 
-<p>su
+<pre><code>su
 apt-get update 
 apt-get upgrade
 apt-get install build-essential mysql-server mysql-client php5 apache2 php5-mysql \
 libblkid-dev libcurl4-gnutls-dev libmysqlclient15-dev libapache2-mod-auth-mysql \
 libapache2-mod-php5 sharutils curl autoconf squid3 git g++-4.4
 cd /usr/src/
-git clone <a href="https://github.com/keikurono/haarpcache.git">https://github.com/keikurono/haarpcache.git</a>
+git clone https://github.com/keikurono/haarpcache.git
 cd haarpcache
 ./configure
 ./configure CXX=g++-4.4 # &lt;--- for ubuntu
@@ -100,7 +100,8 @@ make
 make install
 mysql -u root -p &lt; haarp.sql
 cd /etc/init.d
-update-rc.d haarp defaults 98</p>
+update-rc.d haarp defaults 98
+</code></pre>
 </li>
 <li>
 <p>Create a user for database of haarpcache:</p>
@@ -228,7 +229,7 @@ tc filter add dev $IF_LAN protocol ip parent 1:0 handle 666 fw classid 1:66
 </ul>
 
 <h2>
-<a id="reinstall-or-update" class="anchor" href="#reinstall-or-update" aria-hidden="true"><span class="octicon octicon-link"></span></a>Reinstall or Update</h2>
+<a id="reinstall-or-update" class="anchor" href="#reinstall-or-update" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Reinstall or Update</h2>
 
 <p>For a common update:</p>
 
@@ -254,7 +255,7 @@ tc filter add dev $IF_LAN protocol ip parent 1:0 handle 666 fw classid 1:66
 </code></pre>
 
 <h2>
-<a id="monitoring-logs" class="anchor" href="#monitoring-logs" aria-hidden="true"><span class="octicon octicon-link"></span></a>Monitoring Logs</h2>
+<a id="monitoring-logs" class="anchor" href="#monitoring-logs" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Monitoring Logs</h2>
 
 <p>Depending on the location of the logs defined in the file <code>/etc/haarp/haarp.conf</code>:</p>
 
@@ -265,7 +266,7 @@ tc filter add dev $IF_LAN protocol ip parent 1:0 handle 666 fw classid 1:66
 <p>Level information in the logs: change the <code>LOGLEVEL</code> on <code>/etc/haarp/haarp.conf</code>.</p>
 
 <h2>
-<a id="list-of-plugins" class="anchor" href="#list-of-plugins" aria-hidden="true"><span class="octicon octicon-link"></span></a>List of Plugins</h2>
+<a id="list-of-plugins" class="anchor" href="#list-of-plugins" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>List of Plugins</h2>
 
 <ul>
 <li>
@@ -374,7 +375,7 @@ Manabar;</p>
 <p>Configure your file /etc/haarp/haarp.lst to disable or enable the plugins.  </p>
 
 <h2>
-<a id="changelog" class="anchor" href="#changelog" aria-hidden="true"><span class="octicon octicon-link"></span></a>Changelog</h2>
+<a id="changelog" class="anchor" href="#changelog" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Changelog</h2>
 
 <p><strong>Version 2.1.2</strong></p>
 
@@ -524,7 +525,7 @@ Manabar;</p>
 <div align="center">
 <p></p>
 <h6>
-<a id="if-you-find-this-code-useful-or-wish-to-fund-further-developmentyou-can-use-paypal-to-donate-to-the-haarpcache-project" class="anchor" href="#if-you-find-this-code-useful-or-wish-to-fund-further-developmentyou-can-use-paypal-to-donate-to-the-haarpcache-project" aria-hidden="true"><span class="octicon octicon-link"></span></a>If you find this code useful, or wish to fund further development,
+<a id="if-you-find-this-code-useful-or-wish-to-fund-further-developmentyou-can-use-paypal-to-donate-to-the-haarpcache-project" class="anchor" href="#if-you-find-this-code-useful-or-wish-to-fund-further-developmentyou-can-use-paypal-to-donate-to-the-haarpcache-project" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>If you find this code useful, or wish to fund further development,
 you can use PayPal to donate to the HaarpCache project:</h6>
 <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=QYCCSYYGW52QU"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif"></a>
 </div>
