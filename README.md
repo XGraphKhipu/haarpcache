@@ -406,7 +406,7 @@ __Version 1.1__
 
 Fork created by
 
-Manolo Canales
+Manolo Canales Cuba
 
 kei.haarpcache@gmail.com
 
