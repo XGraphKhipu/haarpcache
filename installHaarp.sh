@@ -226,7 +226,7 @@ ln -s html/ext-3.4.0 ../ext
 # Install LibCGI
 cd /usr/src
 aptitude install autoconf git
-git clone git://github.com/keikurono/libcgi.git
+git clone https://github.com/keikurono/libcgi.git
 cd libcgi
 ./autogen.sh
 ./configure --prefix=/usr
